@@ -6,9 +6,11 @@ A simple user interface for the OpenAI API. It's still at the beginner stage. It
 
 - style the page
 
-- add vision
+    * automatically scroll down a little when new message appears
 
 - add image generation
+
+- add image input
 
 - connect to a database (MongoDB?)
 
