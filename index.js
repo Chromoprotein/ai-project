@@ -23,13 +23,36 @@ const openai = new OpenAI(
 
 app.get('/getai', async (req, res) => {
     try {
+
+        const tools = [
+            {
+                type: "function",
+                function: {
+                    name: "toggle_dark_and_light_mode",
+                    description: "Toggle between the light mode and the dark mode of the chat user interface. Call this whenever the user wants to make the user interface light or dark.",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            theme: {
+                                type: "string",
+                                description: "Light or dark.",
+                            },
+                        },
+                        required: ["theme"],
+                        additionalProperties: false,
+                    },
+                }
+            }
+        ];
+
         const { messages } = req.query;
         const completion = await openai.chat.completions.create({
             messages,
             model: "gpt-4o-mini",
+            tools: tools,
         });
         if(completion) {
-            const output = completion.choices[0].message.content;
+            const output = completion.choices[0].message;
             return res.json(output);
         }
     } catch (error) {

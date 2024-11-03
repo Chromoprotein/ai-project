@@ -1,12 +1,8 @@
 # ai-project
 
-A simple user interface for the OpenAI API. It's still at the beginner stage. It has chat context and a silly system prompt.
+A simple user interface for the OpenAI API. It's still at the beginner stage. It has chat context, a system prompt, and a tool.
 
 ## To do
-
-- style the page
-
-    * automatically scroll down a little when new message appears
 
 - add image generation
 

@@ -4,9 +4,24 @@
     box-sizing: border-box;
 }
 
+.light {
+    --color-pop: rgb(44, 154, 222);
+    --background: #b8e1f1;
+    --highlight-background: white;
+    --text-color: rgb(21, 21, 21);
+}
+
+.dark {
+    --color-pop: rgb(136, 44, 222);
+    --background: rgb(21, 21, 21);
+    --highlight-background: rgb(49, 49, 49);
+    --text-color: rgb(203, 200, 205);
+}
+
 body {
     margin: 0;
     font-family:Arial, Helvetica, sans-serif;
+    background-color: var(--background);
 }
 
 .container {
@@ -22,7 +37,6 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: rgb(203, 200, 205);
 }
 
 .centeredContainer {
@@ -47,7 +61,7 @@ body {
     right: 0;
     margin: 10px auto;
     max-width: 500px;
-    background-color: rgb(21, 21, 21);
+    background-color: var(--highlight-background);
     border-radius: 20px;
     border: 1px solid transparent;
     display: flex;
@@ -61,14 +75,17 @@ body {
     max-width:450px;
     padding: 20px;
     margin:10px;
-    color:rgb(176, 168, 175);
-    background-color: rgb(21, 21, 21);
+    color: var(--text-color);
+    background-color: var(--highlight-background);
     font-size: 16px;
     border:none;
     outline:none;
     font-family: Arial, Helvetica, sans-serif;
-    height:150px;
+    height:130px;
     resize: none;
+}
+.inputContainer textarea::placeholder {
+    color: var(--text-color);
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -91,6 +108,7 @@ body {
     align-self: center;
     display:flex;
     margin:10px;
+    background-color: var(--color-pop);
 }
 
 .inputContainer input,
@@ -99,7 +117,8 @@ body {
 }
 
 .message {
-    background-color: rgb(21, 21, 21);
+    background-color: var(--highlight-background);
+    color: var(--text-color);
     border: 1px solid transparent;
     border-radius: 20px 20px 20px 20px;
     margin:10px 0;
@@ -110,14 +129,22 @@ body {
 
 .name {
     font-weight: bold;
-    color:blueviolet;
+    color:var(--color-pop);
 }
 
 .title {
-    font-size: 1.5em;
-    color:rgb(176, 168, 175);
+    font-size: 2em;
+    font-weight: bold;
+    color:var(--color-pop);
+    text-align: center;
 }
 
 .loading {
     margin:10px;
+    color:var(--text-color);
+}
+
+.navbar{
+    position:absolute;
+    top:0;
 }

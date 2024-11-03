@@ -7,7 +7,8 @@
     "start": "nodemon index.js",
     "client": "cd frontend && npm start",
     "server": "nodemon index.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "sass": "cd frontend && cd src && sass --watch index.scss:index.css",
+    "dev": "concurrently \"npm run server\" \"npm run client\" \"npm run sass\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -14,7 +14,7 @@ $shadows-big: multiple-box-shadow(100);
 
 .star-layers {
   height: 100vh;
-  background: black;
+  background: rgb(21, 21, 21);
   overflow: hidden;
   position: relative;
 
@@ -39,5 +39,61 @@ $shadows-big: multiple-box-shadow(100);
     width: 3px;
     height: 3px;
     box-shadow: $shadows-big;
+  }
+}
+
+
+
+// Function to generate random cloud positions and sizes
+@function multiple-cloud-box-shadow($number_of_clouds) {
+  $value: "#{random(2000)}px #{random(500)}px #{random(200)}px rgba(255, 255, 255, 0.8)"; // initial cloud
+
+  @for $i from 2 through $number_of_clouds {
+    $value: "#{$value}, #{random(2000)}px #{random(500)}px #{random(200)}px rgba(255, 255, 255, 0.7)";
+  }
+
+  @return unquote($value);
+}
+
+// Cloud layers with different sizes
+$clouds-small: multiple-cloud-box-shadow(20);
+$clouds-medium: multiple-cloud-box-shadow(15);
+$clouds-large: multiple-cloud-box-shadow(10);
+
+.cloud-layers {
+  height: 100vh;
+  background: linear-gradient(to bottom, #87CEEB, #ffffff); // daytime sky gradient
+  overflow: hidden;
+  position: relative;
+
+  .cloud-layer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    background: transparent;
+  }
+
+  #clouds-small {
+    box-shadow: $clouds-small;
+    width: 80px;
+    height: 50px;
+    opacity: 0.8;
+    border-radius: 50%;
+  }
+
+  #clouds-medium {
+    box-shadow: $clouds-medium;
+    width: 100px;
+    height: 60px;
+    opacity: 0.7;
+    border-radius: 50%;
+  }
+
+  #clouds-large {
+    box-shadow: $clouds-large;
+    width: 140px;
+    height: 80px;
+    opacity: 0.6;
+    border-radius: 50%;
   }
 }
