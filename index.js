@@ -21,6 +21,22 @@ const openai = new OpenAI(
     }
 );
 
+app.get('/getdalle', async (req, res) => {
+    try {
+        const { prompt } = req.query;
+        const image = await openai.images.generate({ 
+            model: "dall-e-3", 
+            prompt: prompt
+        });
+        if(image) {
+            const output = image.data;
+            return res.json(output);
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+})
+
 app.get('/getai', async (req, res) => {
     try {
 
@@ -42,12 +58,30 @@ app.get('/getai', async (req, res) => {
                         additionalProperties: false,
                     },
                 }
+            },
+            {
+                type: "function",
+                function: {
+                    name: "generate_image",
+                    description: "Generate images. Call this function whenever the user asks for an image or a drawing.",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            image_description: {
+                                type: "string",
+                                description: "A description of the image request",
+                            },
+                        },
+                        required: ["image_description"],
+                        additionalProperties: false,
+                    },
+                }
             }
         ];
 
-        const { messages } = req.query;
+        const { prompt } = req.query;
         const completion = await openai.chat.completions.create({
-            messages,
+            messages: prompt,
             model: "gpt-4o-mini",
             tools: tools,
         });

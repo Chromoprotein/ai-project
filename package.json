@@ -7,7 +7,7 @@
     "start": "nodemon index.js",
     "client": "cd frontend && npm start",
     "server": "nodemon index.js",
-    "sass": "cd frontend && cd src && sass --watch index.scss:index.css",
+    "sass": "cd frontend && cd src && cd styles && sass --watch index.scss:index.css",
     "dev": "concurrently \"npm run server\" \"npm run client\" \"npm run sass\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,7 +19,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "openai": "^4.67.3"
+    "openai": "^4.67.3",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "concurrently": "^9.0.1",

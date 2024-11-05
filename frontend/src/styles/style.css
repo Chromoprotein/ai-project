@@ -148,3 +148,7 @@ body {
     position:absolute;
     top:0;
 }
+
+.genImage {
+    width:100%;
+}
