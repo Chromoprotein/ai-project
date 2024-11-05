@@ -36,30 +36,33 @@ export default function App() {
     });
   };
 
+  // Toggle light and dark mode
+  const toggle_dark_and_light_mode = (theme) => {
+    setTheme(theme);
+    localStorage.setItem('theme', theme);
+    return `The mode has been successfully updated to ${theme} mode`;
+  }
+
+  // Image generation logic
+  const generateImage = async (imageDescription, endpoint) => {
+    const image = await fetchAIResponse(imageDescription, endpoint);
+    if (image.data) {
+      return image.data[0];
+    }
+    return "";
+  };
+
   // Function calling (tools)
   const handleToolCalls = async (toolCall) => {
       const { name, arguments: argsString } = toolCall.function;
       const args = JSON.parse(argsString);
 
       if (name === "toggle_dark_and_light_mode" && args.theme) {
-        setTheme(args.theme);
-        localStorage.setItem('theme', args.theme);
-        return `The mode has been successfully updated to ${args.theme} mode`;
+        return toggle_dark_and_light_mode(args.theme);
 
       } else if (name === "generate_image" && args.image_description) {
-        try {
-          const endpoint = process.env.REACT_APP_DALLE;
-          setLoading(true);
-
-          const image = await fetchAIResponse(args.image_description, endpoint);
-          if(image.data) {
-            return image.data[0];
-          }
-        } catch (error) {
-            console.error("Error generating image:", error);
-        } finally {
-          setLoading(false);
-        }
+        const endpoint = process.env.REACT_APP_DALLE;
+        return await generateImage(args.image_description, endpoint);
       }
 
       return "";
@@ -77,7 +80,6 @@ export default function App() {
     // Add the user's new message to the messages array
     addMessage("user", query);
     setQuery("");
-
     const allMessages = [...messages, { role: "user", content: query }];
 
     try {
@@ -91,15 +93,14 @@ export default function App() {
       }
 
       // If the AI wants to call a function
-      if (data.tool_calls?.[0]) {
-        // Run the tool function and return e.g. image data
-        const toolResponse = await handleToolCalls(data.tool_calls[0]);
+      if (data.tool_calls?.[0]) { // Function call parameters etc.
+        const toolResponse = await handleToolCalls(data.tool_calls[0]); // Run the tool function and return e.g. image data or a confirmation of an action
         if(toolResponse) {
-          // Tell the AI the function was called and show the results to it
+          // Pass the function call's response back to the AI so it can show and explain the results to the user
           const afterToolResponse = await fetchAIResponse([
-            ...allMessages,
-            data, // The AI's initial response that wanted to call a function
-            { role: "tool", content: JSON.stringify(toolResponse), tool_call_id: data.tool_calls[0].id }, // Message containing the result of the function call
+            ...allMessages, // Previous context
+            data, // The AI's initial response with function call parameters
+            { role: "tool", content: JSON.stringify(toolResponse), tool_call_id: data.tool_calls[0].id }, // Message containing the tool's response
           ], endpoint);
 
           // Add the AI's response to the displayed messages
