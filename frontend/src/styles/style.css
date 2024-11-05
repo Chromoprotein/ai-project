@@ -127,6 +127,10 @@ body {
     white-space: pre-line;
 }
 
+.message img {
+    width:100%;
+}
+
 .name {
     font-weight: bold;
     color:var(--color-pop);

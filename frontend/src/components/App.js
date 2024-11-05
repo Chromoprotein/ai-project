@@ -23,14 +23,6 @@ export default function App() {
       setMessages((prevMessages) => [...prevMessages, { role, content }]);
   };
 
-  // If there are images in the chat context, keep only their alt text, so that "content" is a simple string
-  const prepareMessagesForServer = (messages) => {
-    return messages.map((message) => ({
-      role: message.role,
-      content: message.content.image ? `[Image: ${message.content.alt}]` : message.content
-    }));
-  }
-
   // Scroll automatically when new messages appear
   const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,14 +53,7 @@ export default function App() {
 
           const image = await fetchAIResponse(args.image_description, endpoint);
           if(image.data) {
-            addMessage("assistant", 
-              { 
-                image: true,
-                url: image.data[0].url, 
-                alt: image.data[0].revised_prompt
-              }
-            );
-            return image.data[0].revised_prompt; // GPT gets the revised prompt back so it can go "Here is the image of..."
+            return image.data[0];
           }
         } catch (error) {
             console.error("Error generating image:", error);
@@ -93,13 +78,12 @@ export default function App() {
     addMessage("user", query);
     setQuery("");
 
-    // If there are images in the chat context, keep only their alt text, so that "content" is just a string
-    const formattedMessages = prepareMessagesForServer([...messages, { role: "user", content: query }]);
+    const allMessages = [...messages, { role: "user", content: query }];
 
     try {
       setLoading(true);
       const endpoint = process.env.REACT_APP_AI;
-      const { data } = await fetchAIResponse(formattedMessages, endpoint);
+      const { data } = await fetchAIResponse(allMessages, endpoint);
 
       // Add the AI's message to the messages array to be displayed
       if(data.content) {
@@ -113,7 +97,7 @@ export default function App() {
         if(toolResponse) {
           // Tell the AI the function was called and show the results to it
           const afterToolResponse = await fetchAIResponse([
-            ...formattedMessages,
+            ...allMessages,
             data, // The AI's initial response that wanted to call a function
             { role: "tool", content: JSON.stringify(toolResponse), tool_call_id: data.tool_calls[0].id }, // Message containing the result of the function call
           ], endpoint);

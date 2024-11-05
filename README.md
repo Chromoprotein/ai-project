@@ -4,7 +4,7 @@ A simple user interface for the OpenAI API. It has chat context, a system prompt
 
 ## To do
 
-- add image input
+- add image input / vision
 
 - typing/loading animation
 
