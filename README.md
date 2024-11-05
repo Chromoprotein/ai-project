@@ -1,6 +1,6 @@
 # ai-project
 
-A simple user interface for the OpenAI API. It's still at the beginner stage. It has chat context, a system prompt, and a tool.
+A simple user interface for the OpenAI API. It has chat context, a system prompt, and function calling to Dall-e and a custom function.
 
 ## To do
 
