@@ -4,7 +4,7 @@ import '../styles/index.css';
 import '../styles/style.css';
 import { InputContainer } from './InputContainer';
 import { StarBackground, CloudBackground } from './Backgrounds';
-import { Loading } from './Loaders';
+import { Typing } from './Loaders';
 import { Hello } from './SmallUIElements';
 import Message from './Message';
 
@@ -15,7 +15,6 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-  // Uploading an image
   const [file, setFile] = useState(null);
 
   // 1. HELPER FUNCTIONS
@@ -111,7 +110,7 @@ export default function App() {
           },
       ];
     } else {
-      newContent = query;
+      newContent = [{ type: "text", text: query }]
     }
 
     // Add the user's new message to the messages array for displaying
@@ -130,7 +129,8 @@ export default function App() {
 
       // Add the AI's message to the messages array to be displayed
       if(data.content) {
-        addMessage("assistant", data.content);
+        const newAIContent = [{ type: "text", text: data.content }]
+        addMessage("assistant", newAIContent);
       }
 
       // If the AI wants to call a function
@@ -152,7 +152,7 @@ export default function App() {
 
           // Add the AI's response to the displayed messages
           if (afterToolResponse.data.content) {
-            addMessage("assistant", afterToolResponse.data.content);
+            addMessage("assistant", [{ type: "text", text: afterToolResponse.data.content }]);
           }
         }
       }
@@ -194,7 +194,7 @@ export default function App() {
         {mappedMessages.length > 0 ? 
           <div className="chatContainer">
             {mappedMessages}
-            <Loading loading={loading}/>
+            {loading && <Typing />}
             <div ref={messagesEndRef} />
           </div> 
         : 

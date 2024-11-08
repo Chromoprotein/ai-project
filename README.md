@@ -6,16 +6,12 @@ It also has vision, and the images stay in the chat context, so you can ask foll
 
 It also has a custom UI-modifying function as function calling.
 
-## To do
+## My to-do list:
 
-- Features:
+- Set up a database
 
-    - Set up a database
+- Add folders for organizing chats
 
-    - Add folders for organizing chats
+- Add text-to-speech
 
-    - Add a button for copying a message and other small useful features
-
-- Styling:
-
-    - Add a typing/loading animation
+- Add the option to edit and resend a message
