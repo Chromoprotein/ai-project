@@ -3,6 +3,8 @@ const cors = require('cors');
 
 let bodyParser = require('body-parser');
 let OpenAI = require('openai');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
 app.use(cors({ 
@@ -10,7 +12,8 @@ app.use(cors({
     credentials: true 
 }));
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '5mb'}));
+app.use(bodyParser.urlencoded({limit: '5mb', extended: true}));
 
 let dotenv = require('dotenv');
 dotenv.config();
@@ -37,7 +40,7 @@ app.get('/getdalle', async (req, res) => {
     }
 })
 
-app.get('/getai', async (req, res) => {
+app.post('/getai', async (req, res) => {
     try {
 
         const tools = [
@@ -79,20 +82,24 @@ app.get('/getai', async (req, res) => {
             }
         ];
 
-        const { prompt } = req.query;
+        // Previous chat context
+        const messages = req.body.messages;
+
         const completion = await openai.chat.completions.create({
-            messages: prompt,
+            messages: messages,
             model: "gpt-4o-mini",
             tools: tools,
         });
+
         if(completion) {
             const output = completion.choices[0].message;
             return res.json(output);
         }
     } catch (error) {
+        console.error('Error processing upload:', error);
         res.status(500).json({ message: "Internal server error" });
     }
-});
+})
 
 let port = process.env.PORT || 3001;
 

@@ -53,6 +53,13 @@ body {
     overflow-y: auto;
 }
 
+.buttonContainer {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 /*button inside input field*/
 .inputContainer {
     position: fixed;
@@ -122,13 +129,17 @@ body {
     border: 1px solid transparent;
     border-radius: 20px 20px 20px 20px;
     margin:10px 0;
-    padding:10px 20px;
+    padding:20px;
     width:100%;
-    white-space: pre-line;
+}
+
+.message p {
+    display: inline;
 }
 
 .message img {
     width:100%;
+    padding: 10px 0 10px 0;
 }
 
 .name {
@@ -151,8 +162,4 @@ body {
 .navbar{
     position:absolute;
     top:0;
-}
-
-.genImage {
-    width:100%;
 }

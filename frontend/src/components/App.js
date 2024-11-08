@@ -11,10 +11,12 @@ import Message from './Message';
 export default function App() {
 
   const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState([{ role: "system", content: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting. Tools: 1. You can use Dall-e to generate images. 2. You can call a function to toggle the dark mode and light mode of the user interface." }]);
+  const [messages, setMessages] = useState([{ role: "system", content: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting." }]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  // Uploading an image
+  const [file, setFile] = useState(null);
 
   // 1. HELPER FUNCTIONS
 
@@ -28,14 +30,6 @@ export default function App() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Handle API calls to the AI endpoint
-  const fetchAIResponse = async (payload, endpoint) => {
-    return await axios.get(endpoint, {
-        withCredentials: true,
-        params: { prompt: payload }
-    });
-  };
-
   // Toggle light and dark mode
   const toggle_dark_and_light_mode = (theme) => {
     setTheme(theme);
@@ -45,7 +39,10 @@ export default function App() {
 
   // Image generation logic
   const generateImage = async (imageDescription, endpoint) => {
-    const image = await fetchAIResponse(imageDescription, endpoint);
+    const image = await axios.get(endpoint, {
+        withCredentials: true,
+        params: { prompt: imageDescription }
+    });
     if (image.data) {
       return image.data[0];
     }
@@ -68,24 +65,68 @@ export default function App() {
       return "";
   };
 
+  // Multimodal AI request
+  const fetchAIResponse = async (payload) => {
+    return await axios.post(process.env.REACT_APP_AI, { messages: payload }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
+  }
+
   // 2. MAIN FUNCTIONALITY
 
   // User prompt
   const handleQuery = (e) => setQuery(e.target.value);
 
+  // Image prompt
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      setFile(reader.result); // base64 encoded image
+    };
+  };
+
+  const handleRemoveImage = () => {
+    setFile(null);
+  };
+
   // Submit a prompt
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Add the user's new message to the messages array
-    addMessage("user", query);
+    // Construct the user's new message
+    let newContent = {};
+    if(file) {
+      newContent = [
+          {type: "text", text: query},
+          {
+            type: "image_url",
+            image_url: {
+                url: file,
+            },
+          },
+      ];
+    } else {
+      newContent = query;
+    }
+
+    // Add the user's new message to the messages array for displaying
+    addMessage("user", newContent)
+
+    // Prepare the data for server
+    const allMessages = [...messages, { role: "user", content: newContent }];
+    
+    // Clear the inputs
     setQuery("");
-    const allMessages = [...messages, { role: "user", content: query }];
+    setFile(null);
 
     try {
       setLoading(true);
-      const endpoint = process.env.REACT_APP_AI;
-      const { data } = await fetchAIResponse(allMessages, endpoint);
+      const { data } = await fetchAIResponse(allMessages);
 
       // Add the AI's message to the messages array to be displayed
       if(data.content) {
@@ -97,15 +138,21 @@ export default function App() {
         const toolResponse = await handleToolCalls(data.tool_calls[0]); // Run the tool function and return e.g. image data or a confirmation of an action
         if(toolResponse) {
           // Pass the function call's response back to the AI so it can show and explain the results to the user
-          const afterToolResponse = await fetchAIResponse([
-            ...allMessages, // Previous context
+          const afterToolAllMessages = [
+            ...allMessages, // Previous messages
             data, // The AI's initial response with function call parameters
-            { role: "tool", content: JSON.stringify(toolResponse), tool_call_id: data.tool_calls[0].id }, // Message containing the tool's response
-          ], endpoint);
+            { 
+              role: "tool", 
+              content: JSON.stringify(toolResponse), 
+              tool_call_id: data.tool_calls[0].id 
+            }, // Message containing the tool's response
+          ];
+
+          const afterToolResponse = await fetchAIResponse(afterToolAllMessages);
 
           // Add the AI's response to the displayed messages
           if (afterToolResponse.data.content) {
-              addMessage("assistant", afterToolResponse.data.content);
+            addMessage("assistant", afterToolResponse.data.content);
           }
         }
       }
@@ -154,7 +201,7 @@ export default function App() {
           <Hello/>
         }
 
-        <InputContainer handleSubmit={handleSubmit} query={query} handleQuery={handleQuery}/>
+        <InputContainer handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} preview={file} handleRemoveImage={handleRemoveImage} />
 
       </div>
 
