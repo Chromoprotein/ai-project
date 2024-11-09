@@ -7,6 +7,7 @@ import { IoMdDownload } from "react-icons/io";
 export default function Message({message, messageIndex}) {
 
     const [copySuccess, setCopySuccess] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     const parentDivRef = useRef(null);
 
@@ -14,11 +15,15 @@ export default function Message({message, messageIndex}) {
     const downloadImage = () => {
       const image = parentDivRef.current.querySelector('img');
       const link = document.createElement("a");
-      link.href = image;
+      link.href = image.src;
       link.target = "_blank";
       link.download = "generated_image.png";
       link.click();
     }
+
+    const handleImageLoad = () => {
+      setImageLoaded(true);
+    };
 
     // Copying a message
     const copyToClipboard = (message) => {
@@ -52,10 +57,10 @@ export default function Message({message, messageIndex}) {
               components={{
                 img: ({ node, ...props }) => (
                   <div className="imageContainer">
-                    <img {...props} alt="AI generated" />
-                    <button className="downloadButton" onClick={downloadImage} >
+                    <img {...props} alt="AI generated" onLoad={handleImageLoad} />
+                    {imageLoaded && <button className="downloadButton" onClick={downloadImage} >
                       <IoMdDownload size={30} />
-                    </button>
+                    </button>}
                   </div>
                 ),
               }}
