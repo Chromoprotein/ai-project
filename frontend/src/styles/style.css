@@ -148,7 +148,21 @@ body {
 
 .message img {
     width:100%;
-    padding: 10px 0 10px 0;
+    margin: 10px 0 10px 0;
+}
+
+.imageContainer {
+    position: relative;
+}
+
+.downloadButton {
+    position:absolute;
+    top:0;
+    right:0;
+    margin: 20px 10px;
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
 }
 
 .name {
