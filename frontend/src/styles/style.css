@@ -60,13 +60,32 @@ body {
     align-items: center;
 }
 
+.smallButtonContainer {
+    display:flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    gap:15px;
+}
+
 .smallButton {
-    display:block;
     background-color: transparent;
     border: transparent;
     cursor: pointer;
     margin-top: 10px;
     padding:0;
+    color: var(--color-pop);
+}
+
+.modal {
+    position: absolute;
+    top:0;
+    left:0;
+    right:0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
 
 /*button inside input field*/

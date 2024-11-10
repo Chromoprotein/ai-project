@@ -3,11 +3,15 @@ import { useState, useRef } from 'react';
 import { FaRegCopy } from "react-icons/fa";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { IoMdDownload } from "react-icons/io";
+import axios from 'axios';
+import { AiFillSound } from "react-icons/ai";
+import { IoClose } from "react-icons/io5";
 
 export default function Message({message, messageIndex}) {
 
     const [copySuccess, setCopySuccess] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [audioUrl, setAudioUrl] = useState(null);
 
     const parentDivRef = useRef(null);
 
@@ -44,6 +48,22 @@ export default function Message({message, messageIndex}) {
       return { text, image }
     });
 
+    const generateAudio = async (text) => {
+      try {
+        const response = await axios.post(process.env.REACT_APP_SPEECH, { text: text }, {
+          headers: { "Content-Type": "application/json" },
+          responseType: "blob",
+          withCredentials: true,
+        });
+
+        const blob = response.data;
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
     return (
       <div key={messageIndex} className="message" id={messageIndex} ref={parentDivRef}>
           {/*sender name*/}
@@ -79,10 +99,35 @@ export default function Message({message, messageIndex}) {
 
           {/*if there is text, display a button for copying the text at the bottom of the message*/}
           {mapItems[0].text && 
-            <CopyButton copyToClipboard={copyToClipboard} copySuccess={copySuccess} text={mapItems[0].text}/>}
+            <div className="smallButtonContainer">
+              <CopyButton copyToClipboard={copyToClipboard} copySuccess={copySuccess} text={mapItems[0].text}/>
 
+              <button className="smallButton" onClick={() => generateAudio(mapItems[0].text)}><AiFillSound /></button>
+            </div>
+          }
+          
+        {audioUrl && <AudioPlayer audioUrl={audioUrl} setAudioUrl={setAudioUrl} />}
       </div> 
     );
+}
+
+export function AudioPlayer({audioUrl, setAudioUrl}) {
+  return (
+    <div className="modal">
+      {audioUrl && (
+        <audio controls src={audioUrl} autoPlay onEnded={() => {
+            URL.revokeObjectURL(audioUrl); // Release memory
+            setAudioUrl(null); // Close the player
+          }}>
+          Your browser does not support the audio element.
+        </audio>
+      )}
+      <button className="smallButton" onClick={() => {
+        URL.revokeObjectURL(audioUrl);
+        setAudioUrl(null);
+      }}><IoClose size={30} /></button>
+    </div>
+  );
 }
 
 export function CopyButton({copyToClipboard, copySuccess, text}) {

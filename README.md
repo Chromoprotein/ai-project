@@ -12,6 +12,4 @@ It also has a custom UI-modifying function as function calling.
 
 - Add folders for organizing chats
 
-- Add text-to-speech
-
 - Add the option to edit and resend a message

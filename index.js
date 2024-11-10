@@ -5,6 +5,7 @@ let bodyParser = require('body-parser');
 let OpenAI = require('openai');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(cors({ 
@@ -39,6 +40,29 @@ app.get('/getdalle', async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 })
+
+app.post('/speech', async (req, res) => {
+    try {
+        const text = req.body.text;
+        const mp3 = await openai.audio.speech.create({
+            model: "tts-1",
+            voice: "alloy",
+            input: text,
+        });
+
+        const buffer = Buffer.from(await mp3.arrayBuffer());
+        res.set({
+            "Content-Type": "audio/mpeg",
+            "Content-Disposition": `attachment; filename="speech.mp3"`,
+        });
+        if(buffer) {
+            res.send(buffer);
+        }
+    } catch (error) {
+        console.error("Error generating speech:", error);
+        res.status(500).json({ error: "Failed to generate speech" });
+    }
+});
 
 app.post('/getai', async (req, res) => {
     try {
