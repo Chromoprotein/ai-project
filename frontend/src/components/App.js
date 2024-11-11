@@ -7,6 +7,8 @@ import { StarBackground, CloudBackground } from './Backgrounds';
 import { Typing } from './Loaders';
 import { Hello } from './SmallUIElements';
 import Message from './Message';
+import { GoSidebarExpand } from "react-icons/go";
+import { GoSidebarCollapse } from "react-icons/go";
 
 export default function App() {
 
@@ -16,6 +18,7 @@ export default function App() {
   const messagesEndRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [file, setFile] = useState(null);
+  const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
 
   // 1. HELPER FUNCTIONS
 
@@ -73,6 +76,10 @@ export default function App() {
       withCredentials: true,
     });
   }
+
+  const toggleNavbar = () => {
+    setIsNavbarCollapsed(!isNavbarCollapsed);
+  };
 
   // 2. MAIN FUNCTIONALITY
 
@@ -185,23 +192,38 @@ export default function App() {
     .filter(message => message.role !== "system")
     .map((message, index) => <Message message={message} index={index} />);
 
+    console.log(isNavbarCollapsed)
   return (
     <>
       {theme === "dark" ? <StarBackground /> : <CloudBackground />}
 
+      <button className="navbarControl roundButton" onClick={toggleNavbar}>
+        {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}
+      </button>
+
       <div className="container">
-
-        {mappedMessages.length > 0 ? 
+        <div className={`navbar ${isNavbarCollapsed ? "collapsed" : "active"}`}>
+          <ul>
+            <li>Placeholder</li>
+            <li>Placeholder</li>
+            <li>Placeholder</li>
+            <li>Some very long chat name</li>
+          </ul>
+        </div>
+        <div className="mainContent">
           <div className="chatContainer">
-            {mappedMessages}
-            {loading && <Typing />}
-            <div ref={messagesEndRef} />
-          </div> 
-        : 
-          <Hello/>
-        }
-
-        <InputContainer handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} preview={file} handleRemoveImage={handleRemoveImage} />
+            {mappedMessages.length > 0 ? 
+              <>
+                {mappedMessages}
+                {loading && <Typing />}
+                <div ref={messagesEndRef} />
+              </>
+            : 
+              <Hello/>
+            }
+          </div>
+          <InputContainer handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} preview={file} handleRemoveImage={handleRemoveImage} />
+        </div>
 
       </div>
 

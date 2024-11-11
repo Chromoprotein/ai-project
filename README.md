@@ -2,9 +2,23 @@
 
 A chatbot with the OpenAI API that generates text and Dall-e images. 
 
-It also has vision, and the images stay in the chat context, so you can ask follow-up questions about images. Vision and function calling work together so you can ask it to generate an image based on an image.
+# Features
 
-It also has a custom UI-modifying function as function calling.
+- Text generation
+
+- Dall-e image generation
+
+- Vision (image analysis)
+
+- Text to speech
+
+- Minor features:
+
+    - Function calling tool for toggling light/dark mode
+
+    - Download image button
+
+    - Copy text to clipboard button
 
 ## My to-do list:
 

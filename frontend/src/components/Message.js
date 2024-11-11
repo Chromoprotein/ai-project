@@ -113,7 +113,7 @@ export default function Message({message, messageIndex}) {
 
 export function AudioPlayer({audioUrl, setAudioUrl}) {
   return (
-    <div className="modal">
+    <div className="audioPlayer">
       {audioUrl && (
         <audio controls src={audioUrl} autoPlay onEnded={() => {
             URL.revokeObjectURL(audioUrl); // Release memory

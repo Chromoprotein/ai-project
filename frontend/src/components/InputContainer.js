@@ -29,10 +29,10 @@ export function InputContainer({handleSubmit, query, handleQuery, handleFileChan
       <input type="file" id="file-upload" onChange={handleFileChange} style={{ display: 'none' }} />
 
       <div className="buttonContainer">
-        <button onClick={handleButtonClick}><RiAttachment2 /></button>
+        <button className="roundButton" onClick={handleButtonClick}><RiAttachment2 /></button>
 
-        <button type="submit"><FaArrowAltCircleUp /></button>
+        <button className="roundButton" type="submit"><FaArrowAltCircleUp /></button>
       </div>
-  </form>
+    </form>
   );
 }

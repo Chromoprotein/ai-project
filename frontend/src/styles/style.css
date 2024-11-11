@@ -1,8 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
 *,
 *::after,
 *::before {
     box-sizing: border-box;
 }
+
+/*LIGHT AND DARK MODE*/
 
 .light {
     --color-pop: rgb(44, 154, 222);
@@ -18,66 +22,163 @@
     --text-color: rgb(203, 200, 205);
 }
 
+/*MAIN LAYOUT*/
+
 body {
     margin: 0;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     background-color: var(--background);
 }
 
+/*wraps the whole page*/
 .container {
-    width: 100%;
-    max-width: 500px;
-    margin:0 auto;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  top:0;
+  bottom: 0;
+  left: 0;
+  right: 0
 }
 
-.centeredContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    height: 100%;
-}
-
-.chatContainer {
-    width:100%;
-    margin-bottom: 170px;
+/*navbar is on the left*/
+.navbar {
+    width: 250px;
+    background-color: var(--highlight-background);
+    color: var(--text-color);
     overflow-y: auto;
+    transition: width 0.3s; /* Smooth transition for collapsing */
+    display: flex;
+    justify-content: center;
 }
 
+/*wraps the chat area on the right and the input field on the bottom right*/
+.mainContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding:20px;
+    justify-content: center;
+    align-items: center;
+}
+
+/*chat content on the right*/
+.chatContainer {
+    flex: 1;
+    overflow-y: auto;
+    width:100%;
+    max-width: 600px;
+}
+
+/*input on the bottom right*/
+.inputContainer {
+    position: sticky;
+    bottom: 0;
+    background-color: var(--highlight-background);
+    border-radius: 20px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width:100%;
+    max-width: 600px;
+}
+
+/*CHAT INPUT FIELD*/
+
+.inputContainer textarea {
+    width: 100%;
+    padding: 20px;
+    margin: 10px;
+    color: var(--text-color);
+    background-color: var(--highlight-background);
+    font-size: 16px;
+    border: none;
+    outline: none;
+    font-family: Arial, Helvetica, sans-serif;
+    height: 130px;
+    resize: none;
+}
+
+.inputContainer textarea::placeholder {
+    color: var(--text-color);
+}
+
+/*wraps the buttons*/
 .buttonContainer {
-    display:flex;
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.smallButtonContainer {
-    display:flex;
-    flex-direction: row;
-    justify-content: left;
-    align-items: center;
-    gap:15px;
-}
-
-.smallButton {
-    background-color: transparent;
-    border: transparent;
+.roundButton {
+    border: 1px solid transparent;
+    padding: 10px;
     cursor: pointer;
-    margin-top: 10px;
-    padding:0;
-    color: var(--color-pop);
+    border-radius: 30px;
+    align-self: center;
+    display: flex;
+    margin: 10px;
+    background-color: var(--color-pop);
 }
 
-.modal {
+.inputContainer input,
+.roundButton {
+    font-size: 16px;
+}
+
+/*NAVBAR*/
+
+.navbar ul {
+    padding:0;
+    margin-top: 70px;
+}
+
+.navbar li {
+    padding: 10px;
+    list-style-type: none;
+    margin:0;
+    margin:10px;
+}
+
+.navbar li:hover {
+    border-radius: 20px;
+    background-color: var(--color-pop);
+    cursor: pointer;
+}
+
+.navbar.collapsed {
+    width: 0;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        position: absolute;
+        width: 0;
+        height: 100vh;
+    }
+
+    .navbar.active {
+        width: 250px;
+        height:100vh;
+        z-index: 10;
+    }
+}
+
+.navbarControl {
+    position: absolute;
+    top:0;
+    left:0;
+    z-index: 10;
+}
+
+/*AUDIO PLAYER*/
+
+.audioPlayer {
     position: absolute;
     top:0;
     left:0;
@@ -88,68 +189,21 @@ body {
     padding: 20px;
 }
 
-/*button inside input field*/
-.inputContainer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 10px auto;
-    max-width: 500px;
-    background-color: var(--highlight-background);
-    border-radius: 20px;
-    border: 1px solid transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height:150px;
-}
-
-.inputContainer textarea {
-    width: 100%;
-    max-width:450px;
-    padding: 20px;
-    margin:10px;
-    color: var(--text-color);
-    background-color: var(--highlight-background);
-    font-size: 16px;
-    border:none;
-    outline:none;
-    font-family: Arial, Helvetica, sans-serif;
-    height:130px;
-    resize: none;
-}
-.inputContainer textarea::placeholder {
-    color: var(--text-color);
-}
+/*SCROLLBARS*/
 
 /* Hide scrollbar for Chrome, Safari and Opera */
-.chatContainer::-webkit-scrollbar, .inputContainer textarea::-webkit-scrollbar {
+.chatContainer::-webkit-scrollbar, .inputContainer textarea::-webkit-scrollbar, .navbar::-webkit-scrollbar {
     display: none;
 }
 /* Hide scrollbar for IE, Edge and Firefox */
-.chatContainer, .inputContainer textarea {
+.chatContainer, .inputContainer textarea, .navbar {
     -ms-overflow-style: none;
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
 }
 
-.inputContainer button {
-    border: 1px solid transparent;
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 30px;
-    align-self: center;
-    display:flex;
-    margin:10px;
-    background-color: var(--color-pop);
-}
-
-.inputContainer input,
-.inputContainer button {
-    font-size: 16px;
-}
+/*CHAT MESSAGES*/
 
 .message {
     background-color: var(--highlight-background);
@@ -163,7 +217,52 @@ body {
 
 .message p {
     display: inline;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5em;
 }
+
+.name {
+    font-weight: bold;
+    color: var(--color-pop);
+}
+
+/*wraps the copy and listen buttons*/
+.smallButtonContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    gap: 15px;
+}
+
+.smallButton {
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
+    margin-top: 10px;
+    padding: 0;
+    color: var(--color-pop);
+}
+
+/*WELCOME SCREEN*/
+
+.centeredContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.title {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--color-pop);
+    text-align: center;
+}
+
+/*IMAGES IN MESSAGES*/
 
 .message img {
     width:100%;
@@ -171,6 +270,9 @@ body {
 }
 
 .imageContainer {
+    width:20vw;
+    min-width:300px;
+    max-width:100%;
     position: relative;
 }
 
@@ -184,29 +286,8 @@ body {
     cursor: pointer;
 }
 
-.name {
-    font-weight: bold;
-    color:var(--color-pop);
-}
+/*LOADER ANIMATION*/
 
-.title {
-    font-size: 2em;
-    font-weight: bold;
-    color:var(--color-pop);
-    text-align: center;
-}
-
-.loading {
-    margin:10px;
-    color:var(--text-color);
-}
-
-.navbar{
-    position:absolute;
-    top:0;
-}
-
-/*typing loading*/
 .loader { 
     ---dotSize: 20px;
     ---animationTime: 0.8s;
