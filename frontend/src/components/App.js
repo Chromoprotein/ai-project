@@ -9,6 +9,7 @@ import { Hello } from './SmallUIElements';
 import Message from './Message';
 import { GoSidebarExpand } from "react-icons/go";
 import { GoSidebarCollapse } from "react-icons/go";
+import { useSearchParams } from "react-router-dom";
 
 export default function App() {
 
@@ -19,6 +20,8 @@ export default function App() {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [file, setFile] = useState(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [chatId, setChatId] = useState(searchParams.get("chatId"));
 
   // 1. HELPER FUNCTIONS
 
@@ -81,6 +84,75 @@ export default function App() {
     setIsNavbarCollapsed(!isNavbarCollapsed);
   };
 
+  const getChat = async (chatId) => {
+    try {
+      const response = await axios.get(process.env.REACT_APP_GETCHAT, {
+          withCredentials: true,
+          params: { chatId: chatId }
+      });
+      if(response.data) {
+        const mappedMessages = response.data.chat.messages.map((message, index) => ({
+          role: message.role, 
+          content: JSON.parse(message.content)
+        }));
+        if(mappedMessages.length > 0) {
+          setMessages(mappedMessages);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // Start a new chat when the user sends the first message
+  const saveNewChat = async () => {
+
+    const title = "New chat";
+    const category = "Miscellaneous";
+
+    const newChatData = { title, category }
+
+    try {
+      const response = await axios.post(process.env.REACT_APP_NEWCHAT, { newChatData: newChatData }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
+      if(response.data) {
+        console.log(response.data);
+        const chatId = response.data.id;
+        setSearchParams({ "chatId": chatId });
+        setChatId(chatId);
+        return chatId;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    return "";
+  }
+
+  // Save a message to the chat
+  const saveMessage = async (role, content, chatId) => {
+
+    try {
+      const newMessageData = { role, content: JSON.stringify(content), chatId }
+      const response = await axios.post(process.env.REACT_APP_ADDMESSAGE, { newMessageData: newMessageData }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
+      if(response.data) {
+        console.log(response.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+  }
+
   // 2. MAIN FUNCTIONALITY
 
   // User prompt
@@ -104,6 +176,9 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Start a new chat thread if you're not currently in a thread (if the chat id state is empty)
+    const chatIdForSaving = chatId ? chatId : await saveNewChat();
+
     // Construct the user's new message
     let newContent = {};
     if(file) {
@@ -120,8 +195,8 @@ export default function App() {
       newContent = [{ type: "text", text: query }]
     }
 
-    // Add the user's new message to the messages array for displaying
-    addMessage("user", newContent)
+    addMessage("user", newContent) // Add the user's new message to the state for displaying
+    const saveUserMessage = await saveMessage("user", newContent, chatIdForSaving) // save to database
 
     // Prepare the data for server
     const allMessages = [...messages, { role: "user", content: newContent }];
@@ -137,7 +212,8 @@ export default function App() {
       // Add the AI's message to the messages array to be displayed
       if(data.content) {
         const newAIContent = [{ type: "text", text: data.content }]
-        addMessage("assistant", newAIContent);
+        addMessage("assistant", newAIContent); // save to state
+        const saveAIMessage = await saveMessage("assistant", newAIContent, chatIdForSaving); // save to database
       }
 
       // If the AI wants to call a function
@@ -159,7 +235,9 @@ export default function App() {
 
           // Add the AI's response to the displayed messages
           if (afterToolResponse.data.content) {
-            addMessage("assistant", [{ type: "text", text: afterToolResponse.data.content }]);
+            const afterToolContent = [{ type: "text", text: afterToolResponse.data.content }];
+            addMessage("assistant", afterToolContent); // save to state
+            const saveAnotherAIMessage = await saveMessage("assistant", afterToolContent, chatIdForSaving); // save to database
           }
         }
       }
@@ -186,13 +264,17 @@ export default function App() {
     document.body.className = theme;
   }, [theme]);
 
+  // Fetching the chat by chat id
+  useEffect(() => {
+    getChat(chatId);
+  }, [chatId])
+  
   // 4. UI ELEMENTS
 
   const mappedMessages = messages
     .filter(message => message.role !== "system")
     .map((message, index) => <Message message={message} index={index} />);
 
-    console.log(isNavbarCollapsed)
   return (
     <>
       {theme === "dark" ? <StarBackground /> : <CloudBackground />}

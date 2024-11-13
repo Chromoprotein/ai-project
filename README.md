@@ -12,6 +12,8 @@ A chatbot with the OpenAI API that generates text and Dall-e images.
 
 - Text to speech
 
+- MongoDB database for the chats
+
 - Minor features:
 
     - Function calling tool for toggling light/dark mode
@@ -22,8 +24,8 @@ A chatbot with the OpenAI API that generates text and Dall-e images.
 
 ## My to-do list:
 
-- Set up a database
+- Make the navbar functional
 
-- Add folders for organizing chats
+- Add folders for organizing chats with automatically generated tags
 
 - Add the option to edit and resend a message
