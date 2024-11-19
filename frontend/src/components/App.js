@@ -14,7 +14,14 @@ import { useSearchParams } from "react-router-dom";
 export default function App() {
 
   const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState([{ role: "system", content: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting." }]);
+  const [messages, setMessages] = useState([
+    { 
+      role: "system", 
+      content: [
+        { type: "text", text: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting." }
+      ] 
+    }
+  ]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -26,8 +33,8 @@ export default function App() {
   // 1. HELPER FUNCTIONS
 
   // Add messages to state
-  const addMessage = (role, content) => {
-      setMessages((prevMessages) => [...prevMessages, { role, content }]);
+  const addMessage = (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
   };
 
   // Scroll automatically when new messages appear
@@ -38,41 +45,15 @@ export default function App() {
   // Toggle light and dark mode
   const toggle_dark_and_light_mode = (theme) => {
     setTheme(theme);
+    console.log("and here")
+    console.log(theme)
     localStorage.setItem('theme', theme);
     return `The mode has been successfully updated to ${theme} mode`;
   }
 
-  // Image generation logic
-  const generateImage = async (imageDescription, endpoint) => {
-    const image = await axios.get(endpoint, {
-        withCredentials: true,
-        params: { prompt: imageDescription }
-    });
-    if (image.data) {
-      return image.data[0];
-    }
-    return "";
-  };
-
-  // Function calling (tools)
-  const handleToolCalls = async (toolCall) => {
-      const { name, arguments: argsString } = toolCall.function;
-      const args = JSON.parse(argsString);
-
-      if (name === "toggle_dark_and_light_mode" && args.theme) {
-        return toggle_dark_and_light_mode(args.theme);
-
-      } else if (name === "generate_image" && args.image_description) {
-        const endpoint = process.env.REACT_APP_DALLE;
-        return await generateImage(args.image_description, endpoint);
-      }
-
-      return "";
-  };
-
   // Multimodal AI request
-  const fetchAIResponse = async (payload) => {
-    return await axios.post(process.env.REACT_APP_AI, { messages: payload }, {
+  const fetchAIResponse = async (payload, chatId) => {
+    return await axios.post(process.env.REACT_APP_AI, { messages: payload, chatId: chatId }, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -84,6 +65,7 @@ export default function App() {
     setIsNavbarCollapsed(!isNavbarCollapsed);
   };
 
+  // Fetch an old chat based on the chat ID in the URL
   const getChat = async (chatId) => {
     try {
       const response = await axios.get(process.env.REACT_APP_GETCHAT, {
@@ -91,12 +73,10 @@ export default function App() {
           params: { chatId: chatId }
       });
       if(response.data) {
-        const mappedMessages = response.data.chat.messages.map((message, index) => ({
-          role: message.role, 
-          content: JSON.parse(message.content)
-        }));
+        const mappedMessages = response.data.chat.messages.map((message) => (JSON.parse(message.content)));
         if(mappedMessages.length > 0) {
           setMessages(mappedMessages);
+          console.log(mappedMessages)
         }
       }
     } catch (error) {
@@ -133,26 +113,6 @@ export default function App() {
     return "";
   }
 
-  // Save a message to the chat
-  const saveMessage = async (role, content, chatId) => {
-
-    try {
-      const newMessageData = { role, content: JSON.stringify(content), chatId }
-      const response = await axios.post(process.env.REACT_APP_ADDMESSAGE, { newMessageData: newMessageData }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      });
-      if(response.data) {
-        console.log(response.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-
-  }
-
   // 2. MAIN FUNCTIONALITY
 
   // User prompt
@@ -180,10 +140,14 @@ export default function App() {
     const chatIdForSaving = chatId ? chatId : await saveNewChat();
 
     // Construct the user's new message
-    let newContent = {};
+    let newContent = [];
     if(file) {
+      // Message contains a file
       newContent = [
-          {type: "text", text: query},
+          {
+            type: "text", 
+            text: query
+          },
           {
             type: "image_url",
             image_url: {
@@ -192,14 +156,20 @@ export default function App() {
           },
       ];
     } else {
-      newContent = [{ type: "text", text: query }]
+      // Message only contains text
+      newContent = [
+        { 
+          type: "text", 
+          text: query 
+        }
+      ]
     }
+    const newMessage = { role: "user", content: newContent };
 
-    addMessage("user", newContent) // Add the user's new message to the state for displaying
-    const saveUserMessage = await saveMessage("user", newContent, chatIdForSaving) // save to database
+    addMessage(newMessage) // Add the user's new message to the state for displaying
 
-    // Prepare the data for server
-    const allMessages = [...messages, { role: "user", content: newContent }];
+    // Full chat context
+    const allMessages = [...messages, newMessage];
     
     // Clear the inputs
     setQuery("");
@@ -207,38 +177,18 @@ export default function App() {
 
     try {
       setLoading(true);
-      const { data } = await fetchAIResponse(allMessages);
+      const { data } = await fetchAIResponse(allMessages, chatIdForSaving);
 
       // Add the AI's message to the messages array to be displayed
-      if(data.content) {
-        const newAIContent = [{ type: "text", text: data.content }]
-        addMessage("assistant", newAIContent); // save to state
-        const saveAIMessage = await saveMessage("assistant", newAIContent, chatIdForSaving); // save to database
+      console.log(data)
+      if(data.AIMessage) {
+        addMessage(data.AIMessage);
       }
 
-      // If the AI wants to call a function
-      if (data.tool_calls?.[0]) { // Function call parameters etc.
-        const toolResponse = await handleToolCalls(data.tool_calls[0]); // Run the tool function and return e.g. image data or a confirmation of an action
-        if(toolResponse) {
-          // Pass the function call's response back to the AI so it can show and explain the results to the user
-          const afterToolAllMessages = [
-            ...allMessages, // Previous messages
-            data, // The AI's initial response with function call parameters
-            { 
-              role: "tool", 
-              content: JSON.stringify(toolResponse), 
-              tool_call_id: data.tool_calls[0].id 
-            }, // Message containing the tool's response
-          ];
-
-          const afterToolResponse = await fetchAIResponse(afterToolAllMessages);
-
-          // Add the AI's response to the displayed messages
-          if (afterToolResponse.data.content) {
-            const afterToolContent = [{ type: "text", text: afterToolResponse.data.content }];
-            addMessage("assistant", afterToolContent); // save to state
-            const saveAnotherAIMessage = await saveMessage("assistant", afterToolContent, chatIdForSaving); // save to database
-          }
+      // Handle function calls that work in the front-end
+      if(data.toolParameters) {
+        if(data.toolParameters.functionName === "toggle_dark_and_light_mode") {
+          toggle_dark_and_light_mode(data.toolParameters.functionArguments);
         }
       }
 
@@ -266,13 +216,15 @@ export default function App() {
 
   // Fetching the chat by chat id
   useEffect(() => {
-    getChat(chatId);
+    if(chatId) {
+      getChat(chatId);
+    }
   }, [chatId])
   
   // 4. UI ELEMENTS
 
   const mappedMessages = messages
-    .filter(message => message.role !== "system")
+    .filter(message => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => <Message message={message} index={index} />);
 
   return (
