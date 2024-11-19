@@ -1,30 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import '../styles/index.css';
-import '../styles/style.css';
-import { InputContainer } from './InputContainer';
-import { StarBackground, CloudBackground } from './Backgrounds';
-import { Typing } from './Loaders';
-import { Hello } from './SmallUIElements';
-import Message from './Message';
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import "../styles/index.css";
+import "../styles/style.css";
+import { InputContainer } from "./InputContainer";
+import { StarBackground, CloudBackground } from "./Backgrounds";
+import { Typing } from "./Loaders";
+import { Hello } from "./SmallUIElements";
+import Message from "./Message";
 import { GoSidebarExpand } from "react-icons/go";
 import { GoSidebarCollapse } from "react-icons/go";
 import { useSearchParams } from "react-router-dom";
 
 export default function App() {
-
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([
-    { 
-      role: "system", 
+    {
+      role: "system",
       content: [
-        { type: "text", text: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting." }
-      ] 
-    }
+        {
+          type: "text",
+          text: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting.",
+        },
+      ],
+    },
   ]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [file, setFile] = useState(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,32 +36,34 @@ export default function App() {
 
   // Add messages to state
   const addMessage = (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+    setMessages((prevMessages) => [...prevMessages, message]);
   };
 
   // Scroll automatically when new messages appear
   const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   // Toggle light and dark mode
   const toggle_dark_and_light_mode = (theme) => {
     setTheme(theme);
-    console.log("and here")
-    console.log(theme)
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
     return `The mode has been successfully updated to ${theme} mode`;
-  }
+  };
 
   // Multimodal AI request
   const fetchAIResponse = async (payload, chatId) => {
-    return await axios.post(process.env.REACT_APP_AI, { messages: payload, chatId: chatId }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      withCredentials: true,
-    });
-  }
+    return await axios.post(
+      process.env.REACT_APP_AI,
+      { messages: payload, chatId: chatId },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
+  };
 
   const toggleNavbar = () => {
     setIsNavbarCollapsed(!isNavbarCollapsed);
@@ -69,40 +73,44 @@ export default function App() {
   const getChat = async (chatId) => {
     try {
       const response = await axios.get(process.env.REACT_APP_GETCHAT, {
-          withCredentials: true,
-          params: { chatId: chatId }
+        withCredentials: true,
+        params: { chatId: chatId },
       });
-      if(response.data) {
-        const mappedMessages = response.data.chat.messages.map((message) => (JSON.parse(message.content)));
-        if(mappedMessages.length > 0) {
+      if (response.data) {
+        const mappedMessages = response.data.chat.messages.map((message) =>
+          JSON.parse(message.content)
+        );
+        if (mappedMessages.length > 0) {
           setMessages(mappedMessages);
-          console.log(mappedMessages)
         }
       }
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   // Start a new chat when the user sends the first message
   const saveNewChat = async () => {
-
     const title = "New chat";
     const category = "Miscellaneous";
 
-    const newChatData = { title, category }
+    const newChatData = { title, category };
 
     try {
-      const response = await axios.post(process.env.REACT_APP_NEWCHAT, { newChatData: newChatData }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      });
-      if(response.data) {
+      const response = await axios.post(
+        process.env.REACT_APP_NEWCHAT,
+        { newChatData: newChatData },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      if (response.data) {
         console.log(response.data);
         const chatId = response.data.id;
-        setSearchParams({ "chatId": chatId });
+        setSearchParams({ chatId: chatId });
         setChatId(chatId);
         return chatId;
       }
@@ -111,7 +119,7 @@ export default function App() {
     }
 
     return "";
-  }
+  };
 
   // 2. MAIN FUNCTIONALITY
 
@@ -141,36 +149,36 @@ export default function App() {
 
     // Construct the user's new message
     let newContent = [];
-    if(file) {
+    if (file) {
       // Message contains a file
       newContent = [
-          {
-            type: "text", 
-            text: query
+        {
+          type: "text",
+          text: query,
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: file,
           },
-          {
-            type: "image_url",
-            image_url: {
-                url: file,
-            },
-          },
+        },
       ];
     } else {
       // Message only contains text
       newContent = [
-        { 
-          type: "text", 
-          text: query 
-        }
-      ]
+        {
+          type: "text",
+          text: query,
+        },
+      ];
     }
     const newMessage = { role: "user", content: newContent };
 
-    addMessage(newMessage) // Add the user's new message to the state for displaying
+    addMessage(newMessage); // Add the user's new message to the state for displaying
 
     // Full chat context
     const allMessages = [...messages, newMessage];
-    
+
     // Clear the inputs
     setQuery("");
     setFile(null);
@@ -180,31 +188,28 @@ export default function App() {
       const { data } = await fetchAIResponse(allMessages, chatIdForSaving);
 
       // Add the AI's message to the messages array to be displayed
-      console.log(data)
-      if(data.AIMessage) {
+      if (data.AIMessage) {
         addMessage(data.AIMessage);
       }
 
       // Handle function calls that work in the front-end
-      if(data.toolParameters) {
-        if(data.toolParameters.functionName === "toggle_dark_and_light_mode") {
+      if (data.toolParameters) {
+        if (data.toolParameters.functionName === "toggle_dark_and_light_mode") {
           toggle_dark_and_light_mode(data.toolParameters.functionArguments);
         }
       }
-
     } catch (error) {
       console.error("Error fetching response:", error);
     } finally {
       setLoading(false);
     }
-
-  }
+  };
 
   // 3. EFFECTS
 
   // Automatic scrolling for new messages
   useEffect(() => {
-    if(messages.length > 0) {
+    if (messages.length > 0) {
       scrollToBottom();
     }
   }, [messages]);
@@ -216,15 +221,15 @@ export default function App() {
 
   // Fetching the chat by chat id
   useEffect(() => {
-    if(chatId) {
+    if (chatId) {
       getChat(chatId);
     }
-  }, [chatId])
-  
+  }, [chatId]);
+
   // 4. UI ELEMENTS
 
   const mappedMessages = messages
-    .filter(message => message.role !== "system" || !message.content) // Filter system and empty content
+    .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => <Message message={message} index={index} />);
 
   return (
@@ -246,23 +251,26 @@ export default function App() {
         </div>
         <div className="mainContent">
           <div className="chatContainer">
-            {mappedMessages.length > 0 ? 
+            {mappedMessages.length > 0 ? (
               <>
                 {mappedMessages}
                 {loading && <Typing />}
                 <div ref={messagesEndRef} />
               </>
-            : 
-              <Hello/>
-            }
+            ) : (
+              <Hello />
+            )}
           </div>
-          <InputContainer handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} preview={file} handleRemoveImage={handleRemoveImage} />
+          <InputContainer
+            handleSubmit={handleSubmit}
+            query={query}
+            handleQuery={handleQuery}
+            handleFileChange={handleFileChange}
+            preview={file}
+            handleRemoveImage={handleRemoveImage}
+          />
         </div>
-
       </div>
-
     </>
   );
 }
-
-
