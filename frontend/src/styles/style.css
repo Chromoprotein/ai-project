@@ -52,7 +52,9 @@ body {
     overflow-y: auto;
     transition: width 0.3s; /* Smooth transition for collapsing */
     display: flex;
-    justify-content: center;
+    justify-content: start;
+    flex-direction: column;
+    padding-top: 70px;
 }
 
 /*wraps the chat area on the right and the input field on the bottom right*/
@@ -135,24 +137,46 @@ body {
 
 .navbar ul {
     padding:0;
-    margin-top: 70px;
 }
 
 .navbar li {
     padding: 10px;
     list-style-type: none;
-    margin:0;
-    margin:10px;
+    margin:5px;
+}
+
+.navbar li a {
+    text-decoration: none;
+    color: var(--text-color);
 }
 
 .navbar li:hover {
-    border-radius: 20px;
+    border-radius: 10px;
     background-color: var(--color-pop);
     cursor: pointer;
 }
 
 .navbar.collapsed {
     width: 0;
+}
+
+.category {
+    
+}
+
+.categoryHeader {
+    border: 1px solid var(--color-pop);
+    margin: 5px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    cursor: pointer;
+    height: 50px;
+}
+
+.openCategoryHeader {
+    background-color: var(--color-pop);
 }
 
 @media (max-width: 768px) {

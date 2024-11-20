@@ -1,12 +1,10 @@
 # ai-project
 
-A chatbot with the OpenAI API that generates text and Dall-e images. 
+A chatbot with the OpenAI API that has chat folders.
 
 # Features
 
-- Text generation
-
-- Dall-e image generation
+- Text generation and Dall-e image generation
 
 - Vision (image analysis)
 
@@ -14,18 +12,36 @@ A chatbot with the OpenAI API that generates text and Dall-e images.
 
 - MongoDB database for the chats
 
+- Chats are automatically sorted into folders
+
 - Minor features:
 
-    - Function calling tool for toggling light/dark mode
+    - Function calling/tool for toggling light/dark mode
 
-    - Download image button
+    - "Download image" button
 
-    - Copy text to clipboard button
+    - "Copy text to clipboard" button
+
+    - Automatic titles for the chats
 
 ## My to-do list:
 
-- Make the navbar functional
+- Improve chatting:
 
-- Add folders for organizing chats with automatically generated tags
+    - Add custom instructions
 
-- Add the option to edit and resend a message
+    - Add the option to edit and resend a message
+
+    - Add the ability to rename chats
+
+    - Add an emoji keyboard
+
+- Improve the folders:
+
+    - Let the user decide what folders the AI can place chats into
+
+    - Add the ability to move chats to a different folder
+
+- Improve the UI:
+
+    - Finish the register and login pages

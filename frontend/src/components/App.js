@@ -10,6 +10,7 @@ import Message from "./Message";
 import { GoSidebarExpand } from "react-icons/go";
 import { GoSidebarCollapse } from "react-icons/go";
 import { useSearchParams } from "react-router-dom";
+import Sidebar from "./Sidebar";
 
 export default function App() {
   const [query, setQuery] = useState("");
@@ -31,6 +32,8 @@ export default function App() {
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [chatId, setChatId] = useState(searchParams.get("chatId"));
+  const [chatList, setChatList] = useState({}); // Object where keys are chat category names and values are arrays of chats (that have a title and an id)
+  const [collapsedCategory, setCollapsedCategory] = useState({}); // Chat categories that are collapsed. Key is the category's name and value is boolean
 
   // 1. HELPER FUNCTIONS
 
@@ -89,12 +92,32 @@ export default function App() {
     }
   };
 
+  const getChatList = async () => {
+    try {
+      const response = await axios.get(process.env.REACT_APP_GETCHATLIST, {
+        withCredentials: true
+      });
+      if (response.data) {
+        setChatList(response.data.groupedChats);
+      }
+    } catch (error) {
+      console.log(error);
+    };
+  }
+
+  // Collapse a chat category
+  const toggleCategory = (category) => {
+      setCollapsedCategory((prev) => ({
+          ...prev,
+          [category]: !prev[category],
+      }));
+  };
+  
   // Start a new chat when the user sends the first message
-  const saveNewChat = async () => {
-    const title = "New chat";
+  const saveNewChat = async (userMessage) => {
     const category = "Miscellaneous";
 
-    const newChatData = { title, category };
+    const newChatData = { userMessage, category };
 
     try {
       const response = await axios.post(
@@ -144,9 +167,6 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Start a new chat thread if you're not currently in a thread (if the chat id state is empty)
-    const chatIdForSaving = chatId ? chatId : await saveNewChat();
-
     // Construct the user's new message
     let newContent = [];
     if (file) {
@@ -179,30 +199,37 @@ export default function App() {
     // Full chat context
     const allMessages = [...messages, newMessage];
 
+    // Start a new chat thread if you're not currently in a thread. Starting a new chat also generates a title for it based on the user message
+    const chatIdForSaving = chatId ? chatId : await saveNewChat(newMessage);
+
     // Clear the inputs
     setQuery("");
     setFile(null);
 
-    try {
-      setLoading(true);
-      const { data } = await fetchAIResponse(allMessages, chatIdForSaving);
+    if(chatIdForSaving) {
+      try {
+        setLoading(true);
+        const { data } = await fetchAIResponse(allMessages, chatIdForSaving);
 
-      // Add the AI's message to the messages array to be displayed
-      if (data.AIMessage) {
-        addMessage(data.AIMessage);
-      }
-
-      // Handle function calls that work in the front-end
-      if (data.toolParameters) {
-        if (data.toolParameters.functionName === "toggle_dark_and_light_mode") {
-          toggle_dark_and_light_mode(data.toolParameters.functionArguments);
+        // Add the AI's message to the messages array to be displayed
+        if (data.AIMessage) {
+          addMessage(data.AIMessage);
         }
+
+        // Handle function calls that work in the front-end
+        if (data.toolParameters) {
+          if (data.toolParameters.functionName === "toggle_dark_and_light_mode") {
+            toggle_dark_and_light_mode(data.toolParameters.functionArguments);
+          }
+          // More tools can be added here
+        }
+      } catch (error) {
+        console.error("Error fetching response:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching response:", error);
-    } finally {
-      setLoading(false);
     }
+
   };
 
   // 3. EFFECTS
@@ -219,12 +246,18 @@ export default function App() {
     document.body.className = theme;
   }, [theme]);
 
-  // Fetching the chat by chat id
+  // Fetching the chat by chat id and fetch the chats list
   useEffect(() => {
     if (chatId) {
       getChat(chatId);
     }
+    getChatList();
   }, [chatId]);
+
+  // Navigation to chats
+  useEffect(() => {
+    setChatId(searchParams.get("chatId"));
+  }, [searchParams]);
 
   // 4. UI ELEMENTS
 
@@ -241,14 +274,13 @@ export default function App() {
       </button>
 
       <div className="container">
-        <div className={`navbar ${isNavbarCollapsed ? "collapsed" : "active"}`}>
-          <ul>
-            <li>Placeholder</li>
-            <li>Placeholder</li>
-            <li>Placeholder</li>
-            <li>Some very long chat name</li>
-          </ul>
-        </div>
+        <Sidebar 
+          chatList={chatList} 
+          collapsedCategory={collapsedCategory} 
+          toggleCategory={toggleCategory} 
+          isNavbarCollapsed={isNavbarCollapsed} 
+        />
+
         <div className="mainContent">
           <div className="chatContainer">
             {mappedMessages.length > 0 ? (
@@ -261,6 +293,7 @@ export default function App() {
               <Hello />
             )}
           </div>
+
           <InputContainer
             handleSubmit={handleSubmit}
             query={query}
