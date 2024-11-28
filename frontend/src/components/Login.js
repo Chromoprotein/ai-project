@@ -1,19 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../utils/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Background from './Backgrounds';
+import Form from './Form';
+import { HashLink } from "react-router-hash-link";
 
 export default function Login() {
   
   const navigate = useNavigate();
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   
+  // Toggling light and dark mode
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
+  const [error, setError] = useState("");
 
   // Don't allow logged-in users to look at the login page
   const { isAuthenticated, loading } = useAuth();
@@ -46,44 +55,46 @@ export default function Login() {
           }
       } catch (error) {
           console.error(error);
+          setError(error.message);
       }
   };
 
   return (
     <>
       <Background theme={theme} />
-      <div className="container">
-        <div className="mainContent">
-          <h1>Log in</h1>
-          <form onSubmit={handleSubmit}>
-            <div>
-              <label>Email:</label>
-              <input
-                type="text"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label>Password:</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-            <button type="submit">Log in</button>
-          </form>
+      <div className="fixedContainer">
 
-          <div>
-            Don't have an account?
-            <button>
-              <Link to="/register">Create an account</Link>
-            </button>
-          </div>
+        <div className="introWrapper">
+          <h1 className="title">Hello, human</h1>
+          <p>Welcome to my chatbot page! It's based on GPT-4o-mini. Features:</p>
+          <ul>
+            <li>Dall-e image generation</li>
+            <li>Automatic folders for organizing the chats</li>
+            <li>And more coming soon!</li>
+          </ul>
+
+          <HashLink smooth to="#Login" className="button">
+              Log in
+          </HashLink>
+          <Link className="button" to="/register">Sign up</Link>
         </div>
+
+        <div className="introWrapper" id="Login">
+        <Form
+          title="Log in"
+          fields={[
+            { label: "Email", type: "text", name: "email", value: formData.email, onChange: handleChange },
+            { label: "Password", type: "password", name: "password", value: formData.password, onChange: handleChange }
+          ]}
+          buttonText="Log in"
+          onSubmit={handleSubmit}
+          error={error}
+          linkInfo="Don't have an account?"
+          linkText="Create an account"
+          linkTo="/register"
+        />
+        </div>
+
       </div>
     </>
   );

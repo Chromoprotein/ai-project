@@ -6,6 +6,17 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
 /*LIGHT AND DARK MODE*/
 
 .light {
@@ -32,7 +43,7 @@ body {
     background-color: var(--background);
 }
 
-/*wraps the whole page*/
+/*wraps the whole page and places it above the sass background*/
 .container {
   display: flex;
   height: 100vh;
@@ -57,7 +68,7 @@ body {
     padding-top: 70px;
 }
 
-/*wraps the chat area on the right and the input field on the bottom right*/
+/*on the chat page, this wraps the chat conntent on the right and the input field on the bottom right*/
 .mainContent {
     flex: 1;
     display: flex;
@@ -87,6 +98,105 @@ body {
     justify-content: center;
     width:100%;
     max-width: 600px;
+}
+
+/* FORM */
+
+.fixedContainer {
+    min-height: 100vh;
+    position: fixed;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow-y: scroll;
+}
+
+.introWrapper {
+    display:flex;
+    width:100%;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: var(--text-color);
+}
+
+.formContainer {
+    background-color: var(--highlight-background);
+    display: flex;
+    flex-direction: column;
+    padding:20px;
+    justify-content: space-evenly;
+    align-items: center;
+    width:100%;
+    max-width:500px;
+    border-radius:20px;
+    height:500px;
+    max-height:100vh;
+    color: var(--text-color);
+}
+
+.formContainer form {
+    height:100%;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: space-evenly;
+}
+
+.formContainer h1, h2 {
+    color: var(--color-pop);
+}
+
+.button {
+    border-radius: 20px;
+    border:1px solid transparent;
+    background-color: var(--color-pop);
+    color: var(--text-color);
+    padding: 10px 20px;
+    cursor:pointer;
+    min-width:100px;
+    margin: 10px 0;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1em;
+}
+
+.formContainer label {
+    color:var(--color-pop);
+    padding:10px 0;
+    text-transform: uppercase;
+    font-size: small;
+    font-weight: bold;
+}
+
+.formContainer input {
+    border-radius: 20px;
+    border: 1px solid transparent;
+    padding: 10px;
+}
+
+.formContainer input:focus {
+    outline: 2px solid var(--color-pop);
+}
+
+.formContainer a {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.formItem {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
+}
+
+.formItem .button {
+    align-self: center;
 }
 
 /*CHAT INPUT FIELD*/
@@ -265,7 +375,7 @@ body {
     color: var(--color-pop);
 }
 
-/*WELCOME SCREEN*/
+/*WELCOME SCREENS*/
 
 .centeredContainer {
     display: flex;
@@ -336,4 +446,14 @@ body {
     opacity: 0.1;
     transform: scale(1);
   }
+}
+
+/* UTILS */
+
+.centerMe {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 100vh;
 }

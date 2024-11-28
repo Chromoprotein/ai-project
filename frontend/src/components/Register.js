@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCookies } from "react-cookie";
 import { useNavigate } from 'react-router-dom';
+import Form from './Form';
+import Background from './Backgrounds';
 
 export default function Register() {
   const [cookies, setCookie, removeCookie] = useCookies(['jwt']);
+
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  
+  // Toggling light and dark mode
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
 
   const navigate = useNavigate();
 
@@ -13,6 +22,8 @@ export default function Register() {
     email: '',
     password: '',
   });
+
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -35,39 +46,32 @@ export default function Register() {
       }
     } catch (error) {
       console.error(error);
+      setError(error.message);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Username:</label>
-        <input
-          type="text"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-        />
+    <>
+      <Background theme={theme} />
+      <div className="fixedContainer">
+
+        <div className="introWrapper">
+          <Form
+            title="Register"
+            fields={[
+              { label: "Username", type: "text", name: "username", value: formData.username, onChange: handleChange },
+              { label: "Email", type: "text", name: "email", value: formData.email, onChange: handleChange },
+              { label: "Password", type: "password", name: "password", value: formData.password, onChange: handleChange }
+            ]}
+            buttonText="Register"
+            onSubmit={handleSubmit}
+            error={error}
+            linkInfo="Already have an account?"
+            linkText="Log in"
+            linkTo="/login"
+          />
+        </div>
       </div>
-      <div>
-        <label>Email:</label>
-        <input
-          type="text"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        <label>Password:</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-      </div>
-      <button type="submit">Register</button>
-    </form>
+    </>
   );
 };
