@@ -1,4 +1,12 @@
-export function StarBackground() {
+export default function Background({ theme }) {
+  return (
+    <>
+      {theme === "light" ? <CloudBackground /> : <StarBackground />};
+    </>
+  );
+}
+
+function StarBackground() {
   return (
     <div className="star-layers">
       <div className="star-layer" id="stars"></div>
@@ -8,7 +16,7 @@ export function StarBackground() {
   );
 }
 
-export function CloudBackground() {
+function CloudBackground() {
   return (
     <div className="cloud-layers">
       <div className="cloud-layer" id="clouds-small"></div>

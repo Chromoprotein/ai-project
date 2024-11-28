@@ -18,7 +18,6 @@ export default function Logout() {
         }
         logout();
         sessionStorage.removeItem('isAuthenticated');
-        sessionStorage.removeItem('userRole');
     }, [])
 
     return (

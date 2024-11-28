@@ -32,16 +32,22 @@ A chatbot with the OpenAI API that has chat folders.
 
     - Add the option to edit and resend a message
 
+    - Let the user delete chats
+
     - Add the ability to rename chats
 
     - Add an emoji keyboard
 
 - Improve the folders:
 
+    - Add a search function
+
     - Let the user decide what folders the AI can place chats into
 
     - Add the ability to move chats to a different folder
 
 - Improve the UI:
+
+    - Add a new chat button
 
     - Finish the register and login pages

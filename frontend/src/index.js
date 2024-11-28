@@ -11,11 +11,32 @@ import {
 import Register from './components/Register';
 import Login from './components/Login';
 import Logout from './components/Logout';
+import { useAuth } from './utils/useAuth';
+
+function RequireAuth({ children }) {
+
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return "Loading...";
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" />;
+}
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">        
-      <Route index element={<App />} />
+      {/* Protected Route */}
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <App />
+          </RequireAuth>
+        }
+      />
+      {/* Public Routes */}
       <Route path="register" element={<Register />} />
       <Route path="login" element={<Login />} />
       <Route path="logout" element={<Logout />} />

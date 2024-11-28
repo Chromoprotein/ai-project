@@ -3,7 +3,7 @@ import axios from "axios";
 import "../styles/index.css";
 import "../styles/style.css";
 import { InputContainer } from "./InputContainer";
-import { StarBackground, CloudBackground } from "./Backgrounds";
+import Background from "./Backgrounds";
 import { Typing } from "./Loaders";
 import { Hello } from "./SmallUIElements";
 import Message from "./Message";
@@ -12,9 +12,7 @@ import { GoSidebarCollapse } from "react-icons/go";
 import { useSearchParams } from "react-router-dom";
 import Sidebar from "./Sidebar";
 
-export default function App() {
-  const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState([
+const initialState = [
     {
       role: "system",
       content: [
@@ -24,10 +22,14 @@ export default function App() {
         },
       ],
     },
-  ]);
+  ];
+
+export default function App() {
+  const [query, setQuery] = useState("");
+  const [messages, setMessages] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [file, setFile] = useState(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -267,7 +269,7 @@ export default function App() {
 
   return (
     <>
-      {theme === "dark" ? <StarBackground /> : <CloudBackground />}
+      <Background theme={theme} />
 
       <button className="navbarControl roundButton" onClick={toggleNavbar}>
         {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}

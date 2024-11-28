@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useCookies } from "react-cookie";
+import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
   const [cookies, setCookie, removeCookie] = useCookies(['jwt']);
+
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: '',
@@ -27,6 +30,8 @@ export default function Register() {
           const token = response.data.jwt;
           setCookie('jwt', token, { path: '/', secure: true, httpOnly: true }); // Set the JWT token as a cookie
           console.log(response.data)
+          sessionStorage.setItem('isAuthenticated', 'true');
+          navigate("/");
       }
     } catch (error) {
       console.error(error);
