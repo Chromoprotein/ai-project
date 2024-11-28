@@ -6,16 +6,12 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import Background from './Backgrounds';
 import Form from './Form';
 import { HashLink } from "react-router-hash-link";
+import { useMode } from '../utils/useMode';
 
 export default function Login() {
   
   const navigate = useNavigate();
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
-  
-  // Toggling light and dark mode
-  useEffect(() => {
-    document.body.className = theme;
-  }, [theme]);
+  const { theme, setTheme } = useMode();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -80,19 +76,19 @@ export default function Login() {
         </div>
 
         <div className="introWrapper" id="Login">
-        <Form
-          title="Log in"
-          fields={[
-            { label: "Email", type: "text", name: "email", value: formData.email, onChange: handleChange },
-            { label: "Password", type: "password", name: "password", value: formData.password, onChange: handleChange }
-          ]}
-          buttonText="Log in"
-          onSubmit={handleSubmit}
-          error={error}
-          linkInfo="Don't have an account?"
-          linkText="Create an account"
-          linkTo="/register"
-        />
+          <Form
+            title="Log in"
+            fields={[
+              { label: "Email", type: "text", name: "email", value: formData.email, onChange: handleChange },
+              { label: "Password", type: "password", name: "password", value: formData.password, onChange: handleChange }
+            ]}
+            buttonText="Log in"
+            onSubmit={handleSubmit}
+            error={error}
+            linkInfo="Don't have an account?"
+            linkText="Create an account"
+            linkTo="/register"
+          />
         </div>
 
       </div>

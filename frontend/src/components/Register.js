@@ -4,16 +4,12 @@ import { useCookies } from "react-cookie";
 import { useNavigate } from 'react-router-dom';
 import Form from './Form';
 import Background from './Backgrounds';
+import { useMode } from '../utils/useMode';
 
 export default function Register() {
   const [cookies, setCookie, removeCookie] = useCookies(['jwt']);
 
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
-  
-  // Toggling light and dark mode
-  useEffect(() => {
-    document.body.className = theme;
-  }, [theme]);
+  const { theme, setTheme } = useMode();
 
   const navigate = useNavigate();
 

@@ -11,6 +11,7 @@ import { GoSidebarExpand } from "react-icons/go";
 import { GoSidebarCollapse } from "react-icons/go";
 import { useSearchParams } from "react-router-dom";
 import Sidebar from "./Sidebar";
+import { useMode } from "../utils/useMode";
 
 const initialState = [
     {
@@ -29,7 +30,7 @@ export default function App() {
   const [messages, setMessages] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const { theme, setTheme } = useMode();
   const [file, setFile] = useState(null);
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -242,11 +243,6 @@ export default function App() {
       scrollToBottom();
     }
   }, [messages]);
-
-  // Toggling light and dark mode
-  useEffect(() => {
-    document.body.className = theme;
-  }, [theme]);
 
   // Fetching the chat by chat id and fetch the chats list
   useEffect(() => {
