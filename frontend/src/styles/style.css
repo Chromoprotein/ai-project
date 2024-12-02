@@ -130,7 +130,6 @@ body {
     justify-content: space-evenly;
     align-items: center;
     width:100%;
-    max-width:500px;
     border-radius:20px;
     height:500px;
     max-height:100vh;

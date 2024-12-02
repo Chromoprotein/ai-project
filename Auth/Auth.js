@@ -82,7 +82,7 @@ exports.login = async (req, res, next) => {
 
       res.status(201).json({
         message: "User successfully logged in",
-        user: user._id,
+        username: user.username
       });
     } else {
       res.status(400).json({ message: "Wrong email or password" });

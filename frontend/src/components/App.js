@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import "../styles/index.css";
 import "../styles/style.css";
@@ -12,22 +12,26 @@ import { GoSidebarCollapse } from "react-icons/go";
 import { useSearchParams } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { useMode } from "../utils/useMode";
+import { GoPlus } from "react-icons/go";
+import Bots from "./Bots";
 
-const initialState = [
-    {
-      role: "system",
-      content: [
-        {
-          type: "text",
-          text: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting.",
-        },
-      ],
-    },
-  ];
+const initialBots = [{
+  botId: "674e1e30554c720e5f15cc69",
+  botName: "Mysterious traveller",
+  systemMessage: {
+    role: "system",
+    content: [
+      {
+        type: "text",
+        text: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting.",
+      },
+    ],
+  },
+}];
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState(initialState);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const { theme, setTheme } = useMode();
@@ -37,6 +41,11 @@ export default function App() {
   const [chatId, setChatId] = useState(searchParams.get("chatId"));
   const [chatList, setChatList] = useState({}); // Object where keys are chat category names and values are arrays of chats (that have a title and an id)
   const [collapsedCategory, setCollapsedCategory] = useState({}); // Chat categories that are collapsed. Key is the category's name and value is boolean
+  const [bots, setBots] = useState(initialBots); // List of bot personas
+  const [currentBot, setCurrentBot] = useState(JSON.parse(localStorage.getItem("currentBot")) || bots[0]);
+  const [showBotList, setShowBotList] = useState(false);
+  const [isSubmit, setIsSubmit] = useState(false);
+  const [username, setUsername] = useState(sessionStorage.getItem("name") || "User");
 
   // 1. HELPER FUNCTIONS
 
@@ -75,8 +84,27 @@ export default function App() {
     setIsNavbarCollapsed(!isNavbarCollapsed);
   };
 
+  // Set a bot as the current bot
+  const toggleBot = useCallback(((bot) => {
+    setCurrentBot(bot);
+    localStorage.setItem("currentBot", JSON.stringify(bot));
+    setShowBotList(false); // Close the bot list
+  }), []);
+
+  // Clear the screen out of the way of a new chat
+  const clearScreen = () => {
+    setChatId();
+    setSearchParams();
+    setMessages([]);
+  }
+
+  const switchBots = (bot) => {
+    clearScreen();
+    toggleBot(bot);
+  }
+
   // Fetch an old chat based on the chat ID in the URL
-  const getChat = async (chatId) => {
+  const getChat = useCallback((async (chatId) => {
     try {
       const response = await axios.get(process.env.REACT_APP_GETCHAT, {
         withCredentials: true,
@@ -89,11 +117,23 @@ export default function App() {
         if (mappedMessages.length > 0) {
           setMessages(mappedMessages);
         }
+        const chat = response.data.chat;
+        if(chat.botId) {
+          const newBot = {
+            botId: chat.botId._id,
+            botName: chat.botId.botName,
+            systemMessage: chat.botId.systemMessage,
+          };
+          toggleBot(newBot);
+        } else {
+          toggleBot(bots[0]); // Default bot
+        }
+
       }
     } catch (error) {
       console.log(error);
     }
-  };
+  }), [bots, toggleBot]);
 
   const getChatList = async () => {
     try {
@@ -116,11 +156,33 @@ export default function App() {
       }));
   };
   
+  // Get the list of bot personas / system prompts
+  const getBots = async () => {
+    try {
+      const response = await axios.get(process.env.REACT_APP_GETBOTS, {       
+        withCredentials: true 
+      });
+      if(response.data.bots.length > 0) {
+        const mappedBots = response.data.bots.map((bot) => ({
+          botId: bot._id,
+          botName: bot.botName,
+          systemMessage: JSON.parse(bot.systemMessage),
+        }));
+        setBots([
+          ...initialBots, // keep the default bot
+          ...mappedBots
+        ]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // Start a new chat when the user sends the first message
   const saveNewChat = async (userMessage) => {
-    const category = "Miscellaneous";
 
-    const newChatData = { userMessage, category };
+    const botId = currentBot.botId;
+    const newChatData = { userMessage, botId };
 
     try {
       const response = await axios.post(
@@ -170,6 +232,11 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // If you're in a new chat thread, append the system prompt of the correct bot
+    if(messages.length < 1) {
+      addMessage(currentBot.systemMessage);
+    }
+
     // Construct the user's new message
     let newContent = [];
     if (file) {
@@ -200,7 +267,11 @@ export default function App() {
     addMessage(newMessage); // Add the user's new message to the state for displaying
 
     // Full chat context
-    const allMessages = [...messages, newMessage];
+    const allMessages = [
+      !chatId && currentBot.systemMessage, // In a new chat thread, add the system message too
+      ...messages, 
+      newMessage
+    ];
 
     // Start a new chat thread if you're not currently in a thread. Starting a new chat also generates a title for it based on the user message
     const chatIdForSaving = chatId ? chatId : await saveNewChat(newMessage);
@@ -250,26 +321,47 @@ export default function App() {
       getChat(chatId);
     }
     getChatList();
-  }, [chatId]);
+  }, [chatId, getChat]);
 
   // Navigation to chats
   useEffect(() => {
     setChatId(searchParams.get("chatId"));
   }, [searchParams]);
 
+  // Get the available bots
+  useEffect (() => {
+    getBots();
+  }, [isSubmit])
+
   // 4. UI ELEMENTS
 
   const mappedMessages = messages
     .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
-    .map((message, index) => <Message message={message} index={index} />);
+    .map((message, index) => {
+      let name;
+      if(message.role === "user") {
+        name = username;
+      } else {
+        name = currentBot.botName;
+      }
+      return <Message message={message} index={index} name={name} />
+  });
 
   return (
     <>
       <Background theme={theme} />
 
-      <button className="navbarControl roundButton" onClick={toggleNavbar}>
-        {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}
-      </button>
+      <div className="navbarControl">
+        <div className="smallButtonContainer">
+          <button className="roundButton" onClick={toggleNavbar}>
+            {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}
+          </button>
+
+          <button className="roundButton" onClick={() => setShowBotList(!showBotList)}>
+            <GoPlus />
+          </button>
+        </div>
+      </div>
 
       <div className="container">
         <Sidebar 
@@ -281,27 +373,38 @@ export default function App() {
 
         <div className="mainContent">
           <div className="chatContainer">
-            {mappedMessages.length > 0 ? (
-              <>
-                {mappedMessages}
-                {loading && <Typing />}
-                <div ref={messagesEndRef} />
-              </>
-            ) : (
-              <Hello />
-            )}
+            {showBotList ? 
+              <Bots bots={bots} toggleBot={switchBots} setIsSubmit={setIsSubmit} /> :
+              <MainContent mappedMessages={mappedMessages} loading={loading} messagesEndRef={messagesEndRef} handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} file={file} handleRemoveImage={handleRemoveImage} bot={currentBot.botName} />
+            }
           </div>
-
-          <InputContainer
-            handleSubmit={handleSubmit}
-            query={query}
-            handleQuery={handleQuery}
-            handleFileChange={handleFileChange}
-            preview={file}
-            handleRemoveImage={handleRemoveImage}
-          />
         </div>
       </div>
+    </>
+  );
+}
+
+function MainContent({mappedMessages, loading, messagesEndRef, handleSubmit, query, handleQuery, handleFileChange, file, handleRemoveImage, bot}) {
+  return (
+    <>
+      {mappedMessages.length > 0 ? (
+        <>
+          {mappedMessages}
+          {loading && <Typing />}
+          <div ref={messagesEndRef} />
+        </>
+      ) : (
+        <Hello bot={bot} />
+      )}
+
+      <InputContainer
+        handleSubmit={handleSubmit}
+        query={query}
+        handleQuery={handleQuery}
+        handleFileChange={handleFileChange}
+        preview={file}
+        handleRemoveImage={handleRemoveImage}
+      />
     </>
   );
 }

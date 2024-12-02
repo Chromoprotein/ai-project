@@ -47,6 +47,7 @@ export default function Login() {
           if (response.status === 201) {
               console.log("user logged in")
               sessionStorage.setItem('isAuthenticated', 'true');
+              sessionStorage.setItem('name', response.data.username)
               navigate("/");
           }
       } catch (error) {

@@ -6,6 +6,10 @@ const chatSchema = new Schema({
     type: String,
     required: true
   },
+  botId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SystemMessage'
+  },
   messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
   category: {
     type: String,

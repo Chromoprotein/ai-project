@@ -1,6 +1,7 @@
 const User = require("../Schemas/User")
 const Chat = require("../Schemas/Chat")
 const Message = require("../Schemas/Message")
+const SystemMessage = require("../Schemas/SystemMessage")
 let OpenAI = require('openai');
 
 const openai = new OpenAI(
@@ -148,7 +149,7 @@ const renameChat = async (userMessage, res) => {
 
     try {
         const messages = [
-            {role: "system", content: "Generate a short title without quotation marks for the following message."},
+            {role: "system", content: "Generate a short, user-friendly title based on the following message. If the message lacks clear context or is vague, use 'General Chat' or something simple and generic as the title."},
             userMessage
         ]
 
@@ -309,6 +310,7 @@ exports.getChat = async (req, res) => {
                 path: 'messages',
                 options: { sort: { createdAt: 1 } }
             })
+            .populate('botId')
             .exec();
         if(chat) {
             res.status(200).json({ chat })
@@ -326,15 +328,15 @@ exports.getChat = async (req, res) => {
 exports.newChat = async (req, res) => {
 
     try {
-        const { userMessage, category } = req.body.newChatData;
+        const { userMessage, botId } = req.body.newChatData;
         // User id comes from the auth middleware
         const userId = req.id;
 
         const generatedTitle = await renameChat(userMessage, res);
         const generatedCategory = await categorizeChat(userMessage, res);
 
-        if(generatedTitle && generatedCategory) {
-            const chat = await Chat.create({ title: generatedTitle, category: generatedCategory, userId });
+        if(generatedTitle && generatedCategory && botId) {
+            const chat = await Chat.create({ title: generatedTitle, botId: botId, category: generatedCategory, userId });
             if(chat) {
                 res.status(201).json({
                     message: "New chat successfully created",
@@ -343,6 +345,64 @@ exports.newChat = async (req, res) => {
             }
         }
 
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        })
+    }
+
+};
+
+// Creates a new system message / bot persona
+exports.newSystemMessage = async (req, res) => {
+
+    try {
+        const { botName, systemMessage } = req.body;
+        // User id comes from the auth middleware
+        const userId = req.id;
+
+        if(botName && systemMessage) {
+
+            const formattedMessage = {
+                role: "system",
+                content: [
+                    {
+                        type: "text",
+                        text: systemMessage,
+                    },
+                ],
+            };
+
+            const bot = await SystemMessage.create({ systemMessage: JSON.stringify(formattedMessage), botName, userId });
+            if(bot) {
+                res.status(201).json({
+                    message: "New system message successfully created",
+                    id: bot._id,
+                });
+            }
+        }
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        })
+    }
+
+};
+
+// Fetches the user's bot personas
+exports.getSystemMessages = async (req, res) => {
+
+    try {
+        // User id comes from the auth middleware
+        const userId = req.id;
+
+        const bots = await SystemMessage.find({ userId: userId })
+        if(bots) {
+            res.status(200).json({ bots })
+        }
     } catch (error) {
         res.status(500).json({
             message: "An error occurred",

@@ -7,7 +7,7 @@ import axios from "axios";
 import { AiFillSound } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 
-export default function Message({ message, messageIndex }) {
+export default function Message({ message, messageIndex, name }) {
   const [copySuccess, setCopySuccess] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -72,7 +72,7 @@ export default function Message({ message, messageIndex }) {
     >
       {/*sender name*/}
       <span className="name">
-        {message.role === "user" ? "You: " : "Mysterious traveller: "}
+        {name}:&nbsp;
       </span>
 
       {/*render text and AI images with markdown. Images have a download button*/}

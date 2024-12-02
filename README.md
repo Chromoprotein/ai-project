@@ -14,6 +14,8 @@ A chatbot with the OpenAI API that has chat folders.
 
 - Chats are automatically sorted into folders
 
+- Custom instructions as bot personas; several can be saved
+
 - Minor features:
 
     - Function calling/tool for toggling light/dark mode
@@ -28,13 +30,13 @@ A chatbot with the OpenAI API that has chat folders.
 
 - Improve chatting:
 
-    - Add custom instructions
+    - Add the option to rename chats
 
     - Add the option to edit and resend a message
 
-    - Let the user delete chats
+    - Add editing or deleting bot personas
 
-    - Add the ability to rename chats
+    - Let the user delete chats
 
     - Add an emoji keyboard
 
@@ -44,10 +46,12 @@ A chatbot with the OpenAI API that has chat folders.
 
     - Let the user decide what folders the AI can place chats into
 
-    - Add the ability to move chats to a different folder
+    - Add the option to move chats to a different folder
 
 - Improve the UI:
 
-    - Add a new chat button
+    - Fix the forms' width
 
-    - Finish the register and login pages
+    - Make the bot persona form collapsible and switch the input field to a textarea
+
+    - Add avatars for the bots
