@@ -2,7 +2,7 @@ import SimpleForm from './SimpleForm';
 import { useState } from 'react';
 import axios from 'axios';
 
-export default function Bots({ bots, toggleBot, setIsSubmit }) {
+export default function Bots({ bots, toggleBot, clearScreen, setIsSubmit }) {
 
     const initialState = {
         botName: '',
@@ -38,6 +38,12 @@ export default function Bots({ bots, toggleBot, setIsSubmit }) {
         setFormData(initialState);
     };
 
+    // Clears the old chat from the states and selects a new bot for a fresh chat
+    const switchBots = (botId) => {
+        clearScreen();
+        toggleBot(botId);
+    }
+
     return (
         <div>
             <SimpleForm 
@@ -57,7 +63,7 @@ export default function Bots({ bots, toggleBot, setIsSubmit }) {
                         <span className="name">Instructions: </span>
                         {bot.systemMessage.content[0].text}
                     </p>
-                    <button className="button" onClick={() => toggleBot(bot.botId)}>Chat</button>
+                    <button className="button" onClick={() => switchBots(bot.botId)}>Chat</button>
                 </div>
             ))}
         </div>
