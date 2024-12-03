@@ -42,7 +42,7 @@ export default function App() {
   const [chatList, setChatList] = useState({}); // Object where keys are chat category names and values are arrays of chats (that have a title and an id)
   const [collapsedCategory, setCollapsedCategory] = useState({}); // Chat categories that are collapsed. Key is the category's name and value is boolean
   const [bots, setBots] = useState(initialBots); // List of bot personas
-  const [currentBot, setCurrentBot] = useState(JSON.parse(localStorage.getItem("currentBot")) || bots[0]);
+  const [currentBotId, setCurrentBotId] = useState(JSON.parse(localStorage.getItem("currentBotId")) || bots[0].botId);
   const [showBotList, setShowBotList] = useState(false);
   const [isSubmit, setIsSubmit] = useState(false);
   const [username, setUsername] = useState(sessionStorage.getItem("name") || "User");
@@ -85,9 +85,9 @@ export default function App() {
   };
 
   // Set a bot as the current bot
-  const toggleBot = useCallback(((bot) => {
-    setCurrentBot(bot);
-    localStorage.setItem("currentBot", JSON.stringify(bot));
+  const toggleBot = useCallback(((botId) => {
+    setCurrentBotId(botId);
+    localStorage.setItem("currentBotId", JSON.stringify(botId));
     setShowBotList(false); // Close the bot list
   }), []);
 
@@ -98,9 +98,9 @@ export default function App() {
     setMessages([]);
   }
 
-  const switchBots = (bot) => {
+  const switchBots = (botId) => {
     clearScreen();
-    toggleBot(bot);
+    toggleBot(botId);
   }
 
   // Fetch an old chat based on the chat ID in the URL
@@ -119,14 +119,9 @@ export default function App() {
         }
         const chat = response.data.chat;
         if(chat.botId) {
-          const newBot = {
-            botId: chat.botId._id,
-            botName: chat.botId.botName,
-            systemMessage: chat.botId.systemMessage,
-          };
-          toggleBot(newBot);
+          toggleBot(chat.botId._id);
         } else {
-          toggleBot(bots[0]); // Default bot
+          toggleBot(bots[0].botId); // Default bot
         }
 
       }
@@ -169,7 +164,7 @@ export default function App() {
           systemMessage: JSON.parse(bot.systemMessage),
         }));
         setBots([
-          ...initialBots, // keep the default bot
+          ...initialBots, // keep the default bot in the list
           ...mappedBots
         ]);
       }
@@ -181,8 +176,7 @@ export default function App() {
   // Start a new chat when the user sends the first message
   const saveNewChat = async (userMessage) => {
 
-    const botId = currentBot.botId;
-    const newChatData = { userMessage, botId };
+    const newChatData = { userMessage, botId: currentBotId };
 
     try {
       const response = await axios.post(
@@ -233,8 +227,10 @@ export default function App() {
     e.preventDefault();
 
     // If you're in a new chat thread, append the system prompt of the correct bot
+    let systemMessage;
     if(messages.length < 1) {
-      addMessage(currentBot.systemMessage);
+      systemMessage = bots.find((bot) => bot.botId === currentBotId).systemMessage || bots[0].systemMessage;
+      addMessage(systemMessage);
     }
 
     // Construct the user's new message
@@ -268,7 +264,7 @@ export default function App() {
 
     // Full chat context
     const allMessages = [
-      !chatId && currentBot.systemMessage, // In a new chat thread, add the system message too
+      systemMessage && systemMessage, // In a new chat thread, the system message was found above. Add it to the chat context
       ...messages, 
       newMessage
     ];
@@ -335,14 +331,18 @@ export default function App() {
 
   // 4. UI ELEMENTS
 
-  const mappedMessages = messages
+  const foundBot = bots.find((bot) => bot.botId === currentBotId);
+  const currentBotName = (foundBot ? foundBot.botName : bots[0]?.botName);
+
+  const mappedMessages = (messages && messages.length > 1) && messages
     .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => {
       let name;
       if(message.role === "user") {
         name = username;
-      } else {
-        name = currentBot.botName;
+      } else if(message.role === "assistant") {
+        const botName = bots.find((bot) => bot.botId === currentBotId).botName || bots[0].botName;
+        name = botName;
       }
       return <Message message={message} index={index} name={name} />
   });
@@ -375,7 +375,7 @@ export default function App() {
           <div className="chatContainer">
             {showBotList ? 
               <Bots bots={bots} toggleBot={switchBots} setIsSubmit={setIsSubmit} /> :
-              <MainContent mappedMessages={mappedMessages} loading={loading} messagesEndRef={messagesEndRef} handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} file={file} handleRemoveImage={handleRemoveImage} bot={currentBot.botName} />
+              <MainContent mappedMessages={mappedMessages} loading={loading} messagesEndRef={messagesEndRef} handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} file={file} handleRemoveImage={handleRemoveImage} bot={currentBotName} />
             }
           </div>
         </div>

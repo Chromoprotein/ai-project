@@ -57,7 +57,7 @@ export default function Bots({ bots, toggleBot, setIsSubmit }) {
                         <span className="name">Instructions: </span>
                         {bot.systemMessage.content[0].text}
                     </p>
-                    <button className="button" onClick={() => toggleBot(bot)}>Chat</button>
+                    <button className="button" onClick={() => toggleBot(bot.botId)}>Chat</button>
                 </div>
             ))}
         </div>
