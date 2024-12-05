@@ -96,7 +96,11 @@ export default function Message({ message, messageIndex, name }) {
       )}
 
       {/*if the user uploaded an image, display it too*/}
-      {image && <img src={image} alt="User uploaded content" />}
+      {image && 
+        <div className="imageContainer">
+          <img src={image} alt="User uploaded content" />
+        </div>
+      }
 
       {/*if there is text, display a button for copying the text at the bottom of the message*/}
       {text && (

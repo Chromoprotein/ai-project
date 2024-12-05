@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
 import "../styles/index.css";
 import "../styles/style.css";
 import { MainContent } from "./MainContent";
@@ -12,6 +11,7 @@ import { useBots } from "../utils/useBots";
 import { toggle_dark_and_light_mode } from "../utils/toolCalling";
 import { useChats } from "../utils/useChats";
 import { scrollToBottom } from "../utils/uiHelpers";
+import axiosInstance from "../utils/axiosInstance";
 
 export default function App() {
 
@@ -22,8 +22,6 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([bots.find((bot) => bot.botId === currentBotId)?.systemMessage || bots[0]?.systemMessage]);
   const [file, setFile] = useState(null);
-
-  console.log(messages)
 
   // UI-related state
   const messagesEndRef = useRef(null);
@@ -45,14 +43,13 @@ export default function App() {
 
   // Multimodal AI request
   const fetchAIResponse = async (payload, chatId) => {
-    return await axios.post(
+    return await axiosInstance.post(
       process.env.REACT_APP_AI,
       { messages: payload, chatId: chatId },
       {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true,
       }
     );
   };
@@ -196,7 +193,6 @@ export default function App() {
 
   const foundBot = bots.find((bot) => bot.botId === currentBotId);
   const currentBotName = (foundBot ? foundBot.botName : bots[0]?.botName);
-  console.log(currentBotName)
   const mappedMessages = (messages && messages.length > 1) && messages
     .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => {
@@ -206,7 +202,7 @@ export default function App() {
       } else if(message.role === "assistant") {
         name = currentBotName;
       }
-      return <Message message={message} index={index} name={name} />
+      return <Message key={index} message={message} index={index} name={name} />
   });
 
   return (
@@ -218,6 +214,7 @@ export default function App() {
           chatList={chatList}
           showBotList={showBotList}
           setShowBotList={setShowBotList}
+          chatId={chatId}
         />
 
         <div className="mainContent">

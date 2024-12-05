@@ -176,7 +176,7 @@ const categorizeChat = async (userMessage, res) => {
 
     try {
         const messages = [
-            {role: "system", content: "Choose the category that is the best fit for the user's message. The possible categories are: Facts, Tutorials, Brainstorming, Coding, Writing, Image Generation, Image Analysis, Social Chat, Fun and Memes, Serious Chat, Support, Opinion, Vent. If the message doesn't fit in any of these categories, you can make one up or use Other. Respond with only the category's name without quotation marks."},
+            {role: "system", content: "Choose the category that is the best fit for the user's message. The possible categories are: Facts, Tutorials, Brainstorming, Coding, Writing, Image Generation, Image Analysis, Social Chat, Fun and Memes, Serious Chat, Support, Opinion, Vent. If the message doesn't fit in any of these categories, you can make one up or use Other. Respond with only the category's name without quotation marks or markdown."},
             userMessage
         ]
 

@@ -45,12 +45,12 @@ export default function Bots({ bots, toggleBot, clearScreen, setIsSubmit }) {
     }
 
     return (
-        <div>
+        <div className="chatContainer">
             <SimpleForm 
                 title="Add a bot persona" 
                 fields={[
-                { label: "Name", type: "text", name: "botName", value: formData.botName, onChange: handleChange },
-                { label: "Instructions", type: "text", name: "systemMessage", value: formData.systemMessage, onChange: handleChange }
+                { label: "Name", type: "text", name: "botName", value: formData.botName, onChange: handleChange, inputType: "input" },
+                { label: "Instructions", type: "text", name: "systemMessage", value: formData.systemMessage, onChange: handleChange, inputType: "textarea" }
                 ]}
                 onSubmit={handleSubmit} 
                 error={error}

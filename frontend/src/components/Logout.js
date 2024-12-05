@@ -1,9 +1,14 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
+import Background from './Backgrounds';
+import { useMode } from "../utils/useMode";
+import { Link } from "react-router-dom";
 
 export default function Logout() {
 
     const [message, setMessage] = useState("");
+
+    const { theme, setTheme } = useMode();
 
     useEffect(() => {
         async function logout() {
@@ -21,6 +26,14 @@ export default function Logout() {
     }, [])
 
     return (
-        <p>{message && message}</p>
+        <>
+            <Background theme={theme} />
+            <div className="container">
+                <div className="mainContent">
+                    <h1 className="title">{message && message}</h1>
+                    <Link className="button" to="/login">Log in again</Link>
+                </div>
+            </div>
+        </>
     );
 }
