@@ -221,12 +221,10 @@ export default function App() {
         />
 
         <div className="mainContent">
-          <div className="chatContainer">
             {showBotList ? 
               <Bots bots={bots} toggleBot={toggleBot} clearScreen={clearScreen} setIsSubmit={setIsSubmit} /> :
               <MainContent mappedMessages={mappedMessages} loading={loading} messagesEndRef={messagesEndRef} handleSubmit={handleSubmit} query={query} handleQuery={handleQuery} handleFileChange={handleFileChange} file={file} handleRemoveImage={handleRemoveImage} bot={currentBotName} />
             }
-          </div>
         </div>
       </div>
     </>

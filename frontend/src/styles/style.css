@@ -68,7 +68,7 @@ body {
     padding-top: 70px;
 }
 
-/*on the chat page, this wraps the chat conntent on the right and the input field on the bottom right*/
+/*on the chat page, this wraps the messages on the right and the input field on the bottom right*/
 .mainContent {
     flex: 1;
     display: flex;
@@ -76,14 +76,15 @@ body {
     padding:20px;
     justify-content: center;
     align-items: center;
+    width:100%;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-/*chat content on the right*/
+/*wraps the messages*/
 .chatContainer {
     flex: 1;
     overflow-y: auto;
-    width:100%;
-    max-width: 600px;
 }
 
 /*input on the bottom right*/
@@ -381,7 +382,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-grow: 1;
+    flex: 1;
+    height:100%;
 }
 
 .title {
@@ -458,5 +460,5 @@ body {
 }
 
 .tall {
-    height: calc(100% - 150px);
+    min-height: calc(100% - 150px);
 }

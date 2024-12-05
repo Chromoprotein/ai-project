@@ -1,6 +1,6 @@
 export function Hello({bot}) {
   return (
-    <div className="centeredContainer tall">
+    <div className="centeredContainer">
       <p className="title">{bot}: How can I help you?</p>
     </div>
   )

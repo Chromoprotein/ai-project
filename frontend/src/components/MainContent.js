@@ -5,15 +5,17 @@ import { InputContainer } from "./InputContainer";
 export function MainContent({mappedMessages, loading, messagesEndRef, handleSubmit, query, handleQuery, handleFileChange, file, handleRemoveImage, bot}) {
   return (
     <>
-      {mappedMessages.length > 0 ? (
-        <div className="tall">
-          {mappedMessages}
-          {loading && <Typing />}
-          <div ref={messagesEndRef} />
-        </div>
-      ) : (
-        <Hello bot={bot} />
-      )}
+      <div className="chatContainer">
+        {mappedMessages.length > 0 ? (
+          <>
+            {mappedMessages}
+            {loading && <Typing />}
+            <div ref={messagesEndRef} />
+          </>
+        ) : (
+          <Hello bot={bot} />
+        )}
+      </div>
 
       <InputContainer
         handleSubmit={handleSubmit}
