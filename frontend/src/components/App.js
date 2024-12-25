@@ -16,7 +16,7 @@ import { useLocation } from "react-router-dom";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, currentBotId, setCurrentBotId, getBots, getBot, currentBot, setCurrentBot } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getBot, currentBot, setCurrentBot } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -78,6 +78,8 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // PREPARE THE PAYLOAD
+
     // System prompt for new chats
     if(messages.length === 0) {
       addMessage(currentBot.systemMessage);
@@ -109,7 +111,6 @@ export default function App() {
       ];
     }
     const newMessage = { role: "user", content: newContent };
-
     addMessage(newMessage); // Add the user's new message to the state for displaying
 
     // Full chat context
@@ -120,17 +121,30 @@ export default function App() {
       allMessages = [...messages, newMessage]; // Old chat, system prompt has already been added before
     }
 
-    // Start a new chat thread if you're not currently in a thread. Starting a new chat also generates a title for it based on the user message
-    const chatIdForSaving = searchParams.get("chatId") ? searchParams.get("chatId") : await saveNewChat(newMessage, currentBotId);
+    // CHAT ID AND CHAT TITLE
+
+    let chatId;
+    if(searchParams.get("chatId")) { // For an old chat, get the chat id from the search params
+      chatId = searchParams.get("chatId");
+    } else {
+      // If there isn't a chat id, generate a new one. This query also generates a title for the new chat based on the user's first message
+      const newChatId = await saveNewChat(newMessage, currentBot.botId);
+      if(newChatId) {
+        chatId = newChatId;
+        await getChatList(); // Update the chats list so it includes the new chat's title
+      }
+    }
 
     // Clear the inputs
     setQuery("");
     setFile(null);
 
-    if(chatIdForSaving) {
+    // AI RESPONSE
+
+    if(chatId) {
       try {
         setLoading(true);
-        const { data } = await fetchAIResponse(allMessages, chatIdForSaving);
+        const { data } = await fetchAIResponse(allMessages, chatId);
 
         // Add the AI's message to the messages array to be displayed
         if (data.AIMessage) {
@@ -162,29 +176,28 @@ export default function App() {
     }
   }, [messages]);
 
-  // Fetching the chat by chat id (search parameter)
+  // Fetching the chat by chat id (search parameter) when you navigate to a chat or a new chat's chatId is generated. By mongo populating, this query also gets the bot's info
   useEffect(() => {
     if (searchParams.get("chatId")) {
       getChat(searchParams.get("chatId"), setMessages);
     }
   }, [searchParams, getChat]);
 
-  // Refresh the chat list when a new chat is possibly added
+  // Get the chat list on the first page load
   useEffect(() => {
     getChatList();
-  }, [searchParams, getChatList]);
+  }, [getChatList]);
 
-  // Find bot's info
-  // customBotId is when navigating here from the bots list
+  // Find bot's info when navigating from the bots list. This is needed to start a new chat
   useEffect(() => {
-    const botToSearch = customBotId ? customBotId : currentBotId;
-    if(botToSearch !== bots[0].botId) { // custom bot
-      getBot(botToSearch);
-    } else { // default bot
-      setCurrentBotId(bots[0].botId);
-      setCurrentBot(bots[0]);
+    if(messages.length === 0 && customBotId) {
+      if(customBotId !== bots[0].botId) { // is a custom bot
+        getBot(customBotId);
+      } else { // is default bot
+        setCurrentBot(bots[0]);
+      }
     }
-  }, [bots, customBotId, currentBotId, getBot, setCurrentBotId, setCurrentBot])
+  }, [customBotId, bots, getBot, setCurrentBot, messages.length])
 
   // 4. UI ELEMENTS
 

@@ -25,7 +25,6 @@ export function useChats() {
 
     // Bot persona -related state
     const [bots, setBots] = useState(initialBots); // List of bot personas
-    const [currentBotId, setCurrentBotId] = useState(initialBots[0].botId);
     const [currentBot, setCurrentBot] = useState(initialBots[0]);
 
     // Fetch an old chat based on the chat ID in the URL
@@ -43,16 +42,20 @@ export function useChats() {
                     setMessages(mappedMessages);
                 }
                 const chat = response.data.chat;
-                if(chat.botId) {
-                    setCurrentBotId(chat.botId._id);
+                if(chat.botId) { // custom bot
+                    setCurrentBot({
+                        botId: chat.botId._id,
+                        botName: chat.botId.botName,
+                        systemMessage: chat.botId.systemMessage,
+                    });
                 } else {
-                    setCurrentBotId(bots[0].botId); // default bot
+                    setCurrentBot(bots[0]); // default bot
                 }
             }
         } catch (error) {
             console.log(error);
         }
-    }), []);
+    }), [bots]);
 
     // Get the list of chats for the sidebar
     const getChatList = useCallback((async () => {
@@ -100,7 +103,7 @@ export function useChats() {
     const getBots = useCallback((async () => {
         try {
             const response = await axios.get(process.env.REACT_APP_GETBOTS, {       
-            withCredentials: true 
+                withCredentials: true 
             });
             if(response.data.bots.length > 0) {
             const mappedBots = response.data.bots.map((bot) => ({
@@ -129,8 +132,7 @@ export function useChats() {
                     botId: response.data.bot._id,
                     botName: response.data.bot.botName,
                     systemMessage: JSON.parse(response.data.bot.systemMessage),
-                };
-                setCurrentBotId(newBot.botId);                
+                };             
                 setCurrentBot(newBot);
             }
         } catch (error) {
@@ -138,6 +140,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, currentBotId, setCurrentBotId, getBots, getBot, currentBot, setCurrentBot }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getBot, currentBot, setCurrentBot }
 
 };
