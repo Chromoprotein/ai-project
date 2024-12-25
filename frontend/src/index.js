@@ -12,6 +12,7 @@ import Register from './components/Register';
 import Login from './components/Login';
 import Logout from './components/Logout';
 import { useAuth } from './utils/useAuth';
+import Bots from './components/Bots';
 
 function RequireAuth({ children }) {
 
@@ -33,6 +34,14 @@ const router = createBrowserRouter(
         element={
           <RequireAuth>
             <App />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="bots"
+        element={
+          <RequireAuth>
+            <Bots />
           </RequireAuth>
         }
       />

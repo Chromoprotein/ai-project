@@ -4,7 +4,7 @@ import { GoSidebarCollapse } from "react-icons/go";
 import { GoPlus } from "react-icons/go";
 import { useState } from "react";
 
-export function Sidebar({ chatList, showBotList, setShowBotList, chatId }) {
+export function Sidebar({ chatList, chatId }) {
 
     const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
     const [collapsedCategory, setCollapsedCategory] = useState({}); // Chat categories that are collapsed. Key is the category's name and value is boolean
@@ -29,9 +29,9 @@ export function Sidebar({ chatList, showBotList, setShowBotList, chatId }) {
                         {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}
                     </button>
 
-                    <button className="roundButton" onClick={() => setShowBotList(!showBotList)}>
+                    <Link className="roundButton" to="/bots">
                         <GoPlus />
-                    </button>
+                    </Link>
                 </div>
             </div>
 
@@ -47,7 +47,10 @@ export function Sidebar({ chatList, showBotList, setShowBotList, chatId }) {
                         {!collapsedCategory[category] && (
                             <div className="category">
                                 {chatList[category].map((chat) => (
-                                    <Link to={`?chatId=${chat._id}`} key={chat._id} className={`navbarItem ${chatId === chat._id ? "active" : "inactive"}`}>
+                                    <Link 
+                                        to={`?chatId=${chat._id}`} 
+                                        key={chat._id} 
+                                        className={`navbarItem ${chatId === chat._id ? "active" : "inactive"}`}>
                                         {chat.title}
                                     </Link>
                                 ))}

@@ -256,6 +256,7 @@ body {
     display: flex;
     margin: 10px;
     background-color: var(--color-pop);
+    color: var(--text-color);
 }
 
 .inputContainer input,

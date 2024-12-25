@@ -411,3 +411,24 @@ exports.getSystemMessages = async (req, res) => {
     }
 
 };
+
+// Fetches the user's bot persona
+exports.getOneSystemMessage = async (req, res) => {
+
+    try {
+        // User id comes from the auth middleware
+        const userId = req.id;
+        const { botId } = req.query;
+
+        const bot = await SystemMessage.findOne({ userId: userId, _id: botId })
+        if(bot) {
+            res.status(200).json({ bot })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        })
+    }
+
+};

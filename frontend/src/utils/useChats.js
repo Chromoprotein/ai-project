@@ -2,33 +2,52 @@ import { useState, useCallback } from "react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
 
+const initialBots = [{
+    botId: "674e1e30554c720e5f15cc69",
+    botName: "Mysterious traveller",
+    systemMessage: {
+        role: "system",
+        content: [
+        {
+            type: "text",
+            text: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting.",
+        },
+        ],
+    },
+}];
+
 export function useChats() {
 
     const [searchParams, setSearchParams] = useSearchParams();
-    const [chatId, setChatId] = useState(searchParams.get("chatId"));
+
+    // Chat-related state
     const [chatList, setChatList] = useState({}); // Object where keys are chat category names and values are arrays of chats (that have a title and an id)
 
+    // Bot persona -related state
+    const [bots, setBots] = useState(initialBots); // List of bot personas
+    const [currentBotId, setCurrentBotId] = useState(initialBots[0].botId);
+    const [currentBot, setCurrentBot] = useState(initialBots[0]);
+
     // Fetch an old chat based on the chat ID in the URL
-    const getChat = useCallback((async (chatId, setMessages, toggleBot, bots) => {
+    const getChat = useCallback((async (chatId, setMessages) => {
         try {
             const response = await axios.get(process.env.REACT_APP_GETCHAT, {
                 withCredentials: true,
                 params: { chatId: chatId },
             });
             if (response.data) {
-            const mappedMessages = response.data.chat.messages.map((message) =>
-                JSON.parse(message.content)
-            );
-            if (mappedMessages.length > 0) {
-                setMessages(mappedMessages);
-            }
-            const chat = response.data.chat;
-            if(chat.botId) {
-                toggleBot(chat.botId._id);
-            } else {
-                toggleBot(bots[0].botId); // Default bot
-            }
-
+                const mappedMessages = response.data.chat.messages.map((message) =>
+                    JSON.parse(message.content)
+                );
+                if (mappedMessages.length > 0) {
+                    setMessages(mappedMessages);
+                }
+                const chat = response.data.chat;
+                if(chat.botId) {
+                    setCurrentBotId(chat.botId._id);
+                } else {
+                    setCurrentBotId(bots[0].botId); // default bot
+                }
             }
         } catch (error) {
             console.log(error);
@@ -42,7 +61,7 @@ export function useChats() {
                 withCredentials: true
             });
             if (response.data) {
-            setChatList(response.data.groupedChats);
+                setChatList(response.data.groupedChats);
             }
         } catch (error) {
             console.log(error);
@@ -68,7 +87,6 @@ export function useChats() {
                 console.log(response.data);
                 const chatId = response.data.id;
                 setSearchParams({ chatId: chatId });
-                setChatId(chatId);
                 return chatId;
             }
         } catch (error) {
@@ -78,6 +96,48 @@ export function useChats() {
         return "";
     };
 
-    return { chatId, setChatId, chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams }
+    // Get the list of bot personas / system prompts
+    const getBots = useCallback((async () => {
+        try {
+            const response = await axios.get(process.env.REACT_APP_GETBOTS, {       
+            withCredentials: true 
+            });
+            if(response.data.bots.length > 0) {
+            const mappedBots = response.data.bots.map((bot) => ({
+                botId: bot._id,
+                botName: bot.botName,
+                systemMessage: JSON.parse(bot.systemMessage),
+            }));
+            setBots([
+                ...initialBots, // keep the default bot in the list
+                ...mappedBots
+            ]);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }), []);
+
+    const getBot = useCallback((async (botToSearch) => {
+        try {
+            const response = await axios.get(process.env.REACT_APP_GETBOT, {       
+                withCredentials: true,
+                params: { botId: botToSearch },
+            });
+            if(response.data.bot) {
+                const newBot = {
+                    botId: response.data.bot._id,
+                    botName: response.data.bot.botName,
+                    systemMessage: JSON.parse(response.data.bot.systemMessage),
+                };
+                setCurrentBotId(newBot.botId);                
+                setCurrentBot(newBot);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }), []);
+
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, currentBotId, setCurrentBotId, getBots, getBot, currentBot, setCurrentBot }
 
 };
