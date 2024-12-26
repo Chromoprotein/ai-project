@@ -140,6 +140,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getBot, currentBot, setCurrentBot }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot }
 
 };

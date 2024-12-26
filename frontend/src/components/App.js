@@ -16,7 +16,7 @@ import { useLocation } from "react-router-dom";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getBot, currentBot, setCurrentBot } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBot, currentBot, setCurrentBot } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");

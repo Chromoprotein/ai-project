@@ -358,18 +358,20 @@ exports.newChat = async (req, res) => {
 exports.newSystemMessage = async (req, res) => {
 
     try {
-        const { botName, systemMessage } = req.body;
+        const { botName, systemMessage, userInfo, traits } = req.body;
         // User id comes from the auth middleware
         const userId = req.id;
 
         if(botName && systemMessage) {
+
+            const fullSystemPrompt = `Your name is ${botName}. ${systemMessage} Additionally, these traits describe you: ${JSON.stringify(traits)}. The maximum value of traits is 100. Here is information about the person you're chatting with: ${userInfo}`;
 
             const formattedMessage = {
                 role: "system",
                 content: [
                     {
                         type: "text",
-                        text: systemMessage,
+                        text: fullSystemPrompt,
                     },
                 ],
             };
@@ -381,6 +383,7 @@ exports.newSystemMessage = async (req, res) => {
                     id: bot._id,
                 });
             }
+
         }
 
     } catch (error) {

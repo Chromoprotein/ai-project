@@ -136,8 +136,7 @@ body {
     align-items: center;
     width:100%;
     border-radius:20px;
-    height:500px;
-    max-height:100vh;
+    min-height:500px;
     color: var(--text-color);
     max-width:600px;
 }
@@ -218,6 +217,46 @@ body {
 
 .formItem .button {
     align-self: center;
+}
+
+/* SLIDERS */
+
+.customSlider {
+    width: 100%;
+    height: 15px;
+    background: var(--color-pop);
+    border-radius: 5px;
+    margin: 0 0 5px 0;
+}
+
+.customTrack {
+    background: var(--color-pop);
+    height: 100%;
+    border-radius: 5px;
+}
+
+.customThumb {
+    height: 15px;
+    width: 15px;
+    background: var(--background);
+    border-radius: 50%;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.sliderLabel {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    width:100%;
+}
+
+.sliderLabel .labelLeft {
+    text-align: left;
+}
+
+.sliderLabel .labelRight {
+    text-align: right;
 }
 
 /*CHAT INPUT FIELD*/
