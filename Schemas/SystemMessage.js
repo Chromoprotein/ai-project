@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 const systemMessageSchema = new Schema({
   systemMessage: {
     type: String,
-    required: true
+    required: false
   },
   botName: {
     type: String,
@@ -13,7 +13,15 @@ const systemMessageSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }
+  },
+  traits: {
+    type: String,
+    required: false
+  },
+  userInfo: {
+    type: String,
+    required: false
+  },
 },{collection : 'systemMessages', timestamps:true});
 
 module.exports = mongoose.model('SystemMessage', systemMessageSchema);

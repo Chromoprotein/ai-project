@@ -354,17 +354,47 @@ exports.newChat = async (req, res) => {
 
 };
 
+const processTraits = (traits, sliderData) => {
+    // Map over the formData array to transform it
+    const processedTraits = traits.map((trait) => {
+        // Find the matching sliderData object by ID
+        const slider = sliderData.find((s) => s.id === trait.id);
+
+        // Determine the active trait based on the score
+        const activeTrait = trait.score < 0 ? slider.leftTrait : slider.rightTrait;
+
+        return {
+            trait: activeTrait, // The trait name
+            score: Math.abs(trait.score), // Convert negative scores to positive
+        };
+    });
+
+    return processedTraits;
+};
+
+function writeTraits(processedTraits) {
+    const traitDescriptions = processedTraits
+        .map((t) => `${t.trait} (${t.score})`) 
+        .join(", ");
+    
+    return `You have the following traits: ${traitDescriptions}. The maximum value is 100.`;
+}
+
 // Creates a new system message / bot persona
 exports.newSystemMessage = async (req, res) => {
 
     try {
-        const { botName, systemMessage, userInfo, traits } = req.body;
+        const { botName, systemMessage, userInfo, traits, sliderData } = req.body;
         // User id comes from the auth middleware
         const userId = req.id;
 
+        const processedTraits = processTraits(traits, sliderData);
+
+        const sentenceAboutTraits = writeTraits(processedTraits);
+
         if(botName && systemMessage) {
 
-            const fullSystemPrompt = `Your name is ${botName}. ${systemMessage} Additionally, these traits describe you: ${JSON.stringify(traits)}. The maximum value of traits is 100. Here is information about the person you're chatting with: ${userInfo}`;
+            const fullSystemPrompt = `Your name is ${botName}. ${systemMessage} ${sentenceAboutTraits} The user has shared this information about themselves: ${userInfo}`;
 
             const formattedMessage = {
                 role: "system",
@@ -376,13 +406,17 @@ exports.newSystemMessage = async (req, res) => {
                 ],
             };
 
-            const bot = await SystemMessage.create({ systemMessage: JSON.stringify(formattedMessage), botName, userId });
+            const bot = await SystemMessage.create({ systemMessage: JSON.stringify(formattedMessage), botName, userId, traits: JSON.stringify(traits), userInfo });
             if(bot) {
                 res.status(201).json({
                     message: "New system message successfully created",
                     id: bot._id,
                 });
             }
+
+            console.log(processedTraits);
+            console.log(sentenceAboutTraits);
+            console.log(fullSystemPrompt);
 
         }
 

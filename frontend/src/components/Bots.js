@@ -16,11 +16,22 @@ export default function Bots() {
         getBots();
     }, [getBots])
 
+    const sliderData = [
+        { id: 1, leftTrait: "kind", rightTrait: "sarcastic" },
+        { id: 2, leftTrait: "serious", rightTrait: "playful" },
+        { id: 3, leftTrait: "formal", rightTrait: "casual" },
+        { id: 4, leftTrait: "solution-oriented", rightTrait: "empathetic" },
+        { id: 5, leftTrait: "detailed", rightTrait: "concise" },
+        { id: 6, leftTrait: "flowery", rightTrait: "plainspoken" },
+        { id: 7, leftTrait: "agreeable", rightTrait: "sceptic" },
+    ]
+
     const initialState = {
         botName: '',
         systemMessage: '',
         userInfo: '',
-        traits: {},
+        traits: [],
+        sliderData: sliderData // for reference for the chatbot
     };
     const [formData, setFormData] = useState(initialState);
 
@@ -35,43 +46,32 @@ export default function Bots() {
         });
     };
 
-    const handleSliderChange = (name, value) => {
+    const handleSliderChange = (id, newScore) => {
         setFormData((prevFormData) => {
-            const updatedTraits = { ...prevFormData.traits };
-
-            if (value < 0) {
-                updatedTraits[name.leftTrait] = value;
-            } else if (value > 0) {
-                updatedTraits[name.rightTrait] = value;
-            } else { // remove if the trait is average (50)
-                if(updatedTraits[name.leftTrait]) {
-                    delete updatedTraits[name.leftTrait];
-                }
-                if(updatedTraits[name.rightTrait]) {
-                    delete updatedTraits[name.rightTrait];
-                }
-            }
+            const updatedTraits = newScore === 0
+                ? prevFormData.traits.filter((trait) => trait.id !== id) // Remove if score is 0
+                : prevFormData.traits.some((trait) => trait.id === id)
+                    ? prevFormData.traits.map((trait) =>
+                        trait.id === id ? { ...trait, score: newScore } : trait
+                    ) // Update existing
+                    : [...prevFormData.traits, { id, score: newScore }]; // Add new
 
             return {
                 ...prevFormData,
-                traits: updatedTraits, // Update traits object
+                traits: updatedTraits, // Only update traits
             };
         });
     };
 
+    console.log(formData.traits)
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Turn the left side traits' values positive
-        const formattedTraits = Object.fromEntries(
-            Object.entries(formData.traits)
-            .map(([key, value]) => [key, Math.abs(value)])
-        );
-        const formattedData = {...formData, traits: formattedTraits};
 
         try {
             const response = await axios.post(
                 process.env.REACT_APP_CREATEBOT,
-                formattedData,
+                formData,
                 { withCredentials: true }
             );
             if (response) {
@@ -89,16 +89,6 @@ export default function Bots() {
     const navigateToBot = (botId) => {
         navigate(`/`, { state: { botId } });
     }
-
-    const sliderData = [
-        { leftTrait: "kind", rightTrait: "sarcastic" },
-        { leftTrait: "serious", rightTrait: "playful" },
-        { leftTrait: "formal", rightTrait: "casual" },
-        { leftTrait: "solution-oriented", rightTrait: "empathetic" },
-        { leftTrait: "detailed", rightTrait: "concise" },
-        { leftTrait: "flowery", rightTrait: "plainspoken" },
-        { leftTrait: "agreeable", rightTrait: "sceptic" },
-    ]
 
     return (
         <>
@@ -118,24 +108,27 @@ export default function Bots() {
                                 <input type="text" name="botName" value={formData.botName} onChange={handleChange} />
                             </div>
 
-                            {sliderData.map(item => (
-                                <div className="formItem">
+                            {sliderData.map(traitPair => {
+                                // Find the current score for this slider's ID
+                                const currentScore = formData.traits?.find((trait) => trait.id === traitPair.id)?.score || 0;
+
+                                return (<div className="formItem">
                                     <label className="sliderLabel">
-                                        <span className="labelLeft">{item.leftTrait}</span>
-                                        <span className="labelRight">{item.rightTrait}</span>
+                                        <span className="labelLeft">{traitPair.leftTrait}</span>
+                                        <span className="labelRight">{traitPair.rightTrait}</span>
                                     </label>
                                     <ReactSlider
                                         className="customSlider"
                                         thumbClassName="customThumb"
                                         trackClassName="customTrack"
-                                        value={formData.traits[item.leftTrait] !== undefined ? formData.traits[item.leftTrait] : formData.traits[item.rightTrait] !== undefined ? formData.traits[item.rightTrait] : 0}
-                                        onChange={(value) => handleSliderChange(item, value)}
+                                        value={currentScore}
+                                        onChange={(value) => handleSliderChange(traitPair.id, value)}
                                         min={-100}
                                         max={100}
                                         step={10} // Interval
                                     />
-                                </div>
-                            ))}
+                                </div>)
+                            })}
 
                             <div className="formItem">
                                 <label>Free instructions</label>
