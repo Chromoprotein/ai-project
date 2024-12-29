@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 const systemMessageSchema = new Schema({
   systemMessage: {
     type: String,
-    required: false
+    required: true
   },
   botName: {
     type: String,

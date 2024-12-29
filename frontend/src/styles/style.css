@@ -131,7 +131,7 @@ body {
     background-color: var(--highlight-background);
     display: flex;
     flex-direction: column;
-    padding:20px;
+    gap:20px;
     justify-content: space-evenly;
     align-items: center;
     width:100%;
@@ -139,6 +139,7 @@ body {
     min-height:500px;
     color: var(--text-color);
     max-width:600px;
+    padding: 20px 0;
 }
 
 .formContainer form {
@@ -182,9 +183,19 @@ body {
     font-size: 16px;
 }
 
+.textButton {
+    cursor: pointer;
+    color:var(--color-pop);
+    padding:0;
+    margin:0;
+    text-transform: uppercase;
+    font-size: small;
+    font-weight: bold;
+}
+
 .formContainer label {
     color:var(--color-pop);
-    padding:10px 0;
+    padding:0;
     text-transform: uppercase;
     font-size: small;
     font-weight: bold;
@@ -213,6 +224,7 @@ body {
     align-items: left;
     width:100%;
     max-width:400px;
+    gap:10px;
 }
 
 .formItem .button {
@@ -226,7 +238,7 @@ body {
     height: 15px;
     background: var(--color-pop);
     border-radius: 5px;
-    margin: 0 0 5px 0;
+    margin: 0;
 }
 
 .customTrack {
@@ -246,17 +258,25 @@ body {
 
 .sliderLabel {
     display:flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
     width:100%;
+    margin-bottom:10px;
 }
 
 .sliderLabel .labelLeft {
     text-align: left;
+    flex:1;
 }
 
 .sliderLabel .labelRight {
     text-align: right;
+    flex: 1;
+}
+
+.sliderLabel .labelCenter {
+    text-align: center;
+    flex: 1;
 }
 
 /*CHAT INPUT FIELD*/
@@ -531,4 +551,12 @@ body {
 
 .tall {
     min-height: calc(100% - 150px);
+}
+
+.removePadding {
+    padding:0;
+}
+
+.removeMargin {
+    margin: 0;
 }

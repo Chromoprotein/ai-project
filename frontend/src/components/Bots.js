@@ -5,10 +5,14 @@ import { useChats } from '../utils/useChats';
 import { useMode } from '../utils/useMode';
 import Background from './Backgrounds';
 import { useNavigate } from 'react-router-dom';
+import sliderData from "../shared/botTraitData";
+import { FaChevronDown } from "react-icons/fa";
+import { FaChevronUp } from "react-icons/fa";
 
 export default function Bots() {
 
     const { bots, getBots } = useChats();
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     const { theme } = useMode();
 
@@ -16,28 +20,22 @@ export default function Bots() {
         getBots();
     }, [getBots])
 
-    const sliderData = [
-        { id: 1, leftTrait: "kind", rightTrait: "sarcastic" },
-        { id: 2, leftTrait: "serious", rightTrait: "playful" },
-        { id: 3, leftTrait: "formal", rightTrait: "casual" },
-        { id: 4, leftTrait: "solution-oriented", rightTrait: "empathetic" },
-        { id: 5, leftTrait: "detailed", rightTrait: "concise" },
-        { id: 6, leftTrait: "flowery", rightTrait: "plainspoken" },
-        { id: 7, leftTrait: "agreeable", rightTrait: "sceptic" },
-    ]
-
     const initialState = {
         botName: '',
         systemMessage: '',
         userInfo: '',
-        traits: [],
-        sliderData: sliderData // for reference for the chatbot
+        traits: []
     };
     const [formData, setFormData] = useState(initialState);
 
     const [error, setError] = useState("");
 
     const navigate = useNavigate();
+
+    const toggleAdvanced = () => {
+        setShowAdvanced((prev) => !prev);
+    }
+    console.log(showAdvanced)
 
     const handleChange = (e) => {
         setFormData({
@@ -50,7 +48,7 @@ export default function Bots() {
         setFormData((prevFormData) => {
             const updatedTraits = newScore === 0
                 ? prevFormData.traits.filter((trait) => trait.id !== id) // Remove if score is 0
-                : prevFormData.traits.some((trait) => trait.id === id)
+                : prevFormData.traits.some((trait) => trait.id === id) // Check whether object exists in formData
                     ? prevFormData.traits.map((trait) =>
                         trait.id === id ? { ...trait, score: newScore } : trait
                     ) // Update existing
@@ -62,8 +60,6 @@ export default function Bots() {
             };
         });
     };
-
-    console.log(formData.traits)
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -104,35 +100,49 @@ export default function Bots() {
                             <h2>Add a new bot persona</h2>
                             </div>
                             <div className="formItem">
-                                <label>Name</label>
+                                <label>Name *</label>
                                 <input type="text" name="botName" value={formData.botName} onChange={handleChange} />
                             </div>
 
-                            {sliderData.map(traitPair => {
-                                // Find the current score for this slider's ID
-                                const currentScore = formData.traits?.find((trait) => trait.id === traitPair.id)?.score || 0;
-
-                                return (<div className="formItem">
-                                    <label className="sliderLabel">
-                                        <span className="labelLeft">{traitPair.leftTrait}</span>
-                                        <span className="labelRight">{traitPair.rightTrait}</span>
-                                    </label>
-                                    <ReactSlider
-                                        className="customSlider"
-                                        thumbClassName="customThumb"
-                                        trackClassName="customTrack"
-                                        value={currentScore}
-                                        onChange={(value) => handleSliderChange(traitPair.id, value)}
-                                        min={-100}
-                                        max={100}
-                                        step={10} // Interval
-                                    />
-                                </div>)
-                            })}
+                            <div className="formItem">
+                                <label>Instructions *
+                                </label>
+                                <textarea type="text" name="systemMessage" value={formData.systemMessage} onChange={handleChange}></textarea>
+                            </div>
 
                             <div className="formItem">
-                                <label>Free instructions</label>
-                                <textarea type="text" name="systemMessage" value={formData.systemMessage} onChange={handleChange}></textarea>
+                                <label>Traits</label>
+
+                                {sliderData.map(traitPair => {
+                                    // Find the current score for this slider's ID
+                                    const currentScore = formData.traits?.find((trait) => trait.id === traitPair.id)?.score || 0;
+
+                                    if(traitPair.isAdvanced && !showAdvanced) {
+                                        return null;
+                                    }
+
+                                    return (<div>
+                                        <label className="sliderLabel">
+                                            <span className="labelLeft">{traitPair.leftTrait}</span>
+                                            <span className="labelCenter">{Math.abs(currentScore)}/100</span>
+                                            <span className="labelRight">{traitPair.rightTrait}</span>
+                                        </label>
+                                        <ReactSlider
+                                            className="customSlider"
+                                            thumbClassName="customThumb"
+                                            trackClassName="customTrack"
+                                            value={currentScore}
+                                            onChange={(value) => handleSliderChange(traitPair.id, value)}
+                                            min={-100}
+                                            max={100}
+                                            step={10} // Interval
+                                        />
+                                    </div>)
+                                })}
+
+                                <p className="textButton" onClick={toggleAdvanced}>
+                                    {showAdvanced ? (<>Show Less <FaChevronUp /> </>) : (<>Show More <FaChevronDown /></>)}
+                                </p>
                             </div>
 
                             <div className="formItem">
@@ -141,7 +151,7 @@ export default function Bots() {
                             </div>
 
                             <div className="formItem">
-                                <button className="button" type="submit">
+                                <button className="button removeMargin" type="submit">
                                     Submit
                                 </button>
                             </div>

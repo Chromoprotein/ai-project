@@ -55,3 +55,5 @@ A chatbot with the OpenAI API that has chat folders.
     - Make the bot persona form collapsible and switch the input field to a textarea
 
     - Add avatars for the bots
+
+    - Fix small problems like weird alignment

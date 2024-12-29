@@ -14,7 +14,7 @@ const initialBots = [{
         },
         ],
     },
-    traits: {},
+    traits: [],
     userInfo: "",
 }];
 
@@ -112,7 +112,7 @@ export function useChats() {
                 botId: bot._id,
                 botName: bot.botName,
                 systemMessage: JSON.parse(bot.systemMessage),
-                traits: JSON.parse(bot.traits),
+                traits: bot.traits,
                 userInfo: bot.userInfo
             }));
             setBots([
@@ -136,7 +136,7 @@ export function useChats() {
                     botId: response.data.bot._id,
                     botName: response.data.bot.botName,
                     systemMessage: JSON.parse(response.data.bot.systemMessage),
-                    traits: JSON.parse(response.data.bot.traits),
+                    traits: response.data.bot.traits,
                     userInfo: response.data.bot.userInfo
                 };             
                 setCurrentBot(newBot);

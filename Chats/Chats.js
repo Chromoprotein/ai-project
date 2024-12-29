@@ -1,8 +1,9 @@
-const User = require("../Schemas/User")
-const Chat = require("../Schemas/Chat")
-const Message = require("../Schemas/Message")
-const SystemMessage = require("../Schemas/SystemMessage")
+const User = require("../Schemas/User");
+const Chat = require("../Schemas/Chat");
+const Message = require("../Schemas/Message");
+const SystemMessage = require("../Schemas/SystemMessage");
 let OpenAI = require('openai');
+const sliderData = require("../frontend/src/shared/botTraitData");
 
 const openai = new OpenAI(
     {
@@ -384,7 +385,7 @@ function writeTraits(processedTraits) {
 exports.newSystemMessage = async (req, res) => {
 
     try {
-        const { botName, systemMessage, userInfo, traits, sliderData } = req.body;
+        const { botName, systemMessage, userInfo, traits } = req.body;
         // User id comes from the auth middleware
         const userId = req.id;
 
@@ -394,7 +395,9 @@ exports.newSystemMessage = async (req, res) => {
 
         if(botName && systemMessage) {
 
-            const fullSystemPrompt = `Your name is ${botName}. ${systemMessage} ${sentenceAboutTraits} The user has shared this information about themselves: ${userInfo}`;
+            const fullSystemPrompt = `Your name is ${botName}. ${systemMessage}` +
+                (sentenceAboutTraits ? ` ${sentenceAboutTraits}` : '') +
+                (userInfo ? ` The user has shared this information about themselves: ${userInfo}` : '');
 
             const formattedMessage = {
                 role: "system",
