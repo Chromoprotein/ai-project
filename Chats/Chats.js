@@ -409,7 +409,7 @@ exports.newSystemMessage = async (req, res) => {
                 ],
             };
 
-            const bot = await SystemMessage.create({ systemMessage: JSON.stringify(formattedMessage), botName, userId, traits: JSON.stringify(traits), userInfo });
+            const bot = await SystemMessage.create({ systemMessage: JSON.stringify(formattedMessage), botName, userId, instructions: systemMessage, traits: JSON.stringify(traits), userInfo });
             if(bot) {
                 res.status(201).json({
                     message: "New system message successfully created",

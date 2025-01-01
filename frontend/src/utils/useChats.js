@@ -15,6 +15,7 @@ const initialBots = [{
         ],
     },
     traits: [],
+    instructions: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting.",
     userInfo: "",
 }];
 
@@ -112,7 +113,8 @@ export function useChats() {
                 botId: bot._id,
                 botName: bot.botName,
                 systemMessage: JSON.parse(bot.systemMessage),
-                traits: bot.traits,
+                instructions: bot.instructions,
+                traits: bot.traits ? JSON.parse(bot.traits) : null,
                 userInfo: bot.userInfo
             }));
             setBots([
@@ -136,7 +138,8 @@ export function useChats() {
                     botId: response.data.bot._id,
                     botName: response.data.bot.botName,
                     systemMessage: JSON.parse(response.data.bot.systemMessage),
-                    traits: response.data.bot.traits,
+                    instructions: response.data.bot.instructions,
+                    traits: response.data.bot.traits ? JSON.parse(response.data.bot.traits) : null,
                     userInfo: response.data.bot.userInfo
                 };             
                 setCurrentBot(newBot);

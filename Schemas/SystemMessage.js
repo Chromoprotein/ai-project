@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema
 
 const systemMessageSchema = new Schema({
-  systemMessage: {
+  systemMessage: { // The full processed system message that is used in chats
     type: String,
     required: true
   },
@@ -14,10 +14,14 @@ const systemMessageSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  traits: {
+  instructions: { // a component of the system message
+    type: String,
+    required: true,
+  },
+  traits: { // a component of the system message
     type: String,
     required: false
-  },
+  }, // a component of the system message
   userInfo: {
     type: String,
     required: false
