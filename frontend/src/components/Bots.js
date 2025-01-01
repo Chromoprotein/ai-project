@@ -176,43 +176,37 @@ export default function Bots() {
 
                         {bots.map((bot, index) => (
                             <div className="botWrapper" key={index}>
-                                <div className="botGrid">
 
-                                    <h2 className="botItem1 smallLabel">{bot.botName}</h2>
+                                <h2 className="botTitle">{bot.botName}</h2>
 
-                                    <div className="botItem2">
-                                        <img src="/placeholderAvatar.webp" alt="Chatbot avatar" className="botImage" />
-                                    </div>
+                                <img src="/placeholderAvatar.webp" alt="Chatbot avatar" className="botImage" />
 
-                                    <div className="botItem3 botTraits">
-                                        {bot.traits ? bot.traits.map(botTrait => {
-                                            // Find the current score for this slider's ID
-                                            const sliderTrait = sliderData?.find((trait) => trait.id === botTrait.id);
+                                <div className="botTraits">
+                                    {bot.traits ? bot.traits.map(botTrait => {
+                                        // Find the current score for this slider's ID
+                                        const sliderTrait = sliderData?.find((trait) => trait.id === botTrait.id);
 
-                                            let displayTrait;
+                                        let displayTrait;
 
-                                            if(botTrait.score < 0) {
-                                                displayTrait = sliderTrait.leftTrait;
-                                            } else {
-                                                displayTrait = sliderTrait.rightTrait;
-                                            }
+                                        if(botTrait.score < 0) {
+                                            displayTrait = sliderTrait.leftTrait;
+                                        } else {
+                                            displayTrait = sliderTrait.rightTrait;
+                                        }
 
-                                            return <div className="labelBubble">{displayTrait} </div>
-                                        }) : <span  className="italic">No traits added</span>}
-                                    </div>
+                                        return <div className="labelBubble">{displayTrait} </div>
+                                    }) : <span  className="italic">No traits added</span>}
                                 </div>
 
-                                <div className="botText">
-                                    <p>
-                                        <span className="smallLabel">Instructions: </span>
-                                        {bot.instructions ? bot.instructions : <span className="italic">No instructions added</span>}
-                                    </p>
+                                <p>
+                                    <span className="smallLabel">Instructions: </span>
+                                    {bot.instructions ? bot.instructions : <span className="italic">No instructions added</span>}
+                                </p>
 
-                                    <p>
-                                        <span className="smallLabel">Knowledge about the user: </span>
-                                        {bot.userInfo ? bot.userInfo : <span className="italic">No user information added</span>}
-                                    </p>
-                                </div>
+                                <p>
+                                    <span className="smallLabel">Knowledge about the user: </span>
+                                    {bot.userInfo ? bot.userInfo : <span className="italic">No user information added</span>}
+                                </p>
 
                                 <div className="botButtons">
                                     <button className="button" onClick={() => navigateToBot(bot.botId)}>Chat</button>
