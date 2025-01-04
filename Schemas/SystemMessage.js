@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema
 
 const systemMessageSchema = new Schema({
-  systemMessage: { // The full processed system message that is used in chats
-    type: String,
-    required: true
-  },
   botName: {
     type: String,
     required: true
@@ -21,8 +17,8 @@ const systemMessageSchema = new Schema({
   traits: { // a component of the system message
     type: String,
     required: false
-  }, // a component of the system message
-  userInfo: {
+  },
+  userInfo: { // a component of the system message
     type: String,
     required: false
   },

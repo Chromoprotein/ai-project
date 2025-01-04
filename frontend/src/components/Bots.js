@@ -1,6 +1,6 @@
 import ReactSlider from "react-slider";
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from "../utils/axiosInstance";
 import { useChats } from '../utils/useChats';
 import { useMode } from '../utils/useMode';
 import Background from './Backgrounds';
@@ -24,7 +24,7 @@ export default function Bots() {
 
     const initialState = {
         botName: '',
-        systemMessage: '',
+        instructions: '',
         userInfo: '',
         traits: []
     };
@@ -70,10 +70,9 @@ export default function Bots() {
         e.preventDefault();
 
         try {
-            const response = await axios.post(
+            const response = await axiosInstance.post(
                 process.env.REACT_APP_CREATEBOT,
-                formData,
-                { withCredentials: true }
+                formData
             );
             if (response) {
                 console.log(response.status.message);
@@ -91,8 +90,6 @@ export default function Bots() {
         navigate(`/`, { state: { botId } });
     }
 
-    console.log(bots)
-
     return (
         <>
             <Background theme={theme} />
@@ -101,6 +98,8 @@ export default function Bots() {
 
                 <div className="mainContent">
                     <div className="chatContainer">
+
+                        {/* The bot form */}
 
                         <form onSubmit={handleSubmit} className="formContainer">
 
@@ -117,7 +116,7 @@ export default function Bots() {
                                 <div className="formItem">
                                     <label className="smallLabel">Instructions *
                                     </label>
-                                    <textarea type="text" name="systemMessage" value={formData.systemMessage} onChange={handleChange}></textarea>
+                                    <textarea type="text" name="instructions" value={formData.instructions} onChange={handleChange}></textarea>
                                 </div>
 
                                 <div className="formItem">
@@ -174,7 +173,9 @@ export default function Bots() {
                             </>}
                         </form>
 
-                        {bots.map((bot, index) => (
+                        {/* The existing bots */}
+
+                        {bots && bots.map((bot, index) => (
                             <div className="botWrapper" key={index}>
 
                                 <h2 className="botTitle">{bot.botName}</h2>
@@ -194,7 +195,9 @@ export default function Bots() {
                                             displayTrait = sliderTrait.rightTrait;
                                         }
 
-                                        return <div className="labelBubble">{displayTrait} </div>
+                                        return <div className="labelBubble">
+                                                    <span>{displayTrait} ({Math.abs(botTrait.score)})</span>
+                                                </div>
                                     }) : <span  className="italic">No traits added</span>}
                                 </div>
 

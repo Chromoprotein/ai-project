@@ -3,7 +3,7 @@ const Chat = require("../Schemas/Chat");
 const Message = require("../Schemas/Message");
 const SystemMessage = require("../Schemas/SystemMessage");
 let OpenAI = require('openai');
-const sliderData = require("../frontend/src/shared/botTraitData");
+const mongoose = require('mongoose');
 
 const openai = new OpenAI(
     {
@@ -311,7 +311,9 @@ exports.getChat = async (req, res) => {
                 path: 'messages',
                 options: { sort: { createdAt: 1 } }
             })
-            .populate('botId')
+            .populate({
+                path: 'botId',
+            })
             .exec();
         if(chat) {
             res.status(200).json({ chat })
@@ -333,11 +335,14 @@ exports.newChat = async (req, res) => {
         // User id comes from the auth middleware
         const userId = req.id;
 
+        // Validate botId
+        const validBotId = botId && mongoose.Types.ObjectId.isValid(botId) ? botId : null;
+
         const generatedTitle = await renameChat(userMessage, res);
         const generatedCategory = await categorizeChat(userMessage, res);
 
-        if(generatedTitle && generatedCategory && botId) {
-            const chat = await Chat.create({ title: generatedTitle, botId: botId, category: generatedCategory, userId });
+        if(generatedTitle && generatedCategory) {
+            const chat = await Chat.create({ title: generatedTitle, botId: validBotId, category: generatedCategory, userId });
             if(chat) {
                 res.status(201).json({
                     message: "New chat successfully created",
@@ -355,72 +360,28 @@ exports.newChat = async (req, res) => {
 
 };
 
-const processTraits = (traits, sliderData) => {
-    // Map over the formData array to transform it
-    const processedTraits = traits.map((trait) => {
-        // Find the matching sliderData object by ID
-        const slider = sliderData.find((s) => s.id === trait.id);
-
-        // Determine the active trait based on the score
-        const activeTrait = trait.score < 0 ? slider.leftTrait : slider.rightTrait;
-
-        return {
-            trait: activeTrait, // The trait name
-            score: Math.abs(trait.score), // Convert negative scores to positive
-        };
-    });
-
-    return processedTraits;
-};
-
-function writeTraits(processedTraits) {
-    const traitDescriptions = processedTraits
-        .map((t) => `${t.trait} (${t.score})`) 
-        .join(", ");
-    
-    return `You have the following traits: ${traitDescriptions}. The maximum value is 100.`;
-}
-
 // Creates a new system message / bot persona
 exports.newSystemMessage = async (req, res) => {
 
     try {
-        const { botName, systemMessage, userInfo, traits } = req.body;
-        // User id comes from the auth middleware
+        const { botName, instructions, userInfo, traits } = req.body;
+
         const userId = req.id;
 
-        const processedTraits = processTraits(traits, sliderData);
+        if(botName && instructions) { // mandatory fields
 
-        const sentenceAboutTraits = writeTraits(processedTraits);
-
-        if(botName && systemMessage) {
-
-            const fullSystemPrompt = `Your name is ${botName}. ${systemMessage}` +
-                (sentenceAboutTraits ? ` ${sentenceAboutTraits}` : '') +
-                (userInfo ? ` The user has shared this information about themselves: ${userInfo}` : '');
-
-            const formattedMessage = {
-                role: "system",
-                content: [
-                    {
-                        type: "text",
-                        text: fullSystemPrompt,
-                    },
-                ],
-            };
-
-            const bot = await SystemMessage.create({ systemMessage: JSON.stringify(formattedMessage), botName, userId, instructions: systemMessage, traits: JSON.stringify(traits), userInfo });
+            const bot = await SystemMessage.create({ botName, userId, instructions, traits: JSON.stringify(traits), userInfo });
             if(bot) {
                 res.status(201).json({
                     message: "New system message successfully created",
                     id: bot._id,
                 });
             }
-
-            console.log(processedTraits);
-            console.log(sentenceAboutTraits);
-            console.log(fullSystemPrompt);
-
+        } else {
+            res.status(500).json({
+                message: "Name and instructions are required",
+                error: error.message,
+            });
         }
 
     } catch (error) {
@@ -471,4 +432,81 @@ exports.getOneSystemMessage = async (req, res) => {
         })
     }
 
+};
+
+// NOT TESTED LAND
+
+exports.editSystemMessage = async (req, res) => {
+
+    try {
+        const { botId, botName, instructions, userInfo, traits } = req.body;
+
+        const userId = req.id;
+
+        if (!botId || !botName || !instructions) { // mandatory fields
+            return res.status(400).json({
+                message: "Bot ID, name, and instructions are required",
+            });
+        }
+
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+
+        if (!existingBot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        existingBot.botName = botName;
+        existingBot.instructions = instructions;
+        existingBot.traits = JSON.stringify(traits);
+        existingBot.userInfo = userInfo;
+
+        await existingBot.save();
+
+        res.status(200).json({
+            message: "System message successfully updated",
+            id: existingBot._id,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+};
+
+exports.deleteSystemMessage = async (req, res) => {
+    try {
+        const { botId } = req.body;
+
+        const userId = req.id;
+
+        if (!botId) {
+            return res.status(400).json({
+                message: "Bot ID is required",
+            });
+        }
+
+        const bot = await SystemMessage.findOne({ _id: botId, userId });
+
+        if (!bot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        await SystemMessage.deleteOne({ _id: botId, userId });
+
+        res.status(200).json({
+            message: "System message successfully deleted",
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
 };

@@ -13,6 +13,9 @@ import { Typing } from "./Loaders";
 import { Hello } from "./SmallUIElements";
 import { InputContainer } from "./InputContainer";
 import { useLocation } from "react-router-dom";
+import { processTraits } from "../utils/systemPromptMakers";
+import { makeFullSystemPrompt } from "../utils/systemPromptMakers";
+import sliderData from "../shared/botTraitData";
 
 export default function App() {
 
@@ -80,9 +83,18 @@ export default function App() {
 
     // PREPARE THE PAYLOAD
 
-    // System prompt for new chats
-    if(messages.length === 0) {
-      addMessage(currentBot.systemMessage);
+    // Full chat context
+    let allMessages;
+
+    // The chat is new (no messages yet) and a bot is selected
+    if (messages.length === 0 && currentBot) {
+      // Add system prompt to new chat
+      const processedTraits = processTraits(currentBot.traits, sliderData);
+      const fullSystemPrompt = makeFullSystemPrompt(currentBot.botName, currentBot.instructions, processedTraits, currentBot.userInfo);
+      allMessages = [fullSystemPrompt];
+      addMessage(fullSystemPrompt);
+    } else {
+      allMessages = [...messages];
     }
 
     // Construct the user's new message
@@ -112,14 +124,7 @@ export default function App() {
     }
     const newMessage = { role: "user", content: newContent };
     addMessage(newMessage); // Add the user's new message to the state for displaying
-
-    // Full chat context
-    let allMessages;
-    if (messages.length === 0) {
-      allMessages = [currentBot.systemMessage, newMessage]; // Add system prompt to new chat
-    } else {
-      allMessages = [...messages, newMessage]; // Old chat, system prompt has already been added before
-    }
+    allMessages = [...allMessages, newMessage];
 
     // CHAT ID AND CHAT TITLE
 
@@ -128,7 +133,8 @@ export default function App() {
       chatId = searchParams.get("chatId");
     } else {
       // If there isn't a chat id, generate a new one. This query also generates a title for the new chat based on the user's first message
-      const newChatId = await saveNewChat(newMessage, currentBot.botId);
+      const newChatId = await saveNewChat(newMessage, currentBot?.botId);
+
       if(newChatId) {
         chatId = newChatId;
         await getChatList(); // Update the chats list so it includes the new chat's title
@@ -191,11 +197,7 @@ export default function App() {
   // Find bot's info when navigating from the bots list. This is needed to start a new chat
   useEffect(() => {
     if(messages.length === 0 && customBotId) {
-      if(customBotId !== bots[0].botId) { // is a custom bot
-        getBot(customBotId);
-      } else { // is default bot
-        setCurrentBot(bots[0]);
-      }
+      getBot(customBotId);
     }
   }, [customBotId, bots, getBot, setCurrentBot, messages.length])
 
@@ -208,7 +210,11 @@ export default function App() {
       if(message.role === "user") {
         name = username;
       } else if(message.role === "assistant") {
-        name = currentBot.botName;
+        if(currentBot?.botName) {
+          name = currentBot.botName;
+        } else {
+          name = "AI";
+        }
       }
       return <Message key={index} message={message} index={index} name={name} />
   });
@@ -232,7 +238,7 @@ export default function App() {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <Hello bot={currentBot.botName} />
+              <Hello bot={currentBot?.botName} />
             )}
           </div>
 
