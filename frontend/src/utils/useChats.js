@@ -92,7 +92,8 @@ export function useChats() {
                 botName: bot.botName,
                 instructions: bot.instructions,
                 traits: bot.traits ? JSON.parse(bot.traits) : null,
-                userInfo: bot.userInfo
+                userInfo: bot.userInfo,
+                avatar: bot.avatar,
             }));
                 setBots(mappedBots);
             }
@@ -112,7 +113,8 @@ export function useChats() {
                     botName: response.data.bot.botName,
                     instructions: response.data.bot.instructions,
                     traits: response.data.bot.traits ? JSON.parse(response.data.bot.traits) : null,
-                    userInfo: response.data.bot.userInfo
+                    userInfo: response.data.bot.userInfo,
+                    avatar: response.data.bot.avatar,
                 };             
                 setCurrentBot(newBot);
             }

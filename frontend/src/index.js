@@ -13,6 +13,7 @@ import Login from './components/Login';
 import Logout from './components/Logout';
 import { useAuth } from './utils/useAuth';
 import Bots from './components/Bots';
+import Edit from './components/Edit';
 
 function RequireAuth({ children }) {
 
@@ -42,6 +43,14 @@ const router = createBrowserRouter(
         element={
           <RequireAuth>
             <Bots />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="edit/:botId"
+        element={
+          <RequireAuth>
+            <Edit />
           </RequireAuth>
         }
       />

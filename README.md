@@ -28,11 +28,9 @@ A chatbot with the OpenAI API that has chat folders.
 
 ## My to-do list:
 
-- Messages' minimum width
-
 - Improve bots:
 
-    - Remember the last used bot's id (in localStorage)
+    - Remember the last used 3 bots and display them as shortcuts on the chat page
 
     - Add a "use user profile" option for the botInfo, and create a user profile page. The user can choose which bots can access the user profile.
 

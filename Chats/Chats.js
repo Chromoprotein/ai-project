@@ -4,6 +4,7 @@ const Message = require("../Schemas/Message");
 const SystemMessage = require("../Schemas/SystemMessage");
 let OpenAI = require('openai');
 const mongoose = require('mongoose');
+const axios = require('axios');
 
 const openai = new OpenAI(
     {
@@ -435,6 +436,73 @@ exports.getOneSystemMessage = async (req, res) => {
 };
 
 // NOT TESTED LAND
+
+exports.generateBotAvatar = async (req, res) => {
+
+    try {
+        const { botId } = req.body;
+        const userId = req.id;
+
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+
+        if (!existingBot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        if(existingBot.instructions) {
+            console.log(existingBot.instructions);
+            const description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
+            const avatar = await getdalle(description);
+            if(avatar) {
+                console.log(avatar)
+                return res.status(200).json(avatar);
+            }
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+};
+
+exports.avatar = async (req, res) => {
+    const { botId, avatar } = req.body;
+    const userId = req.id;
+
+    console.log("we are here")
+
+    if (!avatar || !botId) {
+        return res.status(400).json({ error: 'An avatar is required or bot not found' });
+    }
+
+    try {
+
+        // Make sure the bot exists
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+        if (!existingBot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        // Fetch the image as binary data
+        const response = await axios.get(avatar, { responseType: 'arraybuffer' });
+        const base64Image = Buffer.from(response.data, 'binary').toString('base64');
+
+        // Save to MongoDB
+        existingBot.avatar = base64Image;
+
+        await existingBot.save();
+
+        res.json({ message: 'Avatar uploaded successfully!' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to upload avatar.' });
+    }
+};
 
 exports.editSystemMessage = async (req, res) => {
 

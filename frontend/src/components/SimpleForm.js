@@ -14,14 +14,14 @@
                     </div>
                 ))}
                 <div className="formItem">
-                <button className="button" type="submit">
-                    Submit
-                </button>
+                    <button className="button" type="submit">
+                        Submit
+                    </button>
                 </div>
                 {error && (
-                <div className="formItem">
-                    {error}
-                </div>
+                    <div className="formItem">
+                        {error}
+                    </div>
                 )}
             </form>
         );

@@ -9,12 +9,14 @@ import sliderData from "../shared/botTraitData";
 import { FaChevronDown } from "react-icons/fa";
 import { FaChevronUp } from "react-icons/fa";
 import { CiCirclePlus } from "react-icons/ci";
+import { Link } from "react-router-dom";
 
 export default function Bots() {
 
     const { bots, getBots } = useChats();
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [expandedBots, setExpandedBots] = useState({});
 
     const { theme } = useMode();
 
@@ -41,6 +43,13 @@ export default function Bots() {
     const toggleForm = () => {
         setShowForm((prev) => !prev);
     }
+
+    const expandBot = (botId) => {
+        setExpandedBots((prev) => ({
+            ...prev,
+            [botId]: !prev[botId],
+        }));
+    };
 
     const handleChange = (e) => {
         setFormData({
@@ -99,15 +108,22 @@ export default function Bots() {
                 <div className="mainContent">
                     <div className="chatContainer">
 
+                        <div className="botButtons">
+                            <Link to="/" className="button">Back</Link>
+
+                            <button className="button" onClick={toggleForm}><CiCirclePlus /> Add bot</button>
+                        </div>
+
                         {/* The bot form */}
 
-                        <form onSubmit={handleSubmit} className="formContainer">
+                        {showForm && <>
 
-                            <div className="formItem">
-                                <h2 className="bigTextButton" onClick={toggleForm}><CiCirclePlus /> New bot persona</h2>
-                            </div>
+                            <form onSubmit={handleSubmit} className="formContainer">
 
-                            {showForm && <>
+                                <div className="formItem">
+                                    <h1>New bot persona</h1>
+                                </div>
+
                                 <div className="formItem">
                                     <label className="smallLabel">Name *</label>
                                     <input type="text" name="botName" value={formData.botName} onChange={handleChange} />
@@ -170,53 +186,63 @@ export default function Bots() {
                                         {error}
                                     </div>
                                 )}
-                            </>}
-                        </form>
+                            </form>
+                        </>}
+                        
 
                         {/* The existing bots */}
 
-                        {bots && bots.map((bot, index) => (
-                            <div className="botWrapper" key={index}>
+                        {bots && bots.map((bot, index) => {
+                            const imageSrc = bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp";
+                            
+                            return <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"}`} key={index}>
 
+                                <img src={imageSrc} alt="Chatbot avatar" className="botImage" />
                                 <h2 className="botTitle">{bot.botName}</h2>
 
-                                <img src="/placeholderAvatar.webp" alt="Chatbot avatar" className="botImage" />
+                                {expandedBots[bot.botId] && 
+                                <>
+                                    <img src="/placeholderAvatar.webp" alt="Chatbot avatar" className="botImage" />
+                                    <h2 className="botTitle">{bot.botName}</h2>
 
-                                <div className="botTraits">
-                                    {bot.traits ? bot.traits.map(botTrait => {
-                                        // Find the current score for this slider's ID
-                                        const sliderTrait = sliderData?.find((trait) => trait.id === botTrait.id);
+                                    <div className="botTraits">
+                                        {bot.traits ? bot.traits.map(botTrait => {
+                                            // Find the current score for this slider's ID
+                                            const sliderTrait = sliderData?.find((trait) => trait.id === botTrait.id);
 
-                                        let displayTrait;
+                                            let displayTrait;
 
-                                        if(botTrait.score < 0) {
-                                            displayTrait = sliderTrait.leftTrait;
-                                        } else {
-                                            displayTrait = sliderTrait.rightTrait;
-                                        }
+                                            if(botTrait.score < 0) {
+                                                displayTrait = sliderTrait.leftTrait;
+                                            } else {
+                                                displayTrait = sliderTrait.rightTrait;
+                                            }
 
-                                        return <div className="labelBubble">
-                                                    <span>{displayTrait} ({Math.abs(botTrait.score)})</span>
-                                                </div>
-                                    }) : <span  className="italic">No traits added</span>}
-                                </div>
+                                            return <div className="labelBubble">
+                                                        <span>{displayTrait} ({Math.abs(botTrait.score)})</span>
+                                                    </div>
+                                        }) : <span  className="italic">No traits added</span>}
+                                    </div>
 
-                                <p>
-                                    <span className="smallLabel">Instructions: </span>
-                                    {bot.instructions ? bot.instructions : <span className="italic">No instructions added</span>}
-                                </p>
+                                    <p>
+                                        <span className="smallLabel">Instructions: </span>
+                                        {bot.instructions ? bot.instructions : <span className="italic">No instructions added</span>}
+                                    </p>
 
-                                <p>
-                                    <span className="smallLabel">Knowledge about the user: </span>
-                                    {bot.userInfo ? bot.userInfo : <span className="italic">No user information added</span>}
-                                </p>
+                                    <p>
+                                        <span className="smallLabel">Knowledge about the user: </span>
+                                        {bot.userInfo ? bot.userInfo : <span className="italic">No user information added</span>}
+                                    </p>
+                                </>
+                                }
 
                                 <div className="botButtons">
                                     <button className="button" onClick={() => navigateToBot(bot.botId)}>Chat</button>
-                                    <div className="textButton">Edit</div>
+                                    <button className="textButton" onClick={() => expandBot(bot.botId)}>{!expandedBots[bot.botId] ? "Info" : "Close"}</button>
+                                    <Link to={`/edit/${bot.botId}`} className="textButton">Edit</Link>
                                 </div>
                             </div>
-                        ))}
+                        })}
                     </div>
                 </div>
 

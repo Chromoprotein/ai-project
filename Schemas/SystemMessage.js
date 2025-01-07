@@ -22,6 +22,10 @@ const systemMessageSchema = new Schema({
     type: String,
     required: false
   },
+  avatar: { // Base64-encoded image
+    type: String,
+    required: false
+  }
 },{collection : 'systemMessages', timestamps:true});
 
 module.exports = mongoose.model('SystemMessage', systemMessageSchema);
