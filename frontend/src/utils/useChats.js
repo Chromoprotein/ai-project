@@ -91,7 +91,7 @@ export function useChats() {
                 botId: bot._id,
                 botName: bot.botName,
                 instructions: bot.instructions,
-                traits: bot.traits ? JSON.parse(bot.traits) : null,
+                traits: bot.traits?.length > 0 ? JSON.parse(bot.traits) : [],
                 userInfo: bot.userInfo,
                 avatar: bot.avatar,
             }));
@@ -112,7 +112,7 @@ export function useChats() {
                     botId: response.data.bot._id,
                     botName: response.data.bot.botName,
                     instructions: response.data.bot.instructions,
-                    traits: response.data.bot.traits ? JSON.parse(response.data.bot.traits) : null,
+                    traits: response.data.bot.traits ? JSON.parse(response.data.bot.traits) : [],
                     userInfo: response.data.bot.userInfo,
                     avatar: response.data.bot.avatar,
                 };             

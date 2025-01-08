@@ -24,13 +24,15 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
 
     const handleSliderChange = (id, newScore) => {
         setFormData((prevFormData) => {
+            const currentTraits = prevFormData.traits || [];
+
             const updatedTraits = newScore === 0
-                ? prevFormData.traits.filter((trait) => trait.id !== id) // Remove if score is 0
-                : prevFormData.traits.some((trait) => trait.id === id) // Check whether object exists in formData
-                    ? prevFormData.traits.map((trait) =>
+                ? currentTraits.filter((trait) => trait.id !== id) // Remove if score is 0
+                : currentTraits.some((trait) => trait.id === id) // Check whether object exists in formData
+                    ? currentTraits.map((trait) =>
                         trait.id === id ? { ...trait, score: newScore } : trait
                     ) // Update existing
-                    : [...prevFormData.traits, { id, score: newScore }]; // Add new
+                    : [...currentTraits, { id, score: newScore }]; // Add new
 
             return {
                 ...prevFormData,

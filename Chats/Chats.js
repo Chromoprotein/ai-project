@@ -435,8 +435,6 @@ exports.getOneSystemMessage = async (req, res) => {
 
 };
 
-// NOT TESTED LAND
-
 exports.generateBotAvatar = async (req, res) => {
 
     try {
@@ -544,6 +542,8 @@ exports.editBot = async (req, res) => {
         });
     }
 };
+
+// NOT TESTED LAND
 
 exports.deleteSystemMessage = async (req, res) => {
     try {

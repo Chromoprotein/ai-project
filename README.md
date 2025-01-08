@@ -33,10 +33,6 @@ A chatbot with the OpenAI API that has chat folders.
     - Remember the last used 3 bots and display them as shortcuts on the chat page
 
     - Add a "use user profile" option for the botInfo, and create a user profile page. The user can choose which bots can access the user profile.
-
-    - Avatar generation for bot personas
-
-    - Editing bot personas
     
     - Deleting bot personas
 
