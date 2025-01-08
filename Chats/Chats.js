@@ -504,7 +504,7 @@ exports.avatar = async (req, res) => {
     }
 };
 
-exports.editSystemMessage = async (req, res) => {
+exports.editBot = async (req, res) => {
 
     try {
         const { botId, botName, instructions, userInfo, traits } = req.body;
