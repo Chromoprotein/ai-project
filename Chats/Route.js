@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { newChat, getChat, getChatList, getai, speech, newSystemMessage, editBot, getSystemMessages, getOneSystemMessage, generateBotAvatar, avatar } = require("./Chats");
+const { newChat, getChat, getChatList, getai, speech, newSystemMessage, editBot, deleteBot, getSystemMessages, getOneSystemMessage, generateBotAvatar, avatar } = require("./Chats");
 const { userAuth } = require("../middleware/auth");
 
 // The route and the method and function that follow
@@ -13,6 +13,7 @@ router.route("/speech").post(userAuth, speech);
 
 router.route("/createBot").post(userAuth, newSystemMessage);
 router.route("/editBot").post(userAuth, editBot);
+router.route("/deleteBot/:botId").delete(userAuth, deleteBot);
 router.route("/getBots").get(userAuth, getSystemMessages);
 router.route("/getBot").get(userAuth, getOneSystemMessage);
 

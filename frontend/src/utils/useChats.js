@@ -13,6 +13,8 @@ export function useChats() {
     const [bots, setBots] = useState(); // List of bot personas
     const [currentBot, setCurrentBot] = useState();
 
+    const [loading, setLoading] = useState(false);
+
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
         try {
@@ -85,6 +87,7 @@ export function useChats() {
     // Get the list of bot personas / system prompts
     const getBots = useCallback((async () => {
         try {
+            setLoading(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETBOTS);
             if(response.data.bots.length > 0) {
             const mappedBots = response.data.bots.map((bot) => ({
@@ -99,6 +102,8 @@ export function useChats() {
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
     }), []);
 
@@ -123,6 +128,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot, loading }
 
 };

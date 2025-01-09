@@ -450,13 +450,16 @@ exports.generateBotAvatar = async (req, res) => {
         }
 
         if(existingBot.instructions) {
-            console.log(existingBot.instructions);
             const description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
             const avatar = await getdalle(description);
             if(avatar) {
                 console.log(avatar)
                 return res.status(200).json(avatar);
             }
+        } else {
+            return res.status(404).json({
+                message: "Custom instructions not found, can't generate an avatar.",
+            });
         }
     } catch (error) {
         res.status(500).json({
@@ -545,9 +548,9 @@ exports.editBot = async (req, res) => {
 
 // NOT TESTED LAND
 
-exports.deleteSystemMessage = async (req, res) => {
+exports.deleteBot = async (req, res) => {
     try {
-        const { botId } = req.body;
+        const { botId } = req.params;
 
         const userId = req.id;
 

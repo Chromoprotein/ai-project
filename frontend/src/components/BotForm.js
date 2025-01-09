@@ -10,6 +10,7 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
     const [formData, setFormData] = useState(initialState);
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [error, setError] = useState("");
+    const [deleteWarning, setDeleteWarning] = useState(false);
 
     const toggleAdvanced = () => {
         setShowAdvanced((prev) => !prev);
@@ -64,6 +65,25 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             setError(error.message);
         }
 
+    };
+
+    const toggleDeleteWarning = () => {
+        setDeleteWarning((prev) => !prev);
+    };
+
+    const deleteBot = async (botId) => {
+        try {
+            const response = await axiosInstance.delete(
+                `${process.env.REACT_APP_DELETEBOT}/${botId}`,
+            );
+            if (response) {
+                console.log(response.status.message);
+                setIsSubmit((prev) => !prev); // to refetch the bots
+            }
+        } catch (error) {
+            console.error(error);
+            setError(error.message);
+        }
     };
 
     return (
@@ -128,10 +148,27 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
                 <button className="button removeMargin" type="submit">
                     Submit
                 </button>
-                {edit && <button className="textButton removeMargin" type="button" onClick={toggleEdit}>
-                    Cancel
-                </button>}
+                {edit && <>
+                    <button className="textButton removeMargin" type="button" onClick={toggleEdit}>
+                        Close
+                    </button>
+                    <button className="textButton removeMargin" type="button" onClick={toggleDeleteWarning}>
+                        Delete
+                    </button>
+                </>}
             </div>
+
+            {deleteWarning && <>
+                <p>Confirm you want to delete this bot. Deleting is permanent.</p>
+                <div className="botButtons">
+                    <button className="button removeMargin" type="button" onClick={toggleDeleteWarning}>
+                        Don't delete
+                    </button>
+                    <button className="textButton removeMargin" type="button" onClick={() => deleteBot(formData.botId)}>
+                        Delete
+                    </button>
+                </div>
+            </>}
 
             {error && (
                 <div className="formItem">

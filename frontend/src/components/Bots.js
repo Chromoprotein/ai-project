@@ -9,10 +9,11 @@ import { CiCirclePlus } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import BotForm from './BotForm';
 import axiosInstance from '../utils/axiosInstance';
+import { Spinner } from './SmallUIElements';
 
 export default function Bots() {
 
-    const { bots, getBots } = useChats();
+    const { bots, getBots, loading } = useChats();
 
     const initialState = {
         botName: '',
@@ -95,7 +96,9 @@ export default function Bots() {
                         {showForm && <>
                             <BotForm initialState={initialState} edit={false} setIsSubmit={setIsSubmit} />
                         </>}
-                        
+
+                        {loading && <Spinner />}
+
                         {/* The existing bots */}
 
                         {bots && bots.map((bot, index) => {
@@ -109,7 +112,13 @@ export default function Bots() {
                                 // Displaying the bot
                                 <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"}`} key={index}>
 
-                                    <AvatarGen botId={bot.botId} originalImage={imageSrc} avatarGen={avatarGen} toggleAvatarGen={() => toggleAvatarGen(bot.botId)} setIsSubmit={setIsSubmit} />
+                                    <AvatarGen 
+                                        botId={bot.botId} 
+                                        originalImage={imageSrc} 
+                                        avatarGen={avatarGen} 
+                                        toggleAvatarGen={() => toggleAvatarGen(bot.botId)} 
+                                        setIsSubmit={setIsSubmit} 
+                                    />
 
                                     <h2 className="botTitle">{bot.botName}</h2>
 
@@ -138,13 +147,15 @@ function AvatarGen({botId, originalImage, avatarGen, toggleAvatarGen, setIsSubmi
 
     const [avatar, setAvatar] = useState();
 
+    // States tracking the loading
+    const [generating, setGenerating] = useState();
+    const [saving, setSaving] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
 
-    const [loading, setLoading] = useState(false);
-
     const generateAvatar = async (botId) => {
+        setAvatar();
         setIsSaved(false);
-        setLoading(true);
+        setGenerating(true);
         try {
             const response = await axiosInstance.post(
                 process.env.REACT_APP_GENERATEAVATAR,
@@ -157,12 +168,13 @@ function AvatarGen({botId, originalImage, avatarGen, toggleAvatarGen, setIsSubmi
         } catch (error) {
             console.log(error);
         } finally {
-            setLoading(false);
+            setGenerating(false);
         }
     }
 
     const saveAvatar = async (botId) => {
         try {
+            setSaving(true);
             const response = await axiosInstance.put(
                 process.env.REACT_APP_AVATAR,
                 { 
@@ -178,7 +190,9 @@ function AvatarGen({botId, originalImage, avatarGen, toggleAvatarGen, setIsSubmi
             }
         } catch (error) {
             console.log(error);
-        };
+        } finally {
+            setSaving(false);
+        }
     }
 
     return (
@@ -186,9 +200,13 @@ function AvatarGen({botId, originalImage, avatarGen, toggleAvatarGen, setIsSubmi
             <img src={(avatar && avatarGen === botId) ? avatar : originalImage} alt="Chatbot avatar" className="botImage" onClick={toggleAvatarGen} />
 
             {avatarGen === botId && <div className="botButtons">
-                {loading ? "Working..." : <button className="button" onClick={() => generateAvatar(botId)}>Generate avatar</button>}
+                <button className="button" disabled={generating} onClick={() => generateAvatar(botId)}>
+                    {generating ? "Generating..." : "Generate avatar"}
+                </button>
 
-                {(avatar && !isSaved) ? <button className="button" onClick={() => saveAvatar(botId)}>Save this avatar</button> : isSaved && <p>Avatar saved</p>}
+                <button className="button" disabled={isSaved || !avatar || saving} onClick={() => saveAvatar(botId)}>
+                    {isSaved ? "Avatar saved" : saving ? "Saving" : "Save this avatar"}
+                </button>
             </div>}
         </>
     );
