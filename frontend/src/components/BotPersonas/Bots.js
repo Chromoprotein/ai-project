@@ -1,15 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { useChats } from '../utils/useChats';
-import { useMode } from '../utils/useMode';
-import Background from './Backgrounds';
+import { useChats } from '../../utils/useChats';
+import { useMode } from '../../utils/useMode';
+import Background from '../Reusables/Backgrounds';
 import { useNavigate } from 'react-router-dom';
-import sliderData from "../shared/botTraitData";
 import { CiCirclePlus } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import BotForm from './BotForm';
-import axiosInstance from '../utils/axiosInstance';
-import { Spinner } from './SmallUIElements';
+import { Spinner } from '../Reusables/SmallUIElements';
+import BotDetails from './BotDetails';
+import AvatarGen from './AvatarGen';
 
 export default function Bots() {
 
@@ -141,108 +141,4 @@ export default function Bots() {
             </div>
         </>
     );
-}
-
-function AvatarGen({botId, originalImage, avatarGen, toggleAvatarGen, setIsSubmit}) {
-
-    const [avatar, setAvatar] = useState();
-
-    // States tracking the loading
-    const [generating, setGenerating] = useState();
-    const [saving, setSaving] = useState(false);
-    const [isSaved, setIsSaved] = useState(false);
-
-    const generateAvatar = async (botId) => {
-        setAvatar();
-        setIsSaved(false);
-        setGenerating(true);
-        try {
-            const response = await axiosInstance.post(
-                process.env.REACT_APP_GENERATEAVATAR,
-                { botId }
-            );
-            if(response) {
-                console.log(response.data[0].url)
-                setAvatar(response.data[0].url);
-            }
-        } catch (error) {
-            console.log(error);
-        } finally {
-            setGenerating(false);
-        }
-    }
-
-    const saveAvatar = async (botId) => {
-        try {
-            setSaving(true);
-            const response = await axiosInstance.put(
-                process.env.REACT_APP_AVATAR,
-                { 
-                    botId,
-                    avatar: avatar
-                }
-            );
-            if(response) {
-                //setIsSubmit((prev) => !prev);
-                console.log(response.data);
-                setIsSaved(true);
-                setIsSubmit((prev) => !prev); // to refetch bots
-            }
-        } catch (error) {
-            console.log(error);
-        } finally {
-            setSaving(false);
-        }
-    }
-
-    return (
-        <>
-            <img src={(avatar && avatarGen === botId) ? avatar : originalImage} alt="Chatbot avatar" className="botImage" onClick={toggleAvatarGen} />
-
-            {avatarGen === botId && <div className="botButtons">
-                <button className="button" disabled={generating} onClick={() => generateAvatar(botId)}>
-                    {generating ? "Generating..." : "Generate avatar"}
-                </button>
-
-                <button className="button" disabled={isSaved || !avatar || saving} onClick={() => saveAvatar(botId)}>
-                    {isSaved ? "Avatar saved" : saving ? "Saving" : "Save this avatar"}
-                </button>
-            </div>}
-        </>
-    );
-}
-
-function BotDetails({bot}) {
-    return (
-        <>
-            <div className="botTraits">
-                {bot.traits ? bot.traits.map(botTrait => {
-                    // Find the current score for this slider's ID
-                    const sliderTrait = sliderData?.find((trait) => trait.id === botTrait.id);
-
-                    let displayTrait;
-
-                    if(botTrait.score < 0) {
-                        displayTrait = sliderTrait.leftTrait;
-                    } else {
-                        displayTrait = sliderTrait.rightTrait;
-                    }
-
-                    return <div className="labelBubble">
-                                <span>{displayTrait} ({Math.abs(botTrait.score)})</span>
-                            </div>
-                }) : <span  className="italic">No traits added</span>}
-            </div>
-
-            <p>
-                <span className="smallLabel">Instructions: </span>
-                {bot.instructions ? bot.instructions : <span className="italic">No instructions added</span>}
-            </p>
-
-            <p>
-                <span className="smallLabel">Knowledge about the user: </span>
-                {bot.userInfo ? bot.userInfo : <span className="italic">No user information added</span>}
-            </p>
-        </>
-    );
-}
+};

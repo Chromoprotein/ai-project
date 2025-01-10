@@ -7,7 +7,7 @@ import axios from "axios";
 import { AiFillSound } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 
-export default function Message({ message, messageIndex, name }) {
+export default function Message({ message, messageIndex, name, imageSrc }) {
   const [copySuccess, setCopySuccess] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -64,62 +64,65 @@ export default function Message({ message, messageIndex, name }) {
   };
 
   return (
-    <div
-      key={messageIndex}
-      className="message"
-      id={messageIndex}
-      ref={parentDivRef}
-    >
-      {/*sender name*/}
-      <span className="name">
-        {name}:&nbsp;
-      </span>
+    <div className="avatarWrapper">
+      <img src={imageSrc} alt="Avatar" className="tinyBotImage" />
+      <div
+        key={messageIndex}
+        className="message"
+        id={messageIndex}
+        ref={parentDivRef}
+      >
+        {/*sender name*/}
+        <span className="name">
+          {name}:&nbsp;
+        </span>
 
-      {/*render text and AI images with markdown. Images have a download button*/}
-      {text && (
-        <Markdown
-          components={{
-            img: ({ node, ...props }) => (
-              <div className="imageContainer">
-                <img {...props} alt="AI generated" onLoad={handleImageLoad} />
-                {imageLoaded && (
-                  <button className="downloadButton" onClick={downloadImage}>
-                    <IoMdDownload size={30} />
-                  </button>
-                )}
-              </div>
-            ),
-          }}
-        >
-          {text}
-        </Markdown>
-      )}
+        {/*render text and AI images with markdown. Images have a download button*/}
+        {text && (
+          <Markdown
+            components={{
+              img: ({ node, ...props }) => (
+                <div className="imageContainer">
+                  <img {...props} className="image" alt="AI generated" onLoad={handleImageLoad} />
+                  {imageLoaded && (
+                    <button className="downloadButton" onClick={downloadImage}>
+                      <IoMdDownload size={30} />
+                    </button>
+                  )}
+                </div>
+              ),
+            }}
+          >
+            {text}
+          </Markdown>
+        )}
 
-      {/*if the user uploaded an image, display it too*/}
-      {image && 
-        <div className="imageContainer">
-          <img src={image} alt="User uploaded content" />
-        </div>
-      }
+        {/*if the user uploaded an image, display it too*/}
+        {image && 
+          <div className="imageContainer">
+            <img src={image} className="image" alt="User uploaded content" />
+          </div>
+        }
 
-      {/*if there is text, display a button for copying the text at the bottom of the message*/}
-      {text && (
-        <div className="smallButtonContainer">
-          <CopyButton
-            copyToClipboard={copyToClipboard}
-            copySuccess={copySuccess}
-            text={text}
-          />
+        {/*if there is text, display a button for copying the text at the bottom of the message*/}
+        {text && (
+          <div className="smallButtonContainer">
+            <CopyButton
+              copyToClipboard={copyToClipboard}
+              copySuccess={copySuccess}
+              text={text}
+            />
 
-          <button className="smallButton" onClick={() => generateAudio(text)}>
-            <AiFillSound />
-          </button>
-        </div>
-      )}
+            <button className="smallButton" onClick={() => generateAudio(text)}>
+              <AiFillSound />
+            </button>
+          </div>
+        )}
 
-      {audioUrl && (
-        <AudioPlayer audioUrl={audioUrl} setAudioUrl={setAudioUrl} />
-      )}
+        {audioUrl && (
+          <AudioPlayer audioUrl={audioUrl} setAudioUrl={setAudioUrl} />
+        )}
+      </div>
     </div>
   );
 }

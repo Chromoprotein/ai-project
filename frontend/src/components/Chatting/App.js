@@ -1,25 +1,26 @@
 import React, { useState, useRef, useEffect } from "react";
-import "../styles/index.css";
-import "../styles/style.css";
-import Background from "./Backgrounds";
+import "../../styles/index.css";
+import "../../styles/style.css";
+import Background from "../Reusables/Backgrounds";
 import Message from "./Message";
 import { Sidebar } from "./Sidebar";
-import { useMode } from "../utils/useMode";
-import { toggle_dark_and_light_mode } from "../utils/toolCalling";
-import { useChats } from "../utils/useChats";
-import { scrollToBottom } from "../utils/uiHelpers";
-import axiosInstance from "../utils/axiosInstance";
-import { Typing } from "./Loaders";
-import { Hello } from "./SmallUIElements";
+import { useMode } from "../../utils/useMode";
+import { toggle_dark_and_light_mode } from "../../utils/toolCalling";
+import { useChats } from "../../utils/useChats";
+import { scrollToBottom } from "../../utils/uiHelpers";
+import axiosInstance from "../../utils/axiosInstance";
+import { Typing } from "../Reusables/Loaders";
+import { Hello } from "../Reusables/SmallUIElements";
 import { InputContainer } from "./InputContainer";
 import { useLocation } from "react-router-dom";
-import { processTraits } from "../utils/systemPromptMakers";
-import { makeFullSystemPrompt } from "../utils/systemPromptMakers";
-import sliderData from "../shared/botTraitData";
+import { processTraits } from "../../utils/systemPromptMakers";
+import { makeFullSystemPrompt } from "../../utils/systemPromptMakers";
+import sliderData from "../../shared/botTraitData";
+import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBot, currentBot, setCurrentBot } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBot, currentBot, setCurrentBot, loading } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -33,7 +34,7 @@ export default function App() {
   // UI-related state
   const messagesEndRef = useRef(null);
   const { theme, setTheme } = useMode();
-  const [loading, setLoading] = useState(false);
+  const [botTyping, setBotTyping] = useState(false);
 
   // User data -related state
   const [username, setUsername] = useState(sessionStorage.getItem("name") || "User");
@@ -149,7 +150,7 @@ export default function App() {
 
     if(chatId) {
       try {
-        setLoading(true);
+        setBotTyping(true);
         const { data } = await fetchAIResponse(allMessages, chatId);
 
         // Add the AI's message to the messages array to be displayed
@@ -167,7 +168,7 @@ export default function App() {
       } catch (error) {
         console.error("Error fetching response:", error);
       } finally {
-        setLoading(false);
+        setBotTyping(false);
       }
     }
 
@@ -207,21 +208,25 @@ export default function App() {
     .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => {
       let name;
+      let imageSrc = "/placeholderAvatar.webp";
       if(message.role === "user") {
         name = username;
       } else if(message.role === "assistant") {
+        imageSrc = currentBot?.avatar ? `data:image/webp;base64,${currentBot?.avatar}` : "/placeholderAvatar.webp";
         if(currentBot?.botName) {
           name = currentBot.botName;
         } else {
           name = "AI";
         }
       }
-      return <Message key={index} message={message} index={index} name={name} />
+      return <Message key={index} message={message} index={index} name={name} imageSrc={imageSrc} />
   });
 
   return (
     <>
       <Background theme={theme} />
+
+      {loading && <Spinner />}
 
       <div className="container">
         <Sidebar 
@@ -234,11 +239,11 @@ export default function App() {
             {mappedMessages.length > 0 ? (
               <>
                 {mappedMessages}
-                {loading && <Typing />}
+                {botTyping && <Typing />}
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <Hello bot={currentBot?.botName} />
+              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar} />
             )}
           </div>
 

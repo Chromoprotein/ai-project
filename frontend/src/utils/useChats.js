@@ -18,6 +18,7 @@ export function useChats() {
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
         try {
+            setLoading(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETCHAT, {
                 params: { chatId: chatId },
             });
@@ -37,24 +38,30 @@ export function useChats() {
                         traits: chat.botId.traits,
                         instructions: chat.botId.instructions,
                         userInfo: chat.botId.userInfo,
+                        avatar: chat.botId.avatar,
                     });
                 }
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
     }), []);
 
     // Get the list of chats for the sidebar
     const getChatList = useCallback((async () => {
         try {
+            setLoading(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETCHATLIST);
             if (response.data) {
                 setChatList(response.data.groupedChats);
             }
         } catch (error) {
             console.log(error);
-        };
+        } finally {
+            setLoading(false);
+        }
     }), []);
 
     // Start a new chat when the user sends the first message

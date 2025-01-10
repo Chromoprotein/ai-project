@@ -85,7 +85,7 @@ body {
     justify-content: center;
     align-items: center;
     width:100%;
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
@@ -107,7 +107,7 @@ body {
     align-items: center;
     justify-content: center;
     width:100%;
-    max-width: 600px;
+    max-width: 700px;
     height:150px;
 }
 
@@ -458,6 +458,12 @@ body {
 
 /*CHAT MESSAGES*/
 
+.avatarWrapper {
+    display:flex;
+    flex-direction: row;
+    align-items: start;
+}
+
 .message {
     background-color: var(--highlight-background);
     color: var(--text-color);
@@ -517,7 +523,7 @@ body {
 
 /*IMAGES IN MESSAGES*/
 
-.message img {
+.image {
     width:100%;
     margin: 10px 0 10px 0;
 }
@@ -675,7 +681,16 @@ body {
     width: 90px;
     border-radius: 50%;
     align-self: center;
-    cursor:pointer;
+}
+
+.botLoader {
+    filter: blur(1.1px);
+}
+
+.tinyBotImage {
+    width:50px;
+    border-radius: 50%;
+    margin: 30px 10px;
 }
 
 .labelBubble {
@@ -688,6 +703,13 @@ body {
     padding:5px;
     margin:5px;
     display: inline;
+}
+
+/* ERROR MESSAGE */
+
+.errorMessage {
+    color: red;
+    text-align: center;
 }
 
 /* UTILS */
@@ -717,4 +739,8 @@ body {
 
 .removeMargin {
     margin: 0;
+}
+
+.clickable {
+    cursor: pointer;
 }

@@ -1,9 +1,9 @@
 import ReactSlider from "react-slider";
 import { FaChevronDown } from "react-icons/fa";
 import { FaChevronUp } from "react-icons/fa";
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance from "../../utils/axiosInstance";
 import { useState } from "react";
-import sliderData from "../shared/botTraitData";
+import sliderData from "../../shared/botTraitData";
 
 export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit }) {
 

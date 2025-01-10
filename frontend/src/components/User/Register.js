@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCookies } from "react-cookie";
 import { useNavigate } from 'react-router-dom';
-import Form from './Form';
-import Background from './Backgrounds';
-import { useMode } from '../utils/useMode';
-import { defaultBot } from '../utils/defaultBot';
+import Form from '../Reusables/Form';
+import Background from '../Reusables/Backgrounds';
+import { useMode } from '../../utils/useMode';
+import { defaultBot } from '../../utils/defaultBot';
 
 export default function Register() {
   const [cookies, setCookie, removeCookie] = useCookies(['jwt']);

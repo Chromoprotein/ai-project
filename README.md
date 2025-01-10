@@ -31,12 +31,15 @@ A chatbot with the OpenAI API that has chat folders.
 - Improve bots:
 
     - Remember the last used 3 bots and display them as shortcuts on the chat page
+    - "New chat" button that automatically uses the previous bot
+
+    - fix avatar loading issue on chat page
+
+    - fix avatar saving performance issues
 
     - Add a "use user profile" option for the botInfo, and create a user profile page. The user can choose which bots can access the user profile.
 
     - Make the bot persona page's buttons look better on mobile
-
-    - Show the bot's avatar and the beginning of the instructions on the chat page
 
 - Improve chatting:
 
@@ -56,4 +59,4 @@ A chatbot with the OpenAI API that has chat folders.
 
     - Custom folder categories
 
-    - Moving chats to a different folder with drag-and-drop
+    - Moving chats to a different folder with multiple drag-and-drop

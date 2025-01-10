@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import axios from "axios";
-import Background from './Backgrounds';
-import { useMode } from "../utils/useMode";
+import Background from '../Reusables/Backgrounds';
+import { useMode } from "../../utils/useMode";
 import { Link } from "react-router-dom";
 
 export default function Logout() {

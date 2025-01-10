@@ -1,7 +1,12 @@
-export function Hello({bot = "AI"}) {
+import { useState } from "react";
+
+export function Hello({bot = "AI", avatar = ""}) {
+
+  const imageSrc = avatar ? `data:image/webp;base64,${avatar}` : "/placeholderAvatar.webp";
 
   return (
     <div className="centeredContainer">
+      <img src={imageSrc} alt={`Avatar of ${bot}`} className="botImage"/>
       <p className="title">{bot}: How can I help you?</p>
     </div>
   )

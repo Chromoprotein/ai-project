@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { GoSidebarExpand } from "react-icons/go";
 import { GoSidebarCollapse } from "react-icons/go";
-import { GoPlus } from "react-icons/go";
+import { GoDependabot } from "react-icons/go";
 import { useState } from "react";
 
 export function Sidebar({ chatList, chatId }) {
@@ -30,7 +30,7 @@ export function Sidebar({ chatList, chatId }) {
                     </button>
 
                     <Link className="roundButton" to="/bots">
-                        <GoPlus />
+                        <GoDependabot />
                     </Link>
                 </div>
             </div>
