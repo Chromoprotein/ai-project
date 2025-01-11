@@ -28,30 +28,34 @@ A chatbot with the OpenAI API that has chat folders.
 
 ## My to-do list:
 
+- Improve bots:
+
+    - "New chat" button that automatically uses the previous bot
+
+    - fix avatar loading issue on chat page
+
+    - fix avatar saving performance issues
+
+    - Add a "use user profile" option for the botInfo, and create a user profile page. The user can choose which bots can access the user profile.
+
+    - Make the bot persona page's buttons look better on mobile
+
 - Improve chatting:
 
-    - Add the option to rename chats
+    - Renaming chats
 
-    - Add the option to edit and resend a message
+    - Deleting chats (with multiple selection)
 
-    - Add editing or deleting bot personas
+    - Editing and resending a message
 
-    - Let the user delete chats
+    - Emoji keyboard
 
-    - Add an emoji keyboard
+    - Saving prompts
 
 - Improve the folders:
 
-    - Add a search function
+    - Search function for folders
 
-    - Let the user decide what folders the AI can place chats into
+    - Custom folder categories
 
-    - Add the option to move chats to a different folder
-
-- Improve the UI:
-
-    - Fix the forms' width
-
-    - Make the bot persona form collapsible and switch the input field to a textarea
-
-    - Add avatars for the bots
+    - Moving chats to a different folder with multiple drag-and-drop

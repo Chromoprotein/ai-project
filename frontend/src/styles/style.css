@@ -55,7 +55,12 @@ body {
   top:0;
   bottom: 0;
   left: 0;
-  right: 0
+  right: 0;
+  width:100%;
+}
+
+@media (max-width: 768px) {
+
 }
 
 /*navbar is on the left*/
@@ -80,14 +85,15 @@ body {
     justify-content: center;
     align-items: center;
     width:100%;
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
-/*wraps the messages*/
+/*wraps the messages and can be scrolled*/
 .chatContainer {
     flex: 1;
     overflow-y: auto;
+    width:100%;
 }
 
 /*input on the bottom right*/
@@ -101,7 +107,7 @@ body {
     align-items: center;
     justify-content: center;
     width:100%;
-    max-width: 600px;
+    max-width: 700px;
     height:150px;
 }
 
@@ -131,15 +137,14 @@ body {
     background-color: var(--highlight-background);
     display: flex;
     flex-direction: column;
-    padding:20px;
+    gap:20px;
     justify-content: space-evenly;
     align-items: center;
     width:100%;
-    border-radius:20px;
-    height:500px;
-    max-height:100vh;
-    color: var(--text-color);
     max-width:600px;
+    border-radius:20px;
+    color: var(--text-color);
+    padding: 30px;
 }
 
 .formContainer form {
@@ -183,9 +188,40 @@ body {
     font-size: 16px;
 }
 
-.formContainer label {
+.button:disabled {
+    background-color: gray;
+    cursor:default;
+}
+
+.textButton {
+    display:inline-flex;
+    align-items: center;
+    cursor: pointer;
     color:var(--color-pop);
-    padding:10px 0;
+    padding:10px 20px;
+    margin:0;
+    text-transform: uppercase;
+    font-size: small;
+    font-weight: bold;
+    background-color: transparent;
+    border: 1px solid var(--color-pop);
+    border-radius: 20px;
+    text-decoration: none;
+    width:max-content;
+}
+
+.bigTextButton {
+    display:inline-flex;
+    align-items: center;
+    cursor: pointer;
+    color:var(--color-pop);
+    padding:0;
+    margin:0;
+}
+
+.smallLabel {
+    color:var(--color-pop);
+    padding:0;
     text-transform: uppercase;
     font-size: small;
     font-weight: bold;
@@ -214,10 +250,65 @@ body {
     align-items: left;
     width:100%;
     max-width:400px;
+    gap:10px;
 }
 
 .formItem .button {
     align-self: center;
+}
+
+.formItem .formInfo {
+    text-align: center;
+}
+
+/* SLIDERS */
+
+.customSlider {
+    width: 100%;
+    max-width:400px;
+    height: 15px;
+    background: var(--color-pop);
+    border-radius: 5px;
+    margin: 0;
+}
+
+.customTrack {
+    background: var(--color-pop);
+    height: 100%;
+    border-radius: 5px;
+}
+
+.customThumb {
+    height: 15px;
+    width: 15px;
+    background: var(--background);
+    border-radius: 50%;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.sliderLabel {
+    display:flex;
+    align-items: stretch;
+    justify-content: space-between;
+    width:100%;
+    max-width: 400px;
+    margin-bottom:10px;
+}
+
+.sliderLabel .labelLeft {
+    text-align: left;
+    flex:1;
+}
+
+.sliderLabel .labelRight {
+    text-align: right;
+    flex: 1;
+}
+
+.sliderLabel .labelCenter {
+    text-align: center;
+    flex: 1;
 }
 
 /*CHAT INPUT FIELD*/
@@ -367,6 +458,12 @@ body {
 
 /*CHAT MESSAGES*/
 
+.avatarWrapper {
+    display:flex;
+    flex-direction: row;
+    align-items: start;
+}
+
 .message {
     background-color: var(--highlight-background);
     color: var(--text-color);
@@ -426,7 +523,7 @@ body {
 
 /*IMAGES IN MESSAGES*/
 
-.message img {
+.image {
     width:100%;
     margin: 10px 0 10px 0;
 }
@@ -480,16 +577,170 @@ body {
   }
 }
 
+/* SPINNER */
+
+.loadingContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    /* Ensure it overlays all other content */
+}
+
+.spinner {
+    border: 5px solid var(--text-color);
+    border-top: 5px solid var(--color-pop);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.bigSpinner {
+    width: 50px;
+    height: 50px;
+}
+
+.smallSpinner {
+    width: 20px;
+    height: 20px;
+    display: inline;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* BOTS PAGE */
+
+.botWrapper {
+    background-color: var(--highlight-background);
+    color: var(--text-color);
+    border: 1px solid transparent;
+    border-radius: 20px 20px 20px 20px;
+    margin: 10px 0;
+    padding: 20px 20px 10px 20px;
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    white-space: pre-line;
+}
+
+.expanded {
+    flex-direction: column;
+}
+
+.collapsed {
+    flex-direction: row;
+}
+
+.botWrapper p {
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    margin: 0;
+    float: left;
+}
+
+.botButtons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    flex: 1;
+}
+
+.botTitle {
+    align-self: center;
+    margin: 10px;
+}
+
+.botTraits {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    flex: 1;
+}
+
+.botImage {
+    width: 90px;
+    border-radius: 50%;
+    align-self: center;
+}
+
+.botLoader {
+    filter: blur(1.1px);
+}
+
+.tinyBotImage {
+    width:50px;
+    border-radius: 50%;
+    margin: 30px 10px;
+}
+
+.labelBubble {
+    background-color: var(--color-pop);
+    border-radius: 20px;
+    text-transform: uppercase;
+    font-size: small;
+    font-weight: bold;
+    color: var(--text-color);
+    padding:5px;
+    margin:5px;
+    display: inline;
+}
+
+/* ERROR MESSAGE */
+
+.errorMessage {
+    color: red;
+    text-align: center;
+}
+
 /* UTILS */
+
+.italic {
+    font-style: italic;
+}
 
 .centerMe {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 70vh;
+}
 
-    height: 100vh;
+.centerText {
+    text-align: center;
 }
 
 .tall {
     min-height: calc(100% - 150px);
+}
+
+.removePadding {
+    padding:0;
+}
+
+.removeMargin {
+    margin: 0;
+}
+
+.clickable {
+    cursor: pointer;
 }

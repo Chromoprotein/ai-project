@@ -1,36 +1,35 @@
 import React, { useState, useRef, useEffect } from "react";
-import "../styles/index.css";
-import "../styles/style.css";
-import Background from "./Backgrounds";
+import "../../styles/index.css";
+import "../../styles/style.css";
+import Background from "../Reusables/Backgrounds";
 import Message from "./Message";
 import { Sidebar } from "./Sidebar";
-import { useMode } from "../utils/useMode";
-import { toggle_dark_and_light_mode } from "../utils/toolCalling";
-import { useChats } from "../utils/useChats";
-import { scrollToBottom } from "../utils/uiHelpers";
-import axiosInstance from "../utils/axiosInstance";
-import { Typing } from "./Loaders";
-import { Hello } from "./SmallUIElements";
+import { useMode } from "../../utils/useMode";
+import { toggle_dark_and_light_mode } from "../../utils/toolCalling";
+import { useChats } from "../../utils/useChats";
+import { scrollToBottom } from "../../utils/uiHelpers";
+import axiosInstance from "../../utils/axiosInstance";
+import { Typing } from "../Reusables/Loaders";
+import { Hello } from "../Reusables/SmallUIElements";
 import { InputContainer } from "./InputContainer";
-import { useLocation } from "react-router-dom";
+import { processTraits } from "../../utils/systemPromptMakers";
+import { makeFullSystemPrompt } from "../../utils/systemPromptMakers";
+import sliderData from "../../shared/botTraitData";
+import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getBot, currentBot, setCurrentBot } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, getBot, currentBot, loading, getLastBotId, setLastBotId } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([]);
   const [file, setFile] = useState(null);
 
-  // If navigating here from the bots list
-  const location = useLocation();
-  const customBotId = location.state?.botId; // From navigation state
-
   // UI-related state
   const messagesEndRef = useRef(null);
   const { theme, setTheme } = useMode();
-  const [loading, setLoading] = useState(false);
+  const [botTyping, setBotTyping] = useState(false);
 
   // User data -related state
   const [username, setUsername] = useState(sessionStorage.getItem("name") || "User");
@@ -80,9 +79,18 @@ export default function App() {
 
     // PREPARE THE PAYLOAD
 
-    // System prompt for new chats
-    if(messages.length === 0) {
-      addMessage(currentBot.systemMessage);
+    // Full chat context
+    let allMessages;
+
+    // The chat is new (no messages yet) and a bot is selected
+    if (messages.length === 0 && currentBot) {
+      // Add system prompt to new chat
+      const processedTraits = processTraits(currentBot.traits, sliderData);
+      const fullSystemPrompt = makeFullSystemPrompt(currentBot.botName, currentBot.instructions, processedTraits, currentBot.userInfo);
+      allMessages = [fullSystemPrompt];
+      addMessage(fullSystemPrompt);
+    } else {
+      allMessages = [...messages];
     }
 
     // Construct the user's new message
@@ -112,14 +120,7 @@ export default function App() {
     }
     const newMessage = { role: "user", content: newContent };
     addMessage(newMessage); // Add the user's new message to the state for displaying
-
-    // Full chat context
-    let allMessages;
-    if (messages.length === 0) {
-      allMessages = [currentBot.systemMessage, newMessage]; // Add system prompt to new chat
-    } else {
-      allMessages = [...messages, newMessage]; // Old chat, system prompt has already been added before
-    }
+    allMessages = [...allMessages, newMessage];
 
     // CHAT ID AND CHAT TITLE
 
@@ -128,7 +129,8 @@ export default function App() {
       chatId = searchParams.get("chatId");
     } else {
       // If there isn't a chat id, generate a new one. This query also generates a title for the new chat based on the user's first message
-      const newChatId = await saveNewChat(newMessage, currentBot.botId);
+      const newChatId = await saveNewChat(newMessage, currentBot?.botId);
+
       if(newChatId) {
         chatId = newChatId;
         await getChatList(); // Update the chats list so it includes the new chat's title
@@ -143,7 +145,7 @@ export default function App() {
 
     if(chatId) {
       try {
-        setLoading(true);
+        setBotTyping(true);
         const { data } = await fetchAIResponse(allMessages, chatId);
 
         // Add the AI's message to the messages array to be displayed
@@ -161,7 +163,7 @@ export default function App() {
       } catch (error) {
         console.error("Error fetching response:", error);
       } finally {
-        setLoading(false);
+        setBotTyping(false);
       }
     }
 
@@ -188,16 +190,18 @@ export default function App() {
     getChatList();
   }, [getChatList]);
 
-  // Find bot's info when navigating from the bots list. This is needed to start a new chat
+  // Find the last used bot's info, needed to start a new chat (last used bot = the bot that was selected on the bot personas page or was most recently chatted with)
   useEffect(() => {
-    if(messages.length === 0 && customBotId) {
-      if(customBotId !== bots[0].botId) { // is a custom bot
-        getBot(customBotId);
-      } else { // is default bot
-        setCurrentBot(bots[0]);
-      }
-    }
-  }, [customBotId, bots, getBot, setCurrentBot, messages.length])
+    const activeBot = async () => {
+      if(messages.length === 0) {
+        const lastBotId = await getLastBotId();
+        if(lastBotId) {
+          await getBot(lastBotId);
+        };
+      };
+    };
+    activeBot();
+  }, [getBot, getLastBotId, messages.length])
 
   // 4. UI ELEMENTS
 
@@ -205,17 +209,25 @@ export default function App() {
     .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => {
       let name;
+      let imageSrc = "/placeholderAvatar.webp";
       if(message.role === "user") {
         name = username;
       } else if(message.role === "assistant") {
-        name = currentBot.botName;
+        imageSrc = currentBot?.avatar ? `data:image/webp;base64,${currentBot?.avatar}` : "/placeholderAvatar.webp";
+        if(currentBot?.botName) {
+          name = currentBot.botName;
+        } else {
+          name = "AI";
+        }
       }
-      return <Message key={index} message={message} index={index} name={name} />
+      return <Message key={index} message={message} index={index} name={name} imageSrc={imageSrc} />
   });
 
   return (
     <>
       <Background theme={theme} />
+
+      {loading && <Spinner />}
 
       <div className="container">
         <Sidebar 
@@ -228,11 +240,11 @@ export default function App() {
             {mappedMessages.length > 0 ? (
               <>
                 {mappedMessages}
-                {loading && <Typing />}
+                {botTyping && <Typing />}
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <Hello bot={currentBot.botName} />
+              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar} />
             )}
           </div>
 

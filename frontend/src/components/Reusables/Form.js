@@ -20,12 +20,12 @@ export default function Form({ title, fields, buttonText, onSubmit, error, linkT
       </div>
       {error && (
         <div className="formItem">
-          {error}
+          <p className="formInfo">{error}</p>
         </div>
       )}
       {linkText && linkInfo && linkTo && (
         <div className="formItem">
-          {linkInfo}
+          <p className="formInfo">{linkInfo}</p>
           <Link className="button" to={linkTo}>
             {linkText}
           </Link>

@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema
 
 const systemMessageSchema = new Schema({
-  systemMessage: {
-    type: String,
-    required: true
-  },
   botName: {
     type: String,
     required: true
@@ -13,6 +9,22 @@ const systemMessageSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+  instructions: { // a component of the system message
+    type: String,
+    required: true,
+  },
+  traits: { // a component of the system message
+    type: String,
+    required: false
+  },
+  userInfo: { // a component of the system message
+    type: String,
+    required: false
+  },
+  avatar: { // Base64-encoded image
+    type: String,
+    required: false
   }
 },{collection : 'systemMessages', timestamps:true});
 

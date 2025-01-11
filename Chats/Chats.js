@@ -1,8 +1,10 @@
-const User = require("../Schemas/User")
-const Chat = require("../Schemas/Chat")
-const Message = require("../Schemas/Message")
-const SystemMessage = require("../Schemas/SystemMessage")
+const User = require("../Schemas/User");
+const Chat = require("../Schemas/Chat");
+const Message = require("../Schemas/Message");
+const SystemMessage = require("../Schemas/SystemMessage");
 let OpenAI = require('openai');
+const mongoose = require('mongoose');
+const axios = require('axios');
 
 const openai = new OpenAI(
     {
@@ -310,7 +312,9 @@ exports.getChat = async (req, res) => {
                 path: 'messages',
                 options: { sort: { createdAt: 1 } }
             })
-            .populate('botId')
+            .populate({
+                path: 'botId',
+            })
             .exec();
         if(chat) {
             res.status(200).json({ chat })
@@ -332,11 +336,14 @@ exports.newChat = async (req, res) => {
         // User id comes from the auth middleware
         const userId = req.id;
 
+        // Validate botId
+        const validBotId = botId && mongoose.Types.ObjectId.isValid(botId) ? botId : null;
+
         const generatedTitle = await renameChat(userMessage, res);
         const generatedCategory = await categorizeChat(userMessage, res);
 
-        if(generatedTitle && generatedCategory && botId) {
-            const chat = await Chat.create({ title: generatedTitle, botId: botId, category: generatedCategory, userId });
+        if(generatedTitle && generatedCategory) {
+            const chat = await Chat.create({ title: generatedTitle, botId: validBotId, category: generatedCategory, userId });
             if(chat) {
                 res.status(201).json({
                     message: "New chat successfully created",
@@ -358,29 +365,24 @@ exports.newChat = async (req, res) => {
 exports.newSystemMessage = async (req, res) => {
 
     try {
-        const { botName, systemMessage } = req.body;
-        // User id comes from the auth middleware
+        const { botName, instructions, userInfo, traits } = req.body;
+
         const userId = req.id;
 
-        if(botName && systemMessage) {
+        if(botName && instructions) { // mandatory fields
 
-            const formattedMessage = {
-                role: "system",
-                content: [
-                    {
-                        type: "text",
-                        text: systemMessage,
-                    },
-                ],
-            };
-
-            const bot = await SystemMessage.create({ systemMessage: JSON.stringify(formattedMessage), botName, userId });
+            const bot = await SystemMessage.create({ botName, userId, instructions, traits: JSON.stringify(traits), userInfo });
             if(bot) {
                 res.status(201).json({
                     message: "New system message successfully created",
                     id: bot._id,
                 });
             }
+        } else {
+            res.status(500).json({
+                message: "Name and instructions are required",
+                error: error.message,
+            });
         }
 
     } catch (error) {
@@ -432,3 +434,206 @@ exports.getOneSystemMessage = async (req, res) => {
     }
 
 };
+
+exports.generateBotAvatar = async (req, res) => {
+
+    try {
+        const { botId } = req.body;
+        const userId = req.id;
+
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+
+        if (!existingBot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        if(existingBot.instructions) {
+            const description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
+            const avatar = await getdalle(description);
+            if(avatar) {
+                console.log(avatar)
+                return res.status(200).json(avatar);
+            }
+        } else {
+            return res.status(404).json({
+                message: "Custom instructions not found, can't generate an avatar.",
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+};
+
+exports.avatar = async (req, res) => {
+    const { botId, avatar } = req.body;
+    const userId = req.id;
+
+    console.log("we are here")
+
+    if (!avatar || !botId) {
+        return res.status(400).json({ error: 'An avatar is required or bot not found' });
+    }
+
+    try {
+
+        // Make sure the bot exists
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+        if (!existingBot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        // Fetch the image as binary data
+        const response = await axios.get(avatar, { responseType: 'arraybuffer' });
+        const base64Image = Buffer.from(response.data, 'binary').toString('base64');
+
+        // Save to MongoDB
+        existingBot.avatar = base64Image;
+
+        await existingBot.save();
+
+        res.json({ message: 'Avatar uploaded successfully!' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to upload avatar.' });
+    }
+};
+
+exports.editBot = async (req, res) => {
+
+    try {
+        const { botId, botName, instructions, userInfo, traits } = req.body;
+
+        const userId = req.id;
+
+        if (!botId || !botName || !instructions) { // mandatory fields
+            return res.status(400).json({
+                message: "Bot ID, name, and instructions are required",
+            });
+        }
+
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+
+        if (!existingBot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        existingBot.botName = botName;
+        existingBot.instructions = instructions;
+        existingBot.traits = JSON.stringify(traits);
+        existingBot.userInfo = userInfo;
+
+        await existingBot.save();
+
+        res.status(200).json({
+            message: "System message successfully updated",
+            id: existingBot._id,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+};
+
+exports.deleteBot = async (req, res) => {
+    try {
+        const { botId } = req.params;
+
+        const userId = req.id;
+
+        if (!botId) {
+            return res.status(400).json({
+                message: "Bot ID is required",
+            });
+        }
+
+        const bot = await SystemMessage.findOne({ _id: botId, userId });
+
+        if (!bot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        await SystemMessage.deleteOne({ _id: botId, userId });
+
+        res.status(200).json({
+            message: "System message successfully deleted",
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+};
+
+exports.setLastBotId = async (req, res) => {
+    try {
+        const userId = req.id;
+
+        const { botId } = req.body;
+
+        if (!botId) {
+            return res.status(400).json({
+                message: "Bot ID is required",
+            });
+        }
+
+        const user = await User.findOne({ _id: userId });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        user.lastBotId = botId;
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Latest used bot updated",
+            lastBotId: user.lastBotId,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+}
+
+exports.getLastBotId = async (req, res) => {
+    try {
+        const userId = req.id;
+
+        const user = await User.findOne({ _id: userId });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const lastBotId = user.lastBotId || null;
+        return res.status(200).json({ lastBotId });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+}

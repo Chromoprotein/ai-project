@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../utils/useAuth';
+import { useAuth } from '../../utils/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import Background from './Backgrounds';
-import Form from './Form';
+import Background from '../Reusables/Backgrounds';
+import Form from '../Reusables/Form';
 import { HashLink } from "react-router-hash-link";
-import { useMode } from '../utils/useMode';
+import { useMode } from '../../utils/useMode';
 
 export default function Login() {
   

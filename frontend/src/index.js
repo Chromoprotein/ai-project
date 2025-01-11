@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './components/App';
+import App from './components/Chatting/App';
 import {
   Route,
   Navigate,
@@ -8,11 +8,11 @@ import {
   RouterProvider,
   createRoutesFromElements
 } from "react-router-dom";
-import Register from './components/Register';
-import Login from './components/Login';
-import Logout from './components/Logout';
+import Register from './components/User/Register';
+import Login from './components/User/Login';
+import Logout from './components/User/Logout';
 import { useAuth } from './utils/useAuth';
-import Bots from './components/Bots';
+import Bots from './components/BotPersonas/Bots';
 
 function RequireAuth({ children }) {
 

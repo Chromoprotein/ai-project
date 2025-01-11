@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCookies } from "react-cookie";
 import { useNavigate } from 'react-router-dom';
-import Form from './Form';
-import Background from './Backgrounds';
-import { useMode } from '../utils/useMode';
+import Form from '../Reusables/Form';
+import Background from '../Reusables/Backgrounds';
+import { useMode } from '../../utils/useMode';
+import { defaultBot } from '../../utils/defaultBot';
 
 export default function Register() {
   const [cookies, setCookie, removeCookie] = useCookies(['jwt']);
@@ -36,9 +37,15 @@ export default function Register() {
       if (response.status === 201) {
           const token = response.data.jwt;
           setCookie('jwt', token, { path: '/', secure: true, httpOnly: true }); // Set the JWT token as a cookie
-          console.log(response.data)
           sessionStorage.setItem('isAuthenticated', 'true');
-          navigate("/");
+
+          // Give the user a default bot
+          const botData = {...defaultBot, userInfo: `The user's name is ${response.data.username}`}
+          const createBot = await axios.post(process.env.REACT_APP_CREATEBOT, botData, { withCredentials: true});
+          if(createBot) {
+            console.log(createBot.status.message);
+            navigate("/");
+          }
       }
     } catch (error) {
       console.error(error);

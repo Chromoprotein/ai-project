@@ -1,20 +1,6 @@
 import { useState, useCallback } from "react";
-import axios from "axios";
 import { useSearchParams } from "react-router-dom";
-
-const initialBots = [{
-    botId: "674e1e30554c720e5f15cc69",
-    botName: "Mysterious traveller",
-    systemMessage: {
-        role: "system",
-        content: [
-        {
-            type: "text",
-            text: "Respond like you are an alien from the Andromeda galaxy. You have travelled far and seen many planets. You think humans are interesting.",
-        },
-        ],
-    },
-}];
+import axiosInstance from "./axiosInstance";
 
 export function useChats() {
 
@@ -24,14 +10,56 @@ export function useChats() {
     const [chatList, setChatList] = useState({}); // Object where keys are chat category names and values are arrays of chats (that have a title and an id)
 
     // Bot persona -related state
-    const [bots, setBots] = useState(initialBots); // List of bot personas
-    const [currentBot, setCurrentBot] = useState(initialBots[0]);
+    const [bots, setBots] = useState(); // List of bot personas
+    const [currentBot, setCurrentBot] = useState(); // Avatar, name, custom instructions etc. of the active bot
+    const [lastActiveId, setLastActiveId] = useState(); // last active bot's id, this is saved in the database so the user can continue chatting easily
+
+    const [loading, setLoading] = useState(false);
+
+    // Used when a bot or an old chat is selected
+    const setLastBotId = useCallback((async (botId) => {
+        if(botId !== lastActiveId) { // bot has changed
+            try {
+                const response = await axiosInstance.post(process.env.REACT_APP_SETLASTBOTID, 
+                    { botId },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                if(response) {
+                    setLastActiveId(botId);
+                }
+                console.log(response.data)
+                return response.data.message;
+            } catch (error) {
+                console.log(error.message);
+            }
+        }
+    }), [lastActiveId]);
+
+    // Used when a new chat is started from the front page, automatically gives the last used bot
+    const getLastBotId = useCallback((async () => {
+        try {
+            const response = await axiosInstance.get(process.env.REACT_APP_GETLASTBOTID);
+            if (response.data.lastBotId) {
+                console.log("response is" + response.data.lastBotId)
+                setLastActiveId(response.data.lastBotId);
+                return response.data.lastBotId;
+            }
+            return null; // Explicitly return null if no lastBotId is found
+        } catch (error) {
+            console.log(error.message);
+            return null; // Handle errors gracefully
+        }
+    }), []);
 
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
         try {
-            const response = await axios.get(process.env.REACT_APP_GETCHAT, {
-                withCredentials: true,
+            setLoading(true);
+            const response = await axiosInstance.get(process.env.REACT_APP_GETCHAT, {
                 params: { chatId: chatId },
             });
             if (response.data) {
@@ -42,48 +70,55 @@ export function useChats() {
                     setMessages(mappedMessages);
                 }
                 const chat = response.data.chat;
-                if(chat.botId) { // custom bot
+                console.log(response.data.chat)
+                if(chat.botId) {
                     setCurrentBot({
                         botId: chat.botId._id,
                         botName: chat.botId.botName,
-                        systemMessage: chat.botId.systemMessage,
+                        traits: chat.botId.traits,
+                        instructions: chat.botId.instructions,
+                        userInfo: chat.botId.userInfo,
+                        avatar: chat.botId.avatar,
                     });
-                } else {
-                    setCurrentBot(bots[0]); // default bot
+                    if(lastActiveId !== chat.botId._id) {
+                        await setLastBotId(chat.botId._id);
+                    }
                 }
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
-    }), [bots]);
+    }), [lastActiveId, setLastBotId]);
 
     // Get the list of chats for the sidebar
     const getChatList = useCallback((async () => {
         try {
-            const response = await axios.get(process.env.REACT_APP_GETCHATLIST, {
-                withCredentials: true
-            });
+            setLoading(true);
+            const response = await axiosInstance.get(process.env.REACT_APP_GETCHATLIST);
             if (response.data) {
                 setChatList(response.data.groupedChats);
             }
         } catch (error) {
             console.log(error);
-        };
+        } finally {
+            setLoading(false);
+        }
     }), []);
 
     // Start a new chat when the user sends the first message
-    const saveNewChat = async (userMessage, currentBotId) => {
+    const saveNewChat = async (userMessage, currentBotId = null) => {
         const newChatData = { userMessage, botId: currentBotId };
 
         try {
-            const response = await axios.post(
+            const response = await axiosInstance.post(
                 process.env.REACT_APP_NEWCHAT,
                 { newChatData: newChatData },
                 {
                     headers: {
                     "Content-Type": "application/json",
                     },
-                    withCredentials: true,
                 }
             );
             if (response.data) {
@@ -102,36 +137,39 @@ export function useChats() {
     // Get the list of bot personas / system prompts
     const getBots = useCallback((async () => {
         try {
-            const response = await axios.get(process.env.REACT_APP_GETBOTS, {       
-                withCredentials: true 
-            });
+            setLoading(true);
+            const response = await axiosInstance.get(process.env.REACT_APP_GETBOTS);
             if(response.data.bots.length > 0) {
             const mappedBots = response.data.bots.map((bot) => ({
                 botId: bot._id,
                 botName: bot.botName,
-                systemMessage: JSON.parse(bot.systemMessage),
+                instructions: bot.instructions,
+                traits: bot.traits?.length > 0 ? JSON.parse(bot.traits) : [],
+                userInfo: bot.userInfo,
+                avatar: bot.avatar,
             }));
-            setBots([
-                ...initialBots, // keep the default bot in the list
-                ...mappedBots
-            ]);
+                setBots(mappedBots);
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
     }), []);
 
     const getBot = useCallback((async (botToSearch) => {
         try {
-            const response = await axios.get(process.env.REACT_APP_GETBOT, {       
-                withCredentials: true,
+            const response = await axiosInstance.get(process.env.REACT_APP_GETBOT, {       
                 params: { botId: botToSearch },
             });
             if(response.data.bot) {
                 const newBot = {
                     botId: response.data.bot._id,
                     botName: response.data.bot.botName,
-                    systemMessage: JSON.parse(response.data.bot.systemMessage),
+                    instructions: response.data.bot.instructions,
+                    traits: response.data.bot.traits ? JSON.parse(response.data.bot.traits) : [],
+                    userInfo: response.data.bot.userInfo,
+                    avatar: response.data.bot.avatar,
                 };             
                 setCurrentBot(newBot);
             }
@@ -140,6 +178,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getBot, currentBot, setCurrentBot }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot, loading, getLastBotId, setLastBotId, lastActiveId }
 
 };
