@@ -13,7 +13,7 @@ import AvatarGen from './AvatarGen';
 
 export default function Bots() {
 
-    const { bots, getBots, loading } = useChats();
+    const { bots, getBots, loading, setLastBotId } = useChats();
 
     const initialState = {
         botName: '',
@@ -72,8 +72,12 @@ export default function Bots() {
     };
 
     const navigate = useNavigate();
-    const navigateToBot = (botId) => {
-        navigate(`/`, { state: { botId } });
+    
+    const navigateToBot = async (botId) => {
+        const response = await setLastBotId(botId);
+        if(response) {
+            navigate("/");
+        }
     }
 
     return (

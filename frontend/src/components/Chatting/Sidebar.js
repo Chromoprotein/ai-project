@@ -3,6 +3,7 @@ import { GoSidebarExpand } from "react-icons/go";
 import { GoSidebarCollapse } from "react-icons/go";
 import { GoDependabot } from "react-icons/go";
 import { useState } from "react";
+import { GoPlus } from "react-icons/go";
 
 export function Sidebar({ chatList, chatId }) {
 

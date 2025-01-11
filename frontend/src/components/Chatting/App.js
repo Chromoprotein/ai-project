@@ -12,7 +12,6 @@ import axiosInstance from "../../utils/axiosInstance";
 import { Typing } from "../Reusables/Loaders";
 import { Hello } from "../Reusables/SmallUIElements";
 import { InputContainer } from "./InputContainer";
-import { useLocation } from "react-router-dom";
 import { processTraits } from "../../utils/systemPromptMakers";
 import { makeFullSystemPrompt } from "../../utils/systemPromptMakers";
 import sliderData from "../../shared/botTraitData";
@@ -20,16 +19,12 @@ import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBot, currentBot, setCurrentBot, loading } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, getBot, currentBot, loading, getLastBotId, setLastBotId } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([]);
   const [file, setFile] = useState(null);
-
-  // If navigating here from the bots list
-  const location = useLocation();
-  const customBotId = location.state?.botId; // From navigation state
 
   // UI-related state
   const messagesEndRef = useRef(null);
@@ -195,12 +190,18 @@ export default function App() {
     getChatList();
   }, [getChatList]);
 
-  // Find bot's info when navigating from the bots list. This is needed to start a new chat
+  // Find the last used bot's info, needed to start a new chat (last used bot = the bot that was selected on the bot personas page or was most recently chatted with)
   useEffect(() => {
-    if(messages.length === 0 && customBotId) {
-      getBot(customBotId);
-    }
-  }, [customBotId, bots, getBot, setCurrentBot, messages.length])
+    const activeBot = async () => {
+      if(messages.length === 0) {
+        const lastBotId = await getLastBotId();
+        if(lastBotId) {
+          await getBot(lastBotId);
+        };
+      };
+    };
+    activeBot();
+  }, [getBot, getLastBotId, messages.length])
 
   // 4. UI ELEMENTS
 

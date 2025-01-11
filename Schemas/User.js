@@ -16,7 +16,12 @@ const userSchema = new Schema({
         type:String,
         minlength:6,
         required:true
-    }
+    },
+    lastBotId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SystemMessage',
+        required: false
+    },
 },{collection : 'users', timestamps:true})
 
 module.exports = mongoose.model('User', userSchema)

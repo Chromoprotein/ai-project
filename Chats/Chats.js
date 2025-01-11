@@ -546,8 +546,6 @@ exports.editBot = async (req, res) => {
     }
 };
 
-// NOT TESTED LAND
-
 exports.deleteBot = async (req, res) => {
     try {
         const { botId } = req.params;
@@ -581,3 +579,61 @@ exports.deleteBot = async (req, res) => {
         });
     }
 };
+
+exports.setLastBotId = async (req, res) => {
+    try {
+        const userId = req.id;
+
+        const { botId } = req.body;
+
+        if (!botId) {
+            return res.status(400).json({
+                message: "Bot ID is required",
+            });
+        }
+
+        const user = await User.findOne({ _id: userId });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        user.lastBotId = botId;
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Latest used bot updated",
+            lastBotId: user.lastBotId,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+}
+
+exports.getLastBotId = async (req, res) => {
+    try {
+        const userId = req.id;
+
+        const user = await User.findOne({ _id: userId });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const lastBotId = user.lastBotId || null;
+        return res.status(200).json({ lastBotId });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+}

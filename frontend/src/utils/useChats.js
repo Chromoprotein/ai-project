@@ -11,9 +11,49 @@ export function useChats() {
 
     // Bot persona -related state
     const [bots, setBots] = useState(); // List of bot personas
-    const [currentBot, setCurrentBot] = useState();
+    const [currentBot, setCurrentBot] = useState(); // Avatar, name, custom instructions etc. of the active bot
+    const [lastActiveId, setLastActiveId] = useState(); // last active bot's id, this is saved in the database so the user can continue chatting easily
 
     const [loading, setLoading] = useState(false);
+
+    // Used when a bot or an old chat is selected
+    const setLastBotId = useCallback((async (botId) => {
+        if(botId !== lastActiveId) { // bot has changed
+            try {
+                const response = await axiosInstance.post(process.env.REACT_APP_SETLASTBOTID, 
+                    { botId },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                if(response) {
+                    setLastActiveId(botId);
+                }
+                console.log(response.data)
+                return response.data.message;
+            } catch (error) {
+                console.log(error.message);
+            }
+        }
+    }), [lastActiveId]);
+
+    // Used when a new chat is started from the front page, automatically gives the last used bot
+    const getLastBotId = useCallback((async () => {
+        try {
+            const response = await axiosInstance.get(process.env.REACT_APP_GETLASTBOTID);
+            if (response.data.lastBotId) {
+                console.log("response is" + response.data.lastBotId)
+                setLastActiveId(response.data.lastBotId);
+                return response.data.lastBotId;
+            }
+            return null; // Explicitly return null if no lastBotId is found
+        } catch (error) {
+            console.log(error.message);
+            return null; // Handle errors gracefully
+        }
+    }), []);
 
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
@@ -40,6 +80,9 @@ export function useChats() {
                         userInfo: chat.botId.userInfo,
                         avatar: chat.botId.avatar,
                     });
+                    if(lastActiveId !== chat.botId._id) {
+                        await setLastBotId(chat.botId._id);
+                    }
                 }
             }
         } catch (error) {
@@ -47,7 +90,7 @@ export function useChats() {
         } finally {
             setLoading(false);
         }
-    }), []);
+    }), [lastActiveId, setLastBotId]);
 
     // Get the list of chats for the sidebar
     const getChatList = useCallback((async () => {
@@ -135,6 +178,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot, loading }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot, loading, getLastBotId, setLastBotId, lastActiveId }
 
 };

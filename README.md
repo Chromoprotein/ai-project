@@ -30,7 +30,6 @@ A chatbot with the OpenAI API that has chat folders.
 
 - Improve bots:
 
-    - Remember the last used 3 bots and display them as shortcuts on the chat page
     - "New chat" button that automatically uses the previous bot
 
     - fix avatar loading issue on chat page
