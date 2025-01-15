@@ -4,8 +4,9 @@ import { GoSidebarCollapse } from "react-icons/go";
 import { GoDependabot } from "react-icons/go";
 import { useState } from "react";
 import { GoPlus } from "react-icons/go";
+import { MiniSpinner } from "../Reusables/SmallUIElements";
 
-export function Sidebar({ chatList, chatId }) {
+export function Sidebar({ chatList, chatId, loadingChatList, resetAll }) {
 
     const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
     const [collapsedCategory, setCollapsedCategory] = useState({}); // Chat categories that are collapsed. Key is the category's name and value is boolean
@@ -33,10 +34,17 @@ export function Sidebar({ chatList, chatId }) {
                     <Link className="roundButton" to="/bots">
                         <GoDependabot />
                     </Link>
+
+                    <button className="roundButton" onClick={resetAll}>
+                        <GoPlus />
+                    </button>
                 </div>
             </div>
 
             <div className={`navbar ${isNavbarCollapsed ? "collapsed" : "active"}`}>
+
+                {loadingChatList && <MiniSpinner />} {/*needs to be centered*/}
+
                 {Object.keys(chatList).map((category) => (
                     <div key={category}>
                         <div

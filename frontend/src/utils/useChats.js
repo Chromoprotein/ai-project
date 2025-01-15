@@ -14,7 +14,11 @@ export function useChats() {
     const [currentBot, setCurrentBot] = useState(); // Avatar, name, custom instructions etc. of the active bot
     const [lastActiveId, setLastActiveId] = useState(); // last active bot's id, this is saved in the database so the user can continue chatting easily
 
-    const [loading, setLoading] = useState(false);
+    // Loading states
+    const [loadingBots, setLoadingBots] = useState(false);
+    const [loadingChatList, setLoadingChatList] = useState(false);
+    const [loadingChat, setLoadingChat] = useState(false);
+    const [loadingBot, setLoadingBot] = useState(true);
 
     // Used when a bot or an old chat is selected
     const setLastBotId = useCallback((async (botId) => {
@@ -58,7 +62,7 @@ export function useChats() {
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
         try {
-            setLoading(true);
+            setLoadingChat(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETCHAT, {
                 params: { chatId: chatId },
             });
@@ -80,22 +84,19 @@ export function useChats() {
                         userInfo: chat.botId.userInfo,
                         avatar: chat.botId.avatar,
                     });
-                    if(lastActiveId !== chat.botId._id) {
-                        await setLastBotId(chat.botId._id);
-                    }
                 }
             }
         } catch (error) {
             console.log(error);
         } finally {
-            setLoading(false);
+            setLoadingChat(false);
         }
-    }), [lastActiveId, setLastBotId]);
+    }), []);
 
     // Get the list of chats for the sidebar
     const getChatList = useCallback((async () => {
         try {
-            setLoading(true);
+            setLoadingChatList(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETCHATLIST);
             if (response.data) {
                 setChatList(response.data.groupedChats);
@@ -103,7 +104,7 @@ export function useChats() {
         } catch (error) {
             console.log(error);
         } finally {
-            setLoading(false);
+            setLoadingChatList(false);
         }
     }), []);
 
@@ -137,7 +138,7 @@ export function useChats() {
     // Get the list of bot personas / system prompts
     const getBots = useCallback((async () => {
         try {
-            setLoading(true);
+            setLoadingBots(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETBOTS);
             if(response.data.bots.length > 0) {
             const mappedBots = response.data.bots.map((bot) => ({
@@ -153,12 +154,13 @@ export function useChats() {
         } catch (error) {
             console.log(error);
         } finally {
-            setLoading(false);
+            setLoadingBots(false);
         }
     }), []);
 
     const getBot = useCallback((async (botToSearch) => {
         try {
+            setLoadingBot(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETBOT, {       
                 params: { botId: botToSearch },
             });
@@ -175,9 +177,11 @@ export function useChats() {
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoadingBot(false);
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot, loading, getLastBotId, setLastBotId, lastActiveId }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getBot, currentBot, setCurrentBot, loadingBot, loadingBots, loadingChat, loadingChatList, getLastBotId, setLastBotId, lastActiveId }
 
 };

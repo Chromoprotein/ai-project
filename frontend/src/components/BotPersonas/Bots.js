@@ -13,7 +13,7 @@ import AvatarGen from './AvatarGen';
 
 export default function Bots() {
 
-    const { bots, getBots, loading, setLastBotId } = useChats();
+    const { bots, getBots, setLastBotId, loadingBots } = useChats();
 
     const initialState = {
         botName: '',
@@ -101,7 +101,7 @@ export default function Bots() {
                             <BotForm initialState={initialState} edit={false} setIsSubmit={setIsSubmit} />
                         </>}
 
-                        {loading && <Spinner />}
+                        {loadingBots && <Spinner />}
 
                         {/* The existing bots */}
 

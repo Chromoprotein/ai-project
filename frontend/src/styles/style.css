@@ -59,10 +59,6 @@ body {
   width:100%;
 }
 
-@media (max-width: 768px) {
-
-}
-
 /*navbar is on the left*/
 .navbar {
     width: 250px;
@@ -87,6 +83,12 @@ body {
     width:100%;
     max-width: 700px;
     margin: 0 auto;
+}
+
+@media (max-width: 1007px) {
+    .mainContent {
+        margin: 40px auto 0 auto;
+    }
 }
 
 /*wraps the messages and can be scrolled*/
@@ -681,6 +683,7 @@ body {
     width: 90px;
     border-radius: 50%;
     align-self: center;
+    margin:10px;
 }
 
 .botLoader {

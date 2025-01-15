@@ -19,7 +19,7 @@ import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, getBot, currentBot, loading, getLastBotId, setLastBotId } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getBot, currentBot, getLastBotId, loadingBot, loadingChat, loadingChatList } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -35,6 +35,13 @@ export default function App() {
   const [username, setUsername] = useState(sessionStorage.getItem("name") || "User");
 
   // 1. HELPER FUNCTIONS
+
+  const resetAll = () => {
+    setSearchParams({});
+    setQuery("");
+    setMessages([]);
+    setFile(null);
+  }
 
   // Add messages to state
   const addMessage = (message) => {
@@ -227,12 +234,14 @@ export default function App() {
     <>
       <Background theme={theme} />
 
-      {loading && <Spinner />}
+      {loadingChat && !botTyping && <Spinner />}
 
       <div className="container">
         <Sidebar 
           chatList={chatList}
           chatId={searchParams.get("chatId")}
+          loadingChatList={loadingChatList}
+          resetAll={resetAll}
         />
 
         <div className="mainContent">
@@ -244,7 +253,7 @@ export default function App() {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar} />
+              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar} loadingBot={loadingBot} />
             )}
           </div>
 

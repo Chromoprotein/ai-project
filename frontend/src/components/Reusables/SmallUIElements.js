@@ -1,13 +1,14 @@
-import { useState } from "react";
-
-export function Hello({bot = "AI", avatar = ""}) {
+export function Hello({bot = "AI", avatar = "", loadingBot}) {
 
   const imageSrc = avatar ? `data:image/webp;base64,${avatar}` : "/placeholderAvatar.webp";
 
   return (
     <div className="centeredContainer">
-      <img src={imageSrc} alt={`Avatar of ${bot}`} className="botImage"/>
-      <p className="title">{bot}: How can I help you?</p>
+      {loadingBot ? <Spinner /> : // Switch to a different, relatively positioned spinner
+      <>
+        <img src={imageSrc} alt={`Avatar of ${bot}`} className="botImage"/>
+        <p className="title">Ask {bot} anything</p>
+      </>}
     </div>
   )
 }
