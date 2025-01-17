@@ -435,6 +435,7 @@ exports.getOneSystemMessage = async (req, res) => {
 
 };
 
+// Generates a new avatar with Dalle
 exports.generateBotAvatar = async (req, res) => {
 
     try {
@@ -469,11 +470,10 @@ exports.generateBotAvatar = async (req, res) => {
     }
 };
 
+// Saves a generated an avatar
 exports.avatar = async (req, res) => {
     const { botId, avatar } = req.body;
     const userId = req.id;
-
-    console.log("we are here")
 
     if (!avatar || !botId) {
         return res.status(400).json({ error: 'An avatar is required or bot not found' });
@@ -502,6 +502,32 @@ exports.avatar = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to upload avatar.' });
+    }
+};
+
+// Deletes an avatar
+exports.clearAvatar = async (req, res) => {
+    const { botId } = req.params;
+    const userId = req.id;
+
+    if (!botId) {
+        return res.status(400).json({ error: 'Bot not found' });
+    }
+
+    try {
+
+        // Make sure the bot exists
+        const existingBot = await SystemMessage.updateOne({ _id: botId, userId }, { $unset: { avatar: "" } });
+        if (!existingBot) {
+            return res.status(404).json({
+                message: "Bot not found or does not belong to the user",
+            });
+        }
+
+        res.json({ message: 'Avatar deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to delete avatar.' });
     }
 };
 
@@ -568,8 +594,10 @@ exports.deleteBot = async (req, res) => {
 
         await SystemMessage.deleteOne({ _id: botId, userId });
 
+        await User.updateOne({ _id: userId, lastBotId: botId }, { $unset: { lastBotId: "" } });
+
         res.status(200).json({
-            message: "System message successfully deleted",
+            message: "Bot persona successfully deleted",
         });
 
     } catch (error) {
@@ -616,19 +644,22 @@ exports.setLastBotId = async (req, res) => {
     }
 }
 
-exports.getLastBotId = async (req, res) => {
+exports.getLastBot = async (req, res) => {
     try {
         const userId = req.id;
 
-        const user = await User.findOne({ _id: userId });
-        if (!user) {
+        const lastBot = await User.findOne({ _id: userId })
+        .populate({
+            path: 'lastBotId',
+        });
+        if (!lastBot) {
             return res.status(404).json({
                 message: "User not found",
             });
         }
 
-        const lastBotId = user.lastBotId || null;
-        return res.status(200).json({ lastBotId });
+        const foundLastBot = lastBot.lastBotId || null;
+        return res.status(200).json({ foundLastBot });
 
     } catch (error) {
         res.status(500).json({

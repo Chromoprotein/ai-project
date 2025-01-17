@@ -4,13 +4,13 @@ export function Hello({bot = "AI", avatar = "", loadingBot}) {
 
   return (
     <div className="centeredContainer">
-      {loadingBot ? <Spinner /> : // Switch to a different, relatively positioned spinner
+      {loadingBot ? <MiniSpinner /> : 
       <>
         <img src={imageSrc} alt={`Avatar of ${bot}`} className="botImage"/>
         <p className="title">Ask {bot} anything</p>
       </>}
     </div>
-  )
+  );
 }
 
 export function Spinner() {
@@ -23,6 +23,8 @@ export function Spinner() {
 
 export function MiniSpinner() {
   return (
-    <div className="spinner smallSpinner"></div>
+    <div className="smallSpinnerWrapper">
+      <div className="spinner smallSpinner"></div>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { newChat, getChat, getChatList, getai, speech, newSystemMessage, editBot, deleteBot, getSystemMessages, getOneSystemMessage, generateBotAvatar, avatar, setLastBotId, getLastBotId } = require("./Chats");
+const { newChat, getChat, getChatList, getai, speech, newSystemMessage, editBot, deleteBot, getSystemMessages, getOneSystemMessage, generateBotAvatar, avatar, setLastBotId, getLastBot, clearAvatar } = require("./Chats");
 const { userAuth } = require("../middleware/auth");
 
 // The route and the method and function that follow
@@ -17,10 +17,11 @@ router.route("/deleteBot/:botId").delete(userAuth, deleteBot);
 router.route("/getBots").get(userAuth, getSystemMessages);
 router.route("/getBot").get(userAuth, getOneSystemMessage);
 
-router.route("/getLastBotId").get(userAuth, getLastBotId);
+router.route("/getLastBot").get(userAuth, getLastBot);
 router.route("/setLastBotId").post(userAuth, setLastBotId);
 
 router.route("/generateBotAvatar").post(userAuth, generateBotAvatar);
 router.route("/avatar").put(userAuth, avatar);
+router.route("/clearAvatar/:botId").patch(userAuth, clearAvatar);
 
 module.exports = router;

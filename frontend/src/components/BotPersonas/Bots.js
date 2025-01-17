@@ -13,7 +13,7 @@ import AvatarGen from './AvatarGen';
 
 export default function Bots() {
 
-    const { bots, getBots, setLastBotId, loadingBots } = useChats();
+    const { bots, getBots, getLastBot, currentBot, setLastBotId, loadingBots } = useChats();
 
     const initialState = {
         botName: '',
@@ -48,6 +48,11 @@ export default function Bots() {
     useEffect(() => {
         getBots();
     }, [getBots, isSubmit])
+
+    // Check what bot was last used
+    useEffect(() => {
+        getLastBot();
+    }, [getLastBot]);
 
     const toggleForm = () => {
         setShowForm((prev) => !prev);
@@ -114,7 +119,7 @@ export default function Bots() {
                                 <BotForm initialState={bot} edit={true} toggleEdit={() => toggleEdit(bot.botId)} setIsSubmit={setIsSubmit} /> 
                             :
                                 // Displaying the bot
-                                <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"}`} key={index}>
+                                <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${currentBot.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
 
                                     <AvatarGen 
                                         botId={bot.botId} 

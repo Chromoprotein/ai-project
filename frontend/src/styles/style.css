@@ -611,7 +611,12 @@ body {
 .smallSpinner {
     width: 20px;
     height: 20px;
-    display: inline;
+}
+
+.smallSpinnerWrapper {
+    display:flex;
+    justify-content: center;
+    padding:10px;
 }
 
 @keyframes spin {
@@ -629,7 +634,6 @@ body {
 .botWrapper {
     background-color: var(--highlight-background);
     color: var(--text-color);
-    border: 1px solid transparent;
     border-radius: 20px 20px 20px 20px;
     margin: 10px 0;
     padding: 20px 20px 10px 20px;
@@ -637,6 +641,14 @@ body {
     display: flex;
     gap: 10px;
     white-space: pre-line;
+}
+
+.activeBot {
+    border: 1px solid var(--color-pop);
+}
+
+.inactiveBot {
+    border: 1px solid transparent;
 }
 
 .expanded {
@@ -679,11 +691,31 @@ body {
     flex: 1;
 }
 
+.botImageWrapper {
+    position: relative;
+    align-self: center;
+    margin: 10px;
+}
+
+.botImageWrapper:hover .botImage {
+    border: 3px solid var(--color-pop);
+}
+
+.botImageEditIcon {
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+    z-index: 999;
+    color: var(--color-pop);
+}
+
 .botImage {
+    position: relative;
     width: 90px;
     border-radius: 50%;
-    align-self: center;
-    margin:10px;
+    border: 3px solid transparent;
+    transition: all 0.2s ease-in;
 }
 
 .botLoader {

@@ -19,7 +19,7 @@ import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getBot, currentBot, getLastBotId, loadingBot, loadingChat, loadingChatList } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, loadingBot, loadingChat, loadingChatList } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -197,18 +197,15 @@ export default function App() {
     getChatList();
   }, [getChatList]);
 
-  // Find the last used bot's info, needed to start a new chat (last used bot = the bot that was selected on the bot personas page or was most recently chatted with)
+  // Find the last used bot's info, needed to start a new chat
   useEffect(() => {
     const activeBot = async () => {
-      if(messages.length === 0) {
-        const lastBotId = await getLastBotId();
-        if(lastBotId) {
-          await getBot(lastBotId);
-        };
+      if(messages.length === 0 && !currentBot) { // if the chat hasn't started yet
+        await getLastBot(); // check what bot was last used
       };
     };
     activeBot();
-  }, [getBot, getLastBotId, messages.length])
+  }, [currentBot, getLastBot, messages.length])
 
   // 4. UI ELEMENTS
 
@@ -233,8 +230,6 @@ export default function App() {
   return (
     <>
       <Background theme={theme} />
-
-      {loadingChat && !botTyping && <Spinner />}
 
       <div className="container">
         <Sidebar 

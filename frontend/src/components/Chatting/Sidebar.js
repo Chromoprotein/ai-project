@@ -43,7 +43,7 @@ export function Sidebar({ chatList, chatId, loadingChatList, resetAll }) {
 
             <div className={`navbar ${isNavbarCollapsed ? "collapsed" : "active"}`}>
 
-                {loadingChatList && <MiniSpinner />} {/*needs to be centered*/}
+                {loadingChatList && <MiniSpinner />}
 
                 {Object.keys(chatList).map((category) => (
                     <div key={category}>
