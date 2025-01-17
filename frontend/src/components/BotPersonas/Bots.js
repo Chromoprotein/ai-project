@@ -10,6 +10,10 @@ import BotForm from './BotForm';
 import { Spinner } from '../Reusables/SmallUIElements';
 import BotDetails from './BotDetails';
 import AvatarGen from './AvatarGen';
+import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
+import { FaEdit } from "react-icons/fa";
+import { RiExpandDiagonalLine } from "react-icons/ri";
+import { RiCollapseDiagonal2Line } from "react-icons/ri";
 
 export default function Bots() {
 
@@ -136,9 +140,18 @@ export default function Bots() {
                                     }
 
                                     <div className="botButtons">
-                                        <button className="button" onClick={() => navigateToBot(bot.botId)}>Chat</button>
-                                        <button className="textButton" onClick={() => expandBot(bot.botId)}>{!expandedBots[bot.botId] ? "Info" : "Close"}</button>
-                                        <button className="textButton" onClick={() => toggleEdit(bot.botId)}>Edit</button>
+                                        <button className="botButton" onClick={() => navigateToBot(bot.botId)}>
+                                            <span className="buttonIcon"><IoChatbubbleEllipsesOutline /></span>
+                                            <span className="buttonText">Chat</span>
+                                        </button>
+                                        <button className="botButton" onClick={() => expandBot(bot.botId)}>
+                                            <span className="buttonIcon">{!expandedBots[bot.botId] ? <RiExpandDiagonalLine/> : <RiCollapseDiagonal2Line/>}</span>
+                                            <span className="buttonText">{!expandedBots[bot.botId] ? "Info" : "Close"}</span>
+                                        </button>
+                                        <button className="botButton" onClick={() => toggleEdit(bot.botId)}>
+                                            <span className="buttonIcon"><FaEdit/></span>
+                                            <span className="buttonText">Edit</span>
+                                        </button>
                                     </div>
                                 </div>
                             }

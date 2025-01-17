@@ -2,6 +2,9 @@ import { useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 import { MiniSpinner } from "../Reusables/SmallUIElements";
 import { RiEditCircleFill } from "react-icons/ri";
+import { IoSparklesOutline } from "react-icons/io5";
+import { FaSave } from "react-icons/fa";
+import { MdDeleteForever } from "react-icons/md";
 
 export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatarGen, setIsSubmit}) {
 
@@ -87,20 +90,25 @@ export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatar
             </div>
 
             {avatarGen === botId && <div className="botButtons">
-                <button className="button" disabled={generating} onClick={() => generateAvatar(botId)}>
-                    {generating ? <><MiniSpinner/> Generating...</> : "Generate avatar"}
+                <button className="botButton" disabled={generating} onClick={() => generateAvatar(botId)}>
+                    <span className="buttonIcon"><IoSparklesOutline/></span>
+                    <span className="buttonText">{generating ? <><MiniSpinner/> Generating...</> : "Generate avatar"}</span>
                 </button>
 
-                <button className="button" disabled={isSaved || !avatar || isSaving} onClick={() => saveAvatar(botId)}>
-                    {isSaved ? "Avatar saved" : isSaving ? <><MiniSpinner/> Saving</> : "Save this avatar"}
+                <button className="botButton" disabled={isSaved || !avatar || isSaving} onClick={() => saveAvatar(botId)}>
+                    <span className="buttonIcon"><FaSave/></span>
+                    <span className="buttonText">{isSaved ? "Avatar saved" : isSaving ? <><MiniSpinner/> Saving</> : "Save this avatar"}</span>
                 </button>
 
-                <button className="button" disabled={!originalImage} onClick={() => clearAvatar(botId)}>
-                    {isDeleting ? "Deleting" : "Delete avatar"}
+                <button className="botButton" disabled={!originalImage} onClick={() => clearAvatar(botId)}>
+                    <span className="buttonIcon"><MdDeleteForever/></span>
+                    <span className="buttonText">{isDeleting ? "Deleting" : "Delete avatar"}</span>
                 </button>
             </div>}
 
-            {message && <p>{message}</p>}
+            <div className="errorMessage">
+                {message && <p>{message}</p>}
+            </div>
         </>
     );
 };
