@@ -4,6 +4,9 @@ import { FaChevronUp } from "react-icons/fa";
 import axiosInstance from "../../utils/axiosInstance";
 import { useState } from "react";
 import sliderData from "../../shared/botTraitData";
+import { FaSave } from "react-icons/fa";
+import { MdDeleteForever } from "react-icons/md";
+import { RiCollapseDiagonal2Line } from "react-icons/ri";
 
 export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit }) {
 
@@ -135,7 +138,17 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
                 })}
 
                 <p className="textButton" onClick={toggleAdvanced}>
-                    {showAdvanced ? (<>Show Less <FaChevronUp /> </>) : (<>Show More <FaChevronDown /></>)}
+                    {showAdvanced ? 
+                        (<>
+                            <span className="buttonIcon"><FaChevronUp /></span>
+                            <span className="buttonText">Show Less</span>
+                        </>) 
+                        : 
+                        (<>
+                            <span className="buttonIcon"><FaChevronDown /></span>
+                            <span className="buttonText">Show More</span>
+                        </>)
+                    }
                 </p>
             </div>
 
@@ -145,15 +158,18 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             </div>
 
             <div className="botButtons">
-                <button className="button removeMargin" type="submit">
-                    Submit
+                <button className="botButton" type="submit">
+                    <span className="buttonIcon"><FaSave/></span>
+                    <span className="buttonText">Submit</span>
                 </button>
                 {edit && <>
-                    <button className="textButton removeMargin" type="button" onClick={toggleEdit}>
-                        Close
+                    <button className="botButton" type="button" onClick={toggleEdit}>
+                        <span className="buttonIcon"><RiCollapseDiagonal2Line/></span>
+                        <span className="buttonText">Close</span>
                     </button>
-                    <button className="textButton removeMargin" type="button" onClick={toggleDeleteWarning}>
-                        Delete
+                    <button className="botButton" type="button" onClick={toggleDeleteWarning}>
+                        <span className="buttonIcon"><MdDeleteForever/></span>
+                        <span className="buttonText">Delete</span>
                     </button>
                 </>}
             </div>
@@ -161,10 +177,10 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             {deleteWarning && <>
                 <p>Confirm you want to delete this bot. Deleting is permanent.</p>
                 <div className="botButtons">
-                    <button className="button removeMargin" type="button" onClick={toggleDeleteWarning}>
+                    <button className="botButton" type="button" onClick={toggleDeleteWarning}>
                         Don't delete
                     </button>
-                    <button className="textButton removeMargin" type="button" onClick={() => deleteBot(formData.botId)}>
+                    <button className="botButton" type="button" onClick={() => deleteBot(formData.botId)}>
                         Delete
                     </button>
                 </div>

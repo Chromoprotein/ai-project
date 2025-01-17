@@ -12,53 +12,61 @@ export function useChats() {
     // Bot persona -related state
     const [bots, setBots] = useState(); // List of bot personas
     const [currentBot, setCurrentBot] = useState(); // Avatar, name, custom instructions etc. of the active bot
-    const [lastActiveId, setLastActiveId] = useState(); // last active bot's id, this is saved in the database so the user can continue chatting easily
 
-    const [loading, setLoading] = useState(false);
+    // Loading states
+    const [loadingBots, setLoadingBots] = useState(false);
+    const [loadingChatList, setLoadingChatList] = useState(false);
+    const [loadingChat, setLoadingChat] = useState(false);
+    const [loadingBot, setLoadingBot] = useState(true);
 
     // Used when a bot or an old chat is selected
     const setLastBotId = useCallback((async (botId) => {
-        if(botId !== lastActiveId) { // bot has changed
-            try {
-                const response = await axiosInstance.post(process.env.REACT_APP_SETLASTBOTID, 
-                    { botId },
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-                if(response) {
-                    setLastActiveId(botId);
-                }
-                console.log(response.data)
-                return response.data.message;
-            } catch (error) {
-                console.log(error.message);
-            }
-        }
-    }), [lastActiveId]);
-
-    // Used when a new chat is started from the front page, automatically gives the last used bot
-    const getLastBotId = useCallback((async () => {
         try {
-            const response = await axiosInstance.get(process.env.REACT_APP_GETLASTBOTID);
-            if (response.data.lastBotId) {
-                console.log("response is" + response.data.lastBotId)
-                setLastActiveId(response.data.lastBotId);
-                return response.data.lastBotId;
+            const response = await axiosInstance.post(process.env.REACT_APP_SETLASTBOTID, 
+                { botId },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            if(response) {
+                return response.data.message;
             }
-            return null; // Explicitly return null if no lastBotId is found
+            return null;
         } catch (error) {
             console.log(error.message);
-            return null; // Handle errors gracefully
+        }
+    }), []);
+
+    // Used when a new chat is started from the front page, automatically gives the last used bot
+    const getLastBot = useCallback((async () => {
+        try {
+            setLoadingBot(true);
+            const response = await axiosInstance.get(process.env.REACT_APP_GETLASTBOT);
+            if(response.data.foundLastBot) {
+                const bot = response.data.foundLastBot;
+                const newBot = {
+                    botId: bot._id,
+                    botName: bot.botName,
+                    instructions: bot.instructions,
+                    traits: bot.traits ? JSON.parse(bot.traits) : [],
+                    userInfo: bot.userInfo,
+                    avatar: bot.avatar,
+                };             
+                setCurrentBot(newBot);
+            }
+        } catch (error) {
+            console.log(error.message);
+        } finally {
+            setLoadingBot(false);
         }
     }), []);
 
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
         try {
-            setLoading(true);
+            setLoadingChat(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETCHAT, {
                 params: { chatId: chatId },
             });
@@ -80,22 +88,19 @@ export function useChats() {
                         userInfo: chat.botId.userInfo,
                         avatar: chat.botId.avatar,
                     });
-                    if(lastActiveId !== chat.botId._id) {
-                        await setLastBotId(chat.botId._id);
-                    }
                 }
             }
         } catch (error) {
             console.log(error);
         } finally {
-            setLoading(false);
+            setLoadingChat(false);
         }
-    }), [lastActiveId, setLastBotId]);
+    }), []);
 
     // Get the list of chats for the sidebar
     const getChatList = useCallback((async () => {
         try {
-            setLoading(true);
+            setLoadingChatList(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETCHATLIST);
             if (response.data) {
                 setChatList(response.data.groupedChats);
@@ -103,7 +108,7 @@ export function useChats() {
         } catch (error) {
             console.log(error);
         } finally {
-            setLoading(false);
+            setLoadingChatList(false);
         }
     }), []);
 
@@ -137,7 +142,7 @@ export function useChats() {
     // Get the list of bot personas / system prompts
     const getBots = useCallback((async () => {
         try {
-            setLoading(true);
+            setLoadingBots(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETBOTS);
             if(response.data.bots.length > 0) {
             const mappedBots = response.data.bots.map((bot) => ({
@@ -153,31 +158,10 @@ export function useChats() {
         } catch (error) {
             console.log(error);
         } finally {
-            setLoading(false);
+            setLoadingBots(false);
         }
     }), []);
 
-    const getBot = useCallback((async (botToSearch) => {
-        try {
-            const response = await axiosInstance.get(process.env.REACT_APP_GETBOT, {       
-                params: { botId: botToSearch },
-            });
-            if(response.data.bot) {
-                const newBot = {
-                    botId: response.data.bot._id,
-                    botName: response.data.bot.botName,
-                    instructions: response.data.bot.instructions,
-                    traits: response.data.bot.traits ? JSON.parse(response.data.bot.traits) : [],
-                    userInfo: response.data.bot.userInfo,
-                    avatar: response.data.bot.avatar,
-                };             
-                setCurrentBot(newBot);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }), []);
-
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, bots, getBots, getBot, currentBot, setCurrentBot, loading, getLastBotId, setLastBotId, lastActiveId }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, loadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId }
 
 };

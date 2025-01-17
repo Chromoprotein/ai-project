@@ -19,7 +19,7 @@ import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, getBot, currentBot, loading, getLastBotId, setLastBotId } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, loadingBot, loadingChat, loadingChatList } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -35,6 +35,13 @@ export default function App() {
   const [username, setUsername] = useState(sessionStorage.getItem("name") || "User");
 
   // 1. HELPER FUNCTIONS
+
+  const resetAll = () => {
+    setSearchParams({});
+    setQuery("");
+    setMessages([]);
+    setFile(null);
+  }
 
   // Add messages to state
   const addMessage = (message) => {
@@ -190,18 +197,15 @@ export default function App() {
     getChatList();
   }, [getChatList]);
 
-  // Find the last used bot's info, needed to start a new chat (last used bot = the bot that was selected on the bot personas page or was most recently chatted with)
+  // Find the last used bot's info, needed to start a new chat
   useEffect(() => {
     const activeBot = async () => {
-      if(messages.length === 0) {
-        const lastBotId = await getLastBotId();
-        if(lastBotId) {
-          await getBot(lastBotId);
-        };
+      if(messages.length === 0 && !currentBot) { // if the chat hasn't started yet
+        await getLastBot(); // check what bot was last used
       };
     };
     activeBot();
-  }, [getBot, getLastBotId, messages.length])
+  }, [currentBot, getLastBot, messages.length])
 
   // 4. UI ELEMENTS
 
@@ -227,12 +231,12 @@ export default function App() {
     <>
       <Background theme={theme} />
 
-      {loading && <Spinner />}
-
       <div className="container">
         <Sidebar 
           chatList={chatList}
           chatId={searchParams.get("chatId")}
+          loadingChatList={loadingChatList}
+          resetAll={resetAll}
         />
 
         <div className="mainContent">
@@ -244,7 +248,7 @@ export default function App() {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar} />
+              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar} loadingBot={loadingBot} />
             )}
           </div>
 
