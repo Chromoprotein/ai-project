@@ -608,6 +608,27 @@ exports.deleteBot = async (req, res) => {
     }
 };
 
+exports.forgetBot = async (req, res) => {
+
+    try {
+
+        const userId = req.id;
+
+        await User.updateOne({ _id: userId }, { $unset: { lastBotId: "" } });
+
+        res.status(200).json({
+            message: "Switched to not using custom instructions",
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        });
+    }
+
+}
+
 exports.setLastBotId = async (req, res) => {
     try {
         const userId = req.id;
