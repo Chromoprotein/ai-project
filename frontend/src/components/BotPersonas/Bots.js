@@ -7,13 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { CiCirclePlus } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import BotForm from './BotForm';
-import { Spinner } from '../Reusables/SmallUIElements';
+import { MiniSpinner } from '../Reusables/SmallUIElements';
 import BotDetails from './BotDetails';
 import AvatarGen from './AvatarGen';
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { FaEdit } from "react-icons/fa";
 import { RiExpandDiagonalLine } from "react-icons/ri";
 import { RiCollapseDiagonal2Line } from "react-icons/ri";
+import axiosInstance from '../../utils/axiosInstance';
 
 export default function Bots() {
 
@@ -89,6 +90,17 @@ export default function Bots() {
         }
     }
 
+    const forgetBot = async () => {
+        try {
+            const response = await axiosInstance.patch(process.env.REACT_APP_FORGETBOT);
+            if(response) {
+                navigate("/");
+            }
+        } catch (error) {
+            console.log(error.message);
+        }
+    }
+
     return (
         <>
             <Background theme={theme} />
@@ -110,24 +122,23 @@ export default function Bots() {
                             <BotForm initialState={initialState} edit={false} setIsSubmit={setIsSubmit} />
                         </>}
 
-                        {loadingBots && <Spinner />}
+                        {loadingBots && <MiniSpinner />}
 
                         {/* The existing bots */}
 
                         {bots && bots.map((bot, index) => {
-                            const imageSrc = bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp";
-                            
+
                             return <>
                             {editBot === bot.botId ?
                                 // Form for editing the bot
                                 <BotForm initialState={bot} edit={true} toggleEdit={() => toggleEdit(bot.botId)} setIsSubmit={setIsSubmit} /> 
                             :
                                 // Displaying the bot
-                                <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${currentBot.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
+                                <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${currentBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
 
                                     <AvatarGen 
                                         botId={bot.botId} 
-                                        originalImage={imageSrc} 
+                                        originalImage={bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp"}
                                         avatarGen={avatarGen} 
                                         toggleAvatarGen={() => toggleAvatarGen(bot.botId)} 
                                         setIsSubmit={setIsSubmit} 
@@ -140,10 +151,7 @@ export default function Bots() {
                                     }
 
                                     <div className="botButtons">
-                                        <button className="botButton" onClick={() => navigateToBot(bot.botId)}>
-                                            <span className="buttonIcon"><IoChatbubbleEllipsesOutline /></span>
-                                            <span className="buttonText">Chat</span>
-                                        </button>
+                                        <Chat func={() => navigateToBot(bot.botId)} />
                                         <button className="botButton" onClick={() => expandBot(bot.botId)}>
                                             <span className="buttonIcon">{!expandedBots[bot.botId] ? <RiExpandDiagonalLine/> : <RiCollapseDiagonal2Line/>}</span>
                                             <span className="buttonText">{!expandedBots[bot.botId] ? "Info" : "Close"}</span>
@@ -157,6 +165,13 @@ export default function Bots() {
                             }
                             </>
                         })}
+
+                        <div className={`botWrapper expanded ${currentBot?.botId ? "inactiveBot" : "activeBot"}`}>
+                            <div className="botButtons">
+                                <p>Chat without custom instructions</p>
+                                <Chat func={forgetBot} />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -164,3 +179,12 @@ export default function Bots() {
         </>
     );
 };
+
+function Chat({func}) {
+    return (
+        <button className="botButton" onClick={func}>
+            <span className="buttonIcon"><IoChatbubbleEllipsesOutline /></span>
+            <span className="buttonText">Chat</span>
+        </button>
+    );
+}

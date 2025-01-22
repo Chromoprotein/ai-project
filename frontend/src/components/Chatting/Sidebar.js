@@ -8,7 +8,7 @@ import { MiniSpinner } from "../Reusables/SmallUIElements";
 
 export function Sidebar({ chatList, chatId, loadingChatList, resetAll }) {
 
-    const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(false);
+    const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(true);
     const [collapsedCategory, setCollapsedCategory] = useState({}); // Chat categories that are collapsed. Key is the category's name and value is boolean
 
     const toggleNavbar = () => {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
-import { MiniSpinner } from "../Reusables/SmallUIElements";
+import { MiniOverlaySpinner } from "../Reusables/SmallUIElements";
 import { RiEditCircleFill } from "react-icons/ri";
 import { IoSparklesOutline } from "react-icons/io5";
 import { FaSave } from "react-icons/fa";
@@ -11,17 +11,15 @@ export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatar
     const [avatar, setAvatar] = useState();
 
     // States tracking the loading
-    const [generating, setGenerating] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
 
     const [message, setMessage] = useState();
 
     const generateAvatar = async (botId) => {
         setMessage();
         setIsSaved(false);
-        setGenerating(true);
+        setLoading(true);
         try {
             const response = await axiosInstance.post(
                 process.env.REACT_APP_GENERATEAVATAR,
@@ -33,13 +31,14 @@ export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatar
             }
         } catch (error) {
             console.log(error);
+            setLoading(false);
             setMessage(error.message);
         }
     }
 
     const saveAvatar = async (botId) => {
         try {
-            setIsSaving(true);
+            setLoading(true);
             const response = await axiosInstance.put(
                 process.env.REACT_APP_AVATAR,
                 { 
@@ -54,25 +53,26 @@ export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatar
             console.log(error);
             setMessage(error.message);
         } finally {
-            setIsSaving(false);
+            setLoading(false);
             setIsSaved(true);
         }
     }
 
     const clearAvatar = async (botId) => {
         try {
-            setIsDeleting(true);
+            setLoading(true);
             const response = await axiosInstance.patch(
                 `${process.env.REACT_APP_CLEARAVATAR}/${botId}`,
             );
             if(response) {
+                setAvatar();
                 setIsSubmit((prev) => !prev); // to fetch the updated bot data
             }
         } catch (error) {
             console.log(error);
             setMessage(error.message);
         } finally {
-            setIsDeleting(false);
+            setLoading(false);
         }
     }
 
@@ -80,29 +80,30 @@ export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatar
         <>
             <div className="botImageWrapper" onClick={toggleAvatarGen} >
                 <div className="botImageEditIcon"><RiEditCircleFill size={25}/></div>
+                {loading && <MiniOverlaySpinner/>}
                 <img 
                     src={(avatar && avatarGen === botId) ? avatar : originalImage} 
                     alt="Chatbot avatar" 
-                    className="botImage clickable" 
-                    onLoad={() => setGenerating(false)} 
+                    className={`botImage clickable ${loading && "botImageLoading"}`} 
+                    onLoad={() => setLoading(false)} 
                     onError={() => setMessage("Error: failed to load image")}
                 />
             </div>
 
             {avatarGen === botId && <div className="botButtons">
-                <button className="botButton" disabled={generating} onClick={() => generateAvatar(botId)}>
+                <button className="botButton" disabled={loading} onClick={() => generateAvatar(botId)}>
                     <span className="buttonIcon"><IoSparklesOutline/></span>
-                    <span className="buttonText">{generating ? <><MiniSpinner/> Generating...</> : "Generate avatar"}</span>
+                    <span className="buttonText">Generate avatar</span>
                 </button>
 
-                <button className="botButton" disabled={isSaved || !avatar || isSaving} onClick={() => saveAvatar(botId)}>
+                <button className="botButton" disabled={isSaved || !avatar || loading} onClick={() => saveAvatar(botId)}>
                     <span className="buttonIcon"><FaSave/></span>
-                    <span className="buttonText">{isSaved ? "Avatar saved" : isSaving ? <><MiniSpinner/> Saving</> : "Save this avatar"}</span>
+                    <span className="buttonText">{isSaved ? "Avatar saved" : "Save this avatar"}</span>
                 </button>
 
-                <button className="botButton" disabled={!originalImage} onClick={() => clearAvatar(botId)}>
+                <button className="botButton" disabled={!originalImage || loading} onClick={() => clearAvatar(botId)}>
                     <span className="buttonIcon"><MdDeleteForever/></span>
-                    <span className="buttonText">{isDeleting ? "Deleting" : "Delete avatar"}</span>
+                    <span className="buttonText">Delete avatar</span>
                 </button>
             </div>}
 

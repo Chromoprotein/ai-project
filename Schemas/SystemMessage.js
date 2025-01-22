@@ -22,7 +22,7 @@ const systemMessageSchema = new Schema({
     type: String,
     required: false
   },
-  avatar: { // Base64-encoded image
+  avatar: { 
     type: String,
     required: false
   }

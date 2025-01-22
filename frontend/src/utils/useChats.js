@@ -11,7 +11,7 @@ export function useChats() {
 
     // Bot persona -related state
     const [bots, setBots] = useState(); // List of bot personas
-    const [currentBot, setCurrentBot] = useState(); // Avatar, name, custom instructions etc. of the active bot
+    const [currentBot, setCurrentBot] = useState();
 
     // Loading states
     const [loadingBots, setLoadingBots] = useState(false);
@@ -19,7 +19,7 @@ export function useChats() {
     const [loadingChat, setLoadingChat] = useState(false);
     const [loadingBot, setLoadingBot] = useState(true);
 
-    // Used when a bot or an old chat is selected
+    // Used when a bot is selected. Saves what was the last active bot
     const setLastBotId = useCallback((async (botId) => {
         try {
             const response = await axiosInstance.post(process.env.REACT_APP_SETLASTBOTID, 
@@ -39,7 +39,7 @@ export function useChats() {
         }
     }), []);
 
-    // Used when a new chat is started from the front page, automatically gives the last used bot
+    // Used when a new chat is started from the front page, automatically gives the last selected bot as a suggestion
     const getLastBot = useCallback((async () => {
         try {
             setLoadingBot(true);
@@ -78,7 +78,6 @@ export function useChats() {
                     setMessages(mappedMessages);
                 }
                 const chat = response.data.chat;
-                console.log(response.data.chat)
                 if(chat.botId) {
                     setCurrentBot({
                         botId: chat.botId._id,
@@ -162,6 +161,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, loadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId }
 
 };
