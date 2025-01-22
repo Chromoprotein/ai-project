@@ -29,6 +29,7 @@
     "openai": "^4.67.3",
     "path": "^0.12.7",
     "react-slider": "^2.0.6",
+    "sharp": "^0.33.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

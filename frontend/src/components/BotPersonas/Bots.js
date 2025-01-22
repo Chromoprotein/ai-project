@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { CiCirclePlus } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import BotForm from './BotForm';
-import { Spinner } from '../Reusables/SmallUIElements';
+import { MiniSpinner } from '../Reusables/SmallUIElements';
 import BotDetails from './BotDetails';
 import AvatarGen from './AvatarGen';
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
@@ -122,13 +122,12 @@ export default function Bots() {
                             <BotForm initialState={initialState} edit={false} setIsSubmit={setIsSubmit} />
                         </>}
 
-                        {loadingBots && <Spinner />}
+                        {loadingBots && <MiniSpinner />}
 
                         {/* The existing bots */}
 
                         {bots && bots.map((bot, index) => {
-                            const imageSrc = bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp";
-                            
+
                             return <>
                             {editBot === bot.botId ?
                                 // Form for editing the bot
@@ -139,7 +138,7 @@ export default function Bots() {
 
                                     <AvatarGen 
                                         botId={bot.botId} 
-                                        originalImage={imageSrc} 
+                                        originalImage={bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp"}
                                         avatarGen={avatarGen} 
                                         toggleAvatarGen={() => toggleAvatarGen(bot.botId)} 
                                         setIsSubmit={setIsSubmit} 

@@ -5,6 +5,8 @@ const SystemMessage = require("../Schemas/SystemMessage");
 let OpenAI = require('openai');
 const mongoose = require('mongoose');
 const axios = require('axios');
+const sharp = require('sharp');
+const path = require('path');
 
 const openai = new OpenAI(
     {
@@ -470,7 +472,7 @@ exports.generateBotAvatar = async (req, res) => {
     }
 };
 
-// Saves a generated an avatar
+// Saves a generated avatar
 exports.avatar = async (req, res) => {
     const { botId, avatar } = req.body;
     const userId = req.id;
@@ -481,17 +483,24 @@ exports.avatar = async (req, res) => {
 
     try {
 
-        // Make sure the bot exists
-        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+        // Fetch the bot and image concurrently
+        const [existingBot, avatarResponse] = await Promise.all([
+            SystemMessage.findOne({ _id: botId, userId }),
+            axios.get(avatar, { responseType: 'arraybuffer' })
+        ]);
+
         if (!existingBot) {
             return res.status(404).json({
-                message: "Bot not found or does not belong to the user",
+                message: "Bot not found",
             });
-        }
+        };
 
-        // Fetch the image as binary data
-        const response = await axios.get(avatar, { responseType: 'arraybuffer' });
-        const base64Image = Buffer.from(response.data, 'binary').toString('base64');
+        // Resize the image
+        const processedImage = await sharp(avatarResponse.data)
+            .resize(128, 128)
+            .toBuffer();
+
+        const base64Image = Buffer.from(processedImage, 'binary').toString('base64');
 
         // Save to MongoDB
         existingBot.avatar = base64Image;

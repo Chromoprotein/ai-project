@@ -1,12 +1,10 @@
-export function Hello({bot = "AI", avatar = "", loadingBot}) {
-
-  const imageSrc = avatar ? `data:image/webp;base64,${avatar}` : "/placeholderAvatar.webp";
+export function Hello({bot = "AI", avatar, loadingBot}) {
 
   return (
     <div className="centeredContainer">
       {loadingBot ? <MiniSpinner /> : 
       <>
-        <img src={imageSrc} alt={`Avatar of ${bot}`} className="botImage"/>
+        <img src={avatar} alt={`Avatar of ${bot}`} className="botImage"/>
         <p className="title">Ask {bot} anything</p>
       </>}
     </div>
@@ -26,5 +24,11 @@ export function MiniSpinner() {
     <div className="smallSpinnerWrapper">
       <div className="spinner smallSpinner"></div>
     </div>
+  );
+}
+
+export function MiniOverlaySpinner() {
+  return (
+      <div className="spinner smallSpinner smallOverlaySpinner"></div>
   );
 }

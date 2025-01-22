@@ -54,10 +54,6 @@ A chatbot with the OpenAI API that has chat folders.
 
     - Moving chats to a different folder with multiple drag-and-drop
 
-- Improve UI:
+- Improve the UI:
 
-    - center the mini spinner on the sidebar
-
-    - center the spinner in the Hello component
-
-    - Make the bot persona page's buttons look better on mobile
+    - Better loading experience on the Bots page

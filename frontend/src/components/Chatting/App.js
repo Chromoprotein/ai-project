@@ -19,7 +19,7 @@ import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, loadingBot, loadingChat, loadingChatList } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingChatList } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -41,6 +41,8 @@ export default function App() {
     setQuery("");
     setMessages([]);
     setFile(null);
+    setCurrentBot({});
+    setLoadingBot(true);
   }
 
   // Add messages to state
@@ -200,12 +202,12 @@ export default function App() {
   // Find the last used bot's info, needed to start a new chat
   useEffect(() => {
     const activeBot = async () => {
-      if(messages.length === 0 && !currentBot) { // if the chat hasn't started yet
+      if(!searchParams.get("chatId")) { // if the chat hasn't started yet
         await getLastBot(); // check what bot was last used
       };
     };
     activeBot();
-  }, [currentBot, getLastBot, messages.length])
+  }, [getLastBot, searchParams]);
 
   // 4. UI ELEMENTS
 
@@ -216,8 +218,9 @@ export default function App() {
       let imageSrc = "/placeholderAvatar.webp";
       if(message.role === "user") {
         name = username;
+        // Users will get avatars when I've added user profiles
       } else if(message.role === "assistant") {
-        imageSrc = currentBot?.avatar ? `data:image/webp;base64,${currentBot?.avatar}` : "/placeholderAvatar.webp";
+        imageSrc = `data:image/webp;base64,${currentBot?.avatar}`;
         if(currentBot?.botName) {
           name = currentBot.botName;
         } else {
@@ -248,7 +251,7 @@ export default function App() {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar} loadingBot={loadingBot} />
+              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar ? `data:image/webp;base64,${currentBot?.avatar}` : "/placeholderAvatar.webp"} loadingBot={loadingBot} />
             )}
           </div>
 

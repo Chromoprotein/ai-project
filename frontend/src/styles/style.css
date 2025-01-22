@@ -597,8 +597,8 @@ body {
 }
 
 .spinner {
-    border: 5px solid var(--text-color);
-    border-top: 5px solid var(--color-pop);
+    border: 5px solid var(--color-pop);
+    border-top: 5px solid var(--text-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -617,6 +617,16 @@ body {
     display:flex;
     justify-content: center;
     padding:10px;
+}
+
+.smallOverlaySpinner {
+    position: absolute;
+    z-index: 999;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    margin:auto;
 }
 
 @keyframes spin {
@@ -691,6 +701,11 @@ body {
     font-size: 16px;
 }
 
+.botButton:disabled {
+    background-color: gray;
+    cursor: default;
+}
+
 .buttonIcon {
     margin-right: 5px;
     display: flex;
@@ -755,6 +770,10 @@ body {
     border-radius: 50%;
     border: 3px solid transparent;
     transition: all 0.2s ease-in;
+}
+
+.botImageLoading {
+    filter: brightness(50%);
 }
 
 .botLoader {
