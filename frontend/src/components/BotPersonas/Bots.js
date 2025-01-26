@@ -4,7 +4,6 @@ import { useChats } from '../../utils/useChats';
 import { useMode } from '../../utils/useMode';
 import { useNavigate } from 'react-router-dom';
 import { CiCirclePlus } from "react-icons/ci";
-import { Link } from "react-router-dom";
 import BotForm from './BotForm';
 import { MiniSpinner } from '../Reusables/SmallUIElements';
 import BotDetails from './BotDetails';
@@ -16,6 +15,7 @@ import { RiCollapseDiagonal2Line } from "react-icons/ri";
 import axiosInstance from '../../utils/axiosInstance';
 import Layout from '../Reusables/Layout';
 import IconButton from '../Reusables/IconButton';
+import BackButton from '../Reusables/BackButton';
 
 export default function Bots() {
 
@@ -104,8 +104,8 @@ export default function Bots() {
 
     const buttons = (
         <>
-            <Link to="/" className="button">Back</Link>
-            <button className="button" onClick={toggleForm}><CiCirclePlus /> Add bot</button>
+            <BackButton />
+            <IconButton func={toggleForm} icon={<CiCirclePlus />} changeClass="botButton" text="Add bot" />
         </>
     );
     

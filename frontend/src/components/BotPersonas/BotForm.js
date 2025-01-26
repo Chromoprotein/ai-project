@@ -8,6 +8,7 @@ import { FaSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { RiCollapseDiagonal2Line } from "react-icons/ri";
 import IconButton from "../Reusables/IconButton";
+import { Link } from "react-router-dom";
 
 export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit }) {
 
@@ -148,11 +149,15 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
                 <textarea type="text" name="userInfo" value={formData.userInfo} onChange={handleChange}></textarea>
             </div>
 
+            <div className="formItem">
+                <Link to={`/shareProfile?botId=${formData.botId}`} className="botButton">Share profile with this bot</Link>
+            </div>
+
             <div className="botButtons">
                 <IconButton type="submit" changeClass="botButton" icon={<FaSave/>} text="Submit" />
                 {edit && <>
                     <IconButton changeClass="botButton" func={toggleEdit} icon={<RiCollapseDiagonal2Line/>} text="Close" />
-                    <IconButton changeClass="botButton" func={toggleDeleteWarning} icon={<MdDeleteForever/>} text="Delete" />
+                    <IconButton changeClass="iconButton" func={toggleDeleteWarning} icon={<MdDeleteForever/>} />
                 </>}
             </div>
 

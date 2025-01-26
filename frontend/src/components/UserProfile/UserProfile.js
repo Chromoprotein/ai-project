@@ -1,6 +1,5 @@
 import Layout from "../Reusables/Layout";
 import { useMode } from "../../utils/useMode";
-import { Link } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosInstance";
@@ -8,6 +7,7 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaPlusCircle } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import IconButton from "../Reusables/IconButton";
+import BackButton from '../Reusables/BackButton';
 
 export default function UserProfile() {
 
@@ -23,7 +23,7 @@ export default function UserProfile() {
         avatar: '',
         aboutMe: '',
         interestsHobbies: '',
-        currentGoals: [{ id: 1, goal: "" }],
+        currentGoals: [{ id: Date.now(), goal: "" }],
         currentMood: '',
     });
 
@@ -67,8 +67,8 @@ export default function UserProfile() {
 
     const buttons = (
         <>
-            <Link to="/" className="button">Back</Link>
-            <IconButton func={toggleEdit} condition={edit} trueIcon={<FaEye/>} trueText="View profile" falseIcon={<FaEdit />} falseText="Edit profile" />
+            <BackButton />
+            <IconButton func={toggleEdit} condition={edit} trueIcon={<FaEye/>} trueText="View profile" falseIcon={<FaEdit />} falseText="Edit profile" changeClass="botButton" />
         </>
     );
 
@@ -122,7 +122,7 @@ export default function UserProfile() {
 
     const formFields = [
         { label: "Username", type: "text", name: "username", value: formData.username, onChange: handleChange },
-        { label: "Email", type: "text", name: "email", value: formData.email, onChange: handleChange },
+        { label: "Email (never shared with bots)", type: "text", name: "email", value: formData.email, onChange: handleChange },
         { label: "About me", type: "text", name: "aboutMe", value: formData.aboutMe, onChange: handleChange, inputType: "textarea" },
         { label: "My interests and hobbies", type: "text", name: "interestsHobbies", value: formData.interestsHobbies, onChange: handleChange, inputType: "textarea" },
         { label: "My current mood", type: "text", name: "currentMood", value: formData.currentMood, onChange: handleChange }

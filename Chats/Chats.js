@@ -602,6 +602,83 @@ exports.getLastBot = async (req, res) => {
     }
 }
 
+exports.getSharedUserData = async (req, res) => {
+
+    try {
+        const userId = req.id;
+
+        const { botId } = req.query;
+
+        const user = await User.findById(userId);
+
+        // Find the sharing preferences for the specific bot
+        const sharingPreferences = user.sharedWithBots.find(bot => bot.botId === botId);
+
+        if (!sharingPreferences) {
+            return res.status(200).json({})
+        }
+
+        // Construct the response based on the sharing preferences
+        const sharedData = {};
+        if (sharingPreferences.shareAboutMe) {
+            sharedData.aboutMe = user.aboutMe;
+        }
+        if (sharingPreferences.shareInterestsHobbies) {
+            sharedData.interestsHobbies = user.interestsHobbies;
+        }
+        if (sharingPreferences.shareCurrentMood) {
+            sharedData.currentMood = user.currentMood;
+        }
+        if (sharingPreferences.sharedGoals && sharingPreferences.sharedGoals.length > 0) {
+            sharedData.currentGoals = user.currentGoals.filter(goal =>
+                sharingPreferences.sharedGoals.includes(goal.id)
+            );
+        }
+
+        return res.status(200).json({ sharedData })
+    } catch (error) {
+        return res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        })
+    };
+};
+
+exports.updateSharedUserData = async (req, res) => {
+    const { botId, sharingPreferences } = req.body;
+
+    const userId = req.id;
+
+    // Validate inputs
+    if (!userId || !botId || !sharingPreferences) {
+        return res.status(400).send('Invalid input');
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).send('User not found');
+    }
+
+    // Update or create sharing preferences for the bot
+    const botSettingsIndex = user.sharedWithBots.findIndex(bot => bot.botId.toString() === botId);
+    if (botSettingsIndex > -1) {
+        // Update existing settings
+        user.sharedWithBots[botSettingsIndex] = {
+            botId,
+            ...sharingPreferences
+        };
+    } else {
+        // Add new settings
+        user.sharedWithBots.push({
+            botId,
+            ...sharingPreferences
+        });
+    }
+
+    await user.save();
+    return res.status(200).send('Sharing preferences updated successfully');
+};
+
 // AVATAR-RELATED
 
 // Generates a new avatar with Dalle

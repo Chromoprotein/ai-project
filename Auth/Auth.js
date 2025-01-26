@@ -124,12 +124,14 @@ exports.getUser = async (req, res) => {
 
     const user = await User.findOne({ _id: userId }, '-password -_id');
     
-    if (user) {
-      res.status(200).json(user);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
     }
+
+    return res.status(200).json(user);
     
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
         message: "An error occurred",
         error: error.message,
     });

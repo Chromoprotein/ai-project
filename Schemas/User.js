@@ -43,7 +43,21 @@ const userSchema = new Schema({
     currentMood: {
         type:String,
         required:false,
-    }
+    },
+    sharedWithBots: [
+        {
+            botId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'SystemMessage',
+            },
+            shareAboutMe: { type: Boolean, default: false },
+            shareInterestsHobbies: { type: Boolean, default: false },
+            shareCurrentMood: { type: Boolean, default: false },
+            sharedGoals: [
+                { type: Number } // Array of IDs of goals the user wants to share
+            ]
+        }
+    ]
 },{collection : 'users', timestamps:true})
 
 module.exports = mongoose.model('User', userSchema)
