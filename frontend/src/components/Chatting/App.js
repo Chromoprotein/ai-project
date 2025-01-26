@@ -15,7 +15,6 @@ import { InputContainer } from "./InputContainer";
 import { processTraits } from "../../utils/systemPromptMakers";
 import { makeFullSystemPrompt } from "../../utils/systemPromptMakers";
 import sliderData from "../../shared/botTraitData";
-import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function App() {
 
@@ -243,7 +242,7 @@ export default function App() {
         />
 
         <div className="mainContent">
-          <div className="chatContainer">
+          <div className="scrollContainer">
             {mappedMessages.length > 0 ? (
               <>
                 {mappedMessages}

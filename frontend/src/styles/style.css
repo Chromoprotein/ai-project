@@ -92,7 +92,7 @@ body {
 }
 
 /*wraps the messages and can be scrolled*/
-.chatContainer {
+.scrollContainer {
     flex: 1;
     overflow-y: auto;
     width:100%;
@@ -261,6 +261,30 @@ body {
 
 .formItem .formInfo {
     text-align: center;
+}
+
+.spacedItemsWrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.iconButton {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-pop);
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+.emptyField {
+    color: gray;
+    font-style: italic;
 }
 
 /* SLIDERS */
@@ -447,11 +471,11 @@ body {
 /*SCROLLBARS*/
 
 /* Hide scrollbar for Chrome, Safari and Opera */
-.chatContainer::-webkit-scrollbar, .inputContainer textarea::-webkit-scrollbar, .navbar::-webkit-scrollbar {
+.scrollContainer::-webkit-scrollbar, .inputContainer textarea::-webkit-scrollbar, .navbar::-webkit-scrollbar {
     display: none;
 }
 /* Hide scrollbar for IE, Edge and Firefox */
-.chatContainer, .inputContainer textarea, .navbar {
+.scrollContainer, .inputContainer textarea, .navbar {
     -ms-overflow-style: none;
     /* IE and Edge */
     scrollbar-width: none;
@@ -494,7 +518,7 @@ body {
     flex-direction: row;
     justify-content: left;
     align-items: center;
-    gap: 15px;
+    gap: 5px;
 }
 
 .smallButton {

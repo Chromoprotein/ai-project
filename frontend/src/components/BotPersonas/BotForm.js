@@ -7,12 +7,14 @@ import sliderData from "../../shared/botTraitData";
 import { FaSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { RiCollapseDiagonal2Line } from "react-icons/ri";
+import IconButton from "../Reusables/IconButton";
 
 export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit }) {
 
     const [formData, setFormData] = useState(initialState);
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
     const [deleteWarning, setDeleteWarning] = useState(false);
 
     const toggleAdvanced = () => {
@@ -61,6 +63,7 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             );
             if (response) {
                 console.log(response.status.message);
+                setMessage("Persona updated");
                 setIsSubmit((prev) => !prev); // to refetch the bots
             }
         } catch (error) {
@@ -137,19 +140,7 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
                     </div>)
                 })}
 
-                <p className="textButton" onClick={toggleAdvanced}>
-                    {showAdvanced ? 
-                        (<>
-                            <span className="buttonIcon"><FaChevronUp /></span>
-                            <span className="buttonText">Show Less</span>
-                        </>) 
-                        : 
-                        (<>
-                            <span className="buttonIcon"><FaChevronDown /></span>
-                            <span className="buttonText">Show More</span>
-                        </>)
-                    }
-                </p>
+                <IconButton changeClass="textButton" func={toggleAdvanced} condition={showAdvanced} trueIcon={<FaChevronUp />} trueText="Show less" falseIcon={<FaChevronDown />} falseText="Show more" />
             </div>
 
             <div className="formItem">
@@ -158,21 +149,18 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             </div>
 
             <div className="botButtons">
-                <button className="botButton" type="submit">
-                    <span className="buttonIcon"><FaSave/></span>
-                    <span className="buttonText">Submit</span>
-                </button>
+                <IconButton type="submit" changeClass="botButton" icon={<FaSave/>} text="Submit" />
                 {edit && <>
-                    <button className="botButton" type="button" onClick={toggleEdit}>
-                        <span className="buttonIcon"><RiCollapseDiagonal2Line/></span>
-                        <span className="buttonText">Close</span>
-                    </button>
-                    <button className="botButton" type="button" onClick={toggleDeleteWarning}>
-                        <span className="buttonIcon"><MdDeleteForever/></span>
-                        <span className="buttonText">Delete</span>
-                    </button>
+                    <IconButton changeClass="botButton" func={toggleEdit} icon={<RiCollapseDiagonal2Line/>} text="Close" />
+                    <IconButton changeClass="botButton" func={toggleDeleteWarning} icon={<MdDeleteForever/>} text="Delete" />
                 </>}
             </div>
+
+            {message && 
+                <div className="formItem">
+                    <div className="formInfo">{message}</div>
+                </div>
+            }
 
             {deleteWarning && <>
                 <p>Confirm you want to delete this bot. Deleting is permanent.</p>

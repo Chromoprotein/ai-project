@@ -5,6 +5,7 @@ import { RiEditCircleFill } from "react-icons/ri";
 import { IoSparklesOutline } from "react-icons/io5";
 import { FaSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
+import IconButton from "../Reusables/IconButton";
 
 export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatarGen, setIsSubmit}) {
 
@@ -91,20 +92,11 @@ export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatar
             </div>
 
             {avatarGen === botId && <div className="botButtons">
-                <button className="botButton" disabled={loading} onClick={() => generateAvatar(botId)}>
-                    <span className="buttonIcon"><IoSparklesOutline/></span>
-                    <span className="buttonText">Generate avatar</span>
-                </button>
+                <IconButton changeClass="botButton" disabled={loading} func={() => generateAvatar(botId)} icon={<IoSparklesOutline/>} text="Generate avatar" />
 
-                <button className="botButton" disabled={isSaved || !avatar || loading} onClick={() => saveAvatar(botId)}>
-                    <span className="buttonIcon"><FaSave/></span>
-                    <span className="buttonText">{isSaved ? "Avatar saved" : "Save this avatar"}</span>
-                </button>
+                <IconButton changeClass="botButton" disabled={isSaved || !avatar || loading} func={() => saveAvatar(botId)} icon={<FaSave/>} text={isSaved ? "Avatar saved" : "Save this avatar"} />
 
-                <button className="botButton" disabled={!originalImage || loading} onClick={() => clearAvatar(botId)}>
-                    <span className="buttonIcon"><MdDeleteForever/></span>
-                    <span className="buttonText">Delete avatar</span>
-                </button>
+                <IconButton changeClass="botButton" disabled={!originalImage || loading} func={() => clearAvatar(botId)} icon={<MdDeleteForever/>} text="Delete avatar" />
             </div>}
 
             <div className="errorMessage">

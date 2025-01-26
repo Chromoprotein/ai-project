@@ -5,6 +5,7 @@ import { GoDependabot } from "react-icons/go";
 import { useState } from "react";
 import { GoPlus } from "react-icons/go";
 import { MiniSpinner } from "../Reusables/SmallUIElements";
+import { FaRegUser } from "react-icons/fa";
 
 export function Sidebar({ chatList, chatId, loadingChatList, resetAll }) {
 
@@ -30,6 +31,10 @@ export function Sidebar({ chatList, chatId, loadingChatList, resetAll }) {
                     <button className="roundButton" onClick={toggleNavbar}>
                         {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}
                     </button>
+
+                    <Link className="roundButton" to="/profile">
+                        <FaRegUser />
+                    </Link>
 
                     <Link className="roundButton" to="/bots">
                         <GoDependabot />

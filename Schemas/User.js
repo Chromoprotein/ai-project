@@ -22,6 +22,28 @@ const userSchema = new Schema({
         ref: 'SystemMessage',
         required: false
     },
+    avatar: {
+        type:String,
+        required:false,
+    },
+    aboutMe: {
+        type:String,
+        required:false
+    },
+    interestsHobbies: {
+        type:String,
+        required:false
+    },
+    currentGoals: [
+        {
+            goal: { type: String, required: false },
+            id: { type: Number, required: false }, 
+        },
+    ],
+    currentMood: {
+        type:String,
+        required:false,
+    }
 },{collection : 'users', timestamps:true})
 
 module.exports = mongoose.model('User', userSchema)

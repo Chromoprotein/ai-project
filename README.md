@@ -30,8 +30,6 @@ A chatbot with the OpenAI API that has chat folders.
 
 - Improve bots:
 
-    - fix avatar saving performance issues
-
     - Add a "use user profile" option for the botInfo, and create a user profile page. The user can choose which bots can access the user profile.
 
 - Improve chatting:
@@ -53,7 +51,3 @@ A chatbot with the OpenAI API that has chat folders.
     - Custom folder categories
 
     - Moving chats to a different folder with multiple drag-and-drop
-
-- Improve the UI:
-
-    - Better loading experience on the Bots page

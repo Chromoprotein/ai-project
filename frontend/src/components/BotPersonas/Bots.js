@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useChats } from '../../utils/useChats';
 import { useMode } from '../../utils/useMode';
-import Background from '../Reusables/Backgrounds';
 import { useNavigate } from 'react-router-dom';
 import { CiCirclePlus } from "react-icons/ci";
 import { Link } from "react-router-dom";
@@ -15,6 +14,8 @@ import { FaEdit } from "react-icons/fa";
 import { RiExpandDiagonalLine } from "react-icons/ri";
 import { RiCollapseDiagonal2Line } from "react-icons/ri";
 import axiosInstance from '../../utils/axiosInstance';
+import Layout from '../Reusables/Layout';
+import IconButton from '../Reusables/IconButton';
 
 export default function Bots() {
 
@@ -26,6 +27,8 @@ export default function Bots() {
         userInfo: '',
         traits: []
     };
+
+    const { theme } = useMode();
 
     const [editBot, setEditBot] = useState();
 
@@ -47,8 +50,6 @@ export default function Bots() {
             }));
         }
     }
-
-    const { theme } = useMode();
 
     useEffect(() => {
         getBots();
@@ -101,90 +102,77 @@ export default function Bots() {
         }
     }
 
+    const buttons = (
+        <>
+            <Link to="/" className="button">Back</Link>
+            <button className="button" onClick={toggleForm}><CiCirclePlus /> Add bot</button>
+        </>
+    );
+    
     return (
         <>
-            <Background theme={theme} />
+            <Layout theme={theme} buttons={buttons}>
 
-            <div className="container">
+            {/* The bot form */}
 
-                <div className="mainContent">
-                    <div className="chatContainer">
+            {showForm && <>
+                <BotForm initialState={initialState} edit={false} setIsSubmit={setIsSubmit} />
+            </>}
+
+            {loadingBots && <MiniSpinner />}
+
+            {/* The existing bots */}
+
+            {bots && bots.map((bot, index) => {
+
+                return <>
+                {editBot === bot.botId ?
+                    // Form for editing the bot
+                    <BotForm initialState={bot} edit={true} toggleEdit={() => toggleEdit(bot.botId)} setIsSubmit={setIsSubmit} /> 
+                :
+                    // Displaying the bot
+                    <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${currentBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
+
+                        <AvatarGen 
+                            botId={bot.botId} 
+                            originalImage={bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp"}
+                            avatarGen={avatarGen} 
+                            toggleAvatarGen={() => toggleAvatarGen(bot.botId)} 
+                            setIsSubmit={setIsSubmit} 
+                        />
+
+                        <h2 className="botTitle">{bot.botName}</h2>
+
+                        {expandedBots[bot.botId] && 
+                            <BotDetails bot={bot} />
+                        }
 
                         <div className="botButtons">
-                            <Link to="/" className="button">Back</Link>
+                            <Chat func={() => navigateToBot(bot.botId)} />
 
-                            <button className="button" onClick={toggleForm}><CiCirclePlus /> Add bot</button>
-                        </div>
+                            <IconButton changeClass="botButton" func={() => expandBot(bot.botId)} condition={!expandedBots[bot.botId]} falseIcon={<RiCollapseDiagonal2Line/>} trueIcon={<RiExpandDiagonalLine/>} falseText="Close" trueText="Info" />
 
-                        {/* The bot form */}
-
-                        {showForm && <>
-                            <BotForm initialState={initialState} edit={false} setIsSubmit={setIsSubmit} />
-                        </>}
-
-                        {loadingBots && <MiniSpinner />}
-
-                        {/* The existing bots */}
-
-                        {bots && bots.map((bot, index) => {
-
-                            return <>
-                            {editBot === bot.botId ?
-                                // Form for editing the bot
-                                <BotForm initialState={bot} edit={true} toggleEdit={() => toggleEdit(bot.botId)} setIsSubmit={setIsSubmit} /> 
-                            :
-                                // Displaying the bot
-                                <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${currentBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
-
-                                    <AvatarGen 
-                                        botId={bot.botId} 
-                                        originalImage={bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp"}
-                                        avatarGen={avatarGen} 
-                                        toggleAvatarGen={() => toggleAvatarGen(bot.botId)} 
-                                        setIsSubmit={setIsSubmit} 
-                                    />
-
-                                    <h2 className="botTitle">{bot.botName}</h2>
-
-                                    {expandedBots[bot.botId] && 
-                                        <BotDetails bot={bot} />
-                                    }
-
-                                    <div className="botButtons">
-                                        <Chat func={() => navigateToBot(bot.botId)} />
-                                        <button className="botButton" onClick={() => expandBot(bot.botId)}>
-                                            <span className="buttonIcon">{!expandedBots[bot.botId] ? <RiExpandDiagonalLine/> : <RiCollapseDiagonal2Line/>}</span>
-                                            <span className="buttonText">{!expandedBots[bot.botId] ? "Info" : "Close"}</span>
-                                        </button>
-                                        <button className="botButton" onClick={() => toggleEdit(bot.botId)}>
-                                            <span className="buttonIcon"><FaEdit/></span>
-                                            <span className="buttonText">Edit</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            }
-                            </>
-                        })}
-
-                        <div className={`botWrapper expanded ${currentBot?.botId ? "inactiveBot" : "activeBot"}`}>
-                            <div className="botButtons">
-                                <p>Chat without custom instructions</p>
-                                <Chat func={forgetBot} />
-                            </div>
+                            <IconButton changeClass="botButton" func={() => toggleEdit(bot.botId)} icon={<FaEdit/>} text="Edit" />
                         </div>
                     </div>
-                </div>
+                }
+                </>
+            })}
 
+            <div className={`botWrapper expanded ${currentBot?.botId ? "inactiveBot" : "activeBot"}`}>
+                <div className="botButtons">
+                    <p>Chat without custom instructions</p>
+                    <Chat func={forgetBot} />
+                </div>
             </div>
+
+            </Layout>
         </>
     );
 };
 
 function Chat({func}) {
     return (
-        <button className="botButton" onClick={func}>
-            <span className="buttonIcon"><IoChatbubbleEllipsesOutline /></span>
-            <span className="buttonText">Chat</span>
-        </button>
+        <IconButton changeClass="botButton" icon={<IoChatbubbleEllipsesOutline />} text="Chat" func={func} />
     );
 }
