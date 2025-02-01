@@ -45,7 +45,6 @@ export default function Login() {
             { withCredentials: true }
           );
           if (response.status === 201) {
-              console.log("user logged in")
               sessionStorage.setItem('isAuthenticated', 'true');
               sessionStorage.setItem('name', response.data.username)
               navigate("/");

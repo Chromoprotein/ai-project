@@ -12,7 +12,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { Typing } from "../Reusables/Loaders";
 import { Hello } from "../Reusables/SmallUIElements";
 import { InputContainer } from "./InputContainer";
-import { processTraits } from "../../utils/systemPromptMakers";
+import { processTraits, processSharedData } from "../../utils/systemPromptMakers";
 import { makeFullSystemPrompt } from "../../utils/systemPromptMakers";
 import sliderData from "../../shared/botTraitData";
 
@@ -94,7 +94,8 @@ export default function App() {
     if (messages.length === 0 && currentBot) {
       // Add system prompt to new chat
       const processedTraits = processTraits(currentBot.traits, sliderData);
-      const fullSystemPrompt = makeFullSystemPrompt(currentBot.botName, currentBot.instructions, processedTraits, currentBot.userInfo);
+      const processedSharedData = processSharedData(currentBot.sharedData);
+      const fullSystemPrompt = makeFullSystemPrompt(currentBot.botName, currentBot.instructions, processedTraits, currentBot.userInfo, processedSharedData);
       allMessages = [fullSystemPrompt];
       addMessage(fullSystemPrompt);
     } else {

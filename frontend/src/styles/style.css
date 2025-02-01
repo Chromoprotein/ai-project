@@ -874,7 +874,8 @@ body {
 }
 
 .leftText {
-    text-align: left;
+    align-self: start;
+    margin-left: 10px;
 }
 
 .tall {

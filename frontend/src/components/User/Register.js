@@ -33,7 +33,6 @@ export default function Register() {
     e.preventDefault();
     try {
       const response = await axios.post(process.env.REACT_APP_REGISTER, formData, { withCredentials: true });
-      console.log(response.data);
       if (response.status === 201) {
           const token = response.data.jwt;
           setCookie('jwt', token, { path: '/', secure: true, httpOnly: true }); // Set the JWT token as a cookie
@@ -43,7 +42,6 @@ export default function Register() {
           const botData = {...defaultBot, userInfo: `The user's name is ${response.data.username}`}
           const createBot = await axios.post(process.env.REACT_APP_CREATEBOT, botData, { withCredentials: true});
           if(createBot) {
-            console.log(createBot.status.message);
             navigate("/");
           }
       }

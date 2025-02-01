@@ -34,8 +34,6 @@ export default function UserProfile() {
                 const response = await axiosInstance.get(process.env.REACT_APP_GETUSER);
                 if(response) {
                     const user = response.data;
-                    console.log("here")
-                    console.log(response.data)
                     setFormData({
                         username: user.username,
                         email: user.email,

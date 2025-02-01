@@ -8,11 +8,12 @@ import { FaSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { RiCollapseDiagonal2Line } from "react-icons/ri";
 import IconButton from "../Reusables/IconButton";
-import { Link } from "react-router-dom";
 
-export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit }) {
+export default function BotForm({ userData, initialState, initialSharedData, edit, toggleEdit, setIsSubmit }) {
 
     const [formData, setFormData] = useState(initialState);
+    const [sharedData, setSharedData] = useState(initialSharedData);
+
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
@@ -58,12 +59,12 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             } else {
                 endpoint = process.env.REACT_APP_CREATEBOT;
             }
+            const allData = { formData, sharedData };
             const response = await axiosInstance.post(
                 endpoint,
-                formData
+                allData
             );
             if (response) {
-                console.log(response.status.message);
                 setMessage("Persona updated");
                 setIsSubmit((prev) => !prev); // to refetch the bots
             }
@@ -84,7 +85,6 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
                 `${process.env.REACT_APP_DELETEBOT}/${botId}`,
             );
             if (response) {
-                console.log(response.status.message);
                 setIsSubmit((prev) => !prev); // to refetch the bots
             }
         } catch (error) {
@@ -92,7 +92,7 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             setError(error.message);
         }
     };
-
+    
     return (
         <form onSubmit={handleSubmit} className="formContainer">
 
@@ -145,12 +145,76 @@ export default function BotForm({ initialState, edit, toggleEdit, setIsSubmit })
             </div>
 
             <div className="formItem">
-                <label className="smallLabel">The bot should know about you:</label>
-                <textarea type="text" name="userInfo" value={formData.userInfo} onChange={handleChange}></textarea>
+                <label className="smallLabel">Select profile data to share</label>
             </div>
 
+            <div className={`clickableText ${sharedData.shareAboutMe && "clickedText"}`} onClick={() => setSharedData((prev) => ({...prev, shareAboutMe: !prev.shareAboutMe}))}>
+                <label className="smallLabel">About Me</label>
+                <p>{userData.aboutMe}</p>
+                <input // Hidden checkbox for accessibility
+                    type="checkbox"
+                    checked={sharedData.shareAboutMe}
+                    style={{ display: "none" }}
+                    onChange={() => {}}
+                />
+            </div>
+
+            <div className={`clickableText ${sharedData.shareInterestsHobbies && "clickedText"}`} onClick={() => setSharedData((prev) => ({...prev, shareInterestsHobbies: !prev.shareInterestsHobbies}))}>
+                <label className="smallLabel">Interests & Hobbies</label>
+                <p>{userData.interestsHobbies}</p>
+                <input
+                    type="checkbox"
+                    checked={sharedData.shareInterestsHobbies}
+                    style={{ display: "none" }}
+                    onChange={() => {}}
+                />
+            </div>
+
+            <div className={`clickableText ${sharedData.shareCurrentMood && "clickedText"}`} onClick={() => setSharedData((prev) => ({...prev, shareCurrentMood: !prev.shareCurrentMood}))}>
+                <label className="smallLabel">Current Mood</label>
+                <p>{userData.currentMood}</p>
+                <input
+                    type="checkbox"
+                    checked={sharedData.shareCurrentMood}
+                    style={{ display: "none" }}
+                    onChange={() => {}}
+                />
+            </div>
+
+            <label className="smallLabel leftText">Current goals</label>
+            <>
+                {userData.currentGoals.map((goal) => {
+                    const isSelected = sharedData.sharedGoals?.includes(goal.id) || false;
+                    
+                    return (
+                        <div
+                            key={goal.id}
+                            className={`clickableText ${isSelected && "clickedText"}`}
+                            onClick={() => {
+                                setSharedData((prev) => ({
+                                    ...prev,
+                                    sharedGoals: isSelected
+                                        ? prev.sharedGoals.filter((goalId) => goalId !== goal.id)
+                                        : [...prev.sharedGoals, goal.id]
+                                }));
+                            }}
+                        >
+                            {goal.goal}
+                            {/* Hidden checkbox for accessibility */}
+                            <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {}} // No direct onChange; handled by div click
+                                style={{ display: "none" }} // Hide the checkbox
+                            />
+                        </div>
+                    );
+                })}
+            </>
+
             <div className="formItem">
-                <Link to={`/shareProfile?botId=${formData.botId}`} className="botButton">Share profile with this bot</Link>
+                <label className="smallLabel">Additional information bot should know about you:</label>
+                <textarea type="text" name="userInfo" value={formData.userInfo} onChange={handleChange}></textarea>
             </div>
 
             <div className="botButtons">

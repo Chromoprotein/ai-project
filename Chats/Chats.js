@@ -369,11 +369,34 @@ exports.newChat = async (req, res) => {
 
 // BOT PERSONA-RELATED
 
+exports.getAllBots = async (req, res) => {
+
+    try {
+        const userId = req.id;
+
+        const bots = await SystemMessage.find({ userId: userId }).lean()
+
+        if (!bots) {
+            return res.status(404).send('Bots not found');
+        };
+
+        if(bots) {
+            res.status(200).json({ bots })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        })
+    }
+};
+
 // Creates a new system message / bot persona
 exports.newSystemMessage = async (req, res) => {
 
     try {
-        const { botName, instructions, userInfo, traits } = req.body;
+        const { formData, sharedData } = req.body;
+        const { botName, instructions, userInfo, traits } = formData;
 
         const userId = req.id;
 
@@ -381,6 +404,19 @@ exports.newSystemMessage = async (req, res) => {
 
             const bot = await SystemMessage.create({ botName, userId, instructions, traits: JSON.stringify(traits), userInfo });
             if(bot) {
+
+                const user = await User.findById(userId);
+                if (!user) {
+                    return res.status(404).send('User not found');
+                }
+                // Add new settings
+                user.sharedWithBots.push({
+                    botId: bot._id,
+                    ...sharedData
+                });
+
+                await user.save();
+
                 res.status(201).json({
                     message: "New system message successfully created",
                     id: bot._id,
@@ -402,51 +438,11 @@ exports.newSystemMessage = async (req, res) => {
 
 };
 
-// Fetches the user's bot personas
-exports.getSystemMessages = async (req, res) => {
-
-    try {
-        // User id comes from the auth middleware
-        const userId = req.id;
-
-        const bots = await SystemMessage.find({ userId: userId })
-        if(bots) {
-            res.status(200).json({ bots })
-        }
-    } catch (error) {
-        res.status(500).json({
-            message: "An error occurred",
-            error: error.message,
-        })
-    }
-
-};
-
-// Fetches the user's bot persona
-exports.getOneSystemMessage = async (req, res) => {
-
-    try {
-        // User id comes from the auth middleware
-        const userId = req.id;
-        const { botId } = req.query;
-
-        const bot = await SystemMessage.findOne({ userId: userId, _id: botId })
-        if(bot) {
-            res.status(200).json({ bot })
-        }
-    } catch (error) {
-        res.status(500).json({
-            message: "An error occurred",
-            error: error.message,
-        })
-    }
-
-};
-
 exports.editBot = async (req, res) => {
 
     try {
-        const { botId, botName, instructions, userInfo, traits } = req.body;
+        const { formData, sharedData } = req.body;
+        const { botId, botName, instructions, userInfo, traits } = formData;
 
         const userId = req.id;
 
@@ -471,8 +467,31 @@ exports.editBot = async (req, res) => {
 
         await existingBot.save();
 
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Update or create sharing preferences for the bot
+        const botSettingsIndex = user.sharedWithBots.findIndex(bot => bot.botId.toString() === botId);
+        if (botSettingsIndex > -1) {
+            // Update existing settings
+            user.sharedWithBots[botSettingsIndex] = {
+                botId,
+                ...sharedData
+            };
+        } else {
+            // Add new settings
+            user.sharedWithBots.push({
+                botId,
+                ...sharedData
+            });
+        }
+
+        await user.save();
+
         res.status(200).json({
-            message: "System message successfully updated",
+            message: "Bot successfully updated",
             id: existingBot._id,
         });
 
@@ -506,7 +525,17 @@ exports.deleteBot = async (req, res) => {
 
         await SystemMessage.deleteOne({ _id: botId, userId });
 
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('Error removing profile data permissions from bot: user not found');
+        }
+
         await User.updateOne({ _id: userId, lastBotId: botId }, { $unset: { lastBotId: "" } });
+
+        await User.updateOne(
+            { _id: userId }, // Find the user
+            { $pull: { sharedWithBots: { botId: botId } } } // Remove the specific bot's entry
+        );
 
         res.status(200).json({
             message: "Bot persona successfully deleted",
@@ -581,17 +610,35 @@ exports.getLastBot = async (req, res) => {
     try {
         const userId = req.id;
 
-        const lastBot = await User.findOne({ _id: userId })
+        // Find what the last used bot is
+        const user = await User.findById(userId, '-password').lean()
         .populate({
-            path: 'lastBotId',
+            path: 'lastBotId', // Populate bot data
         });
-        if (!lastBot) {
+        if (!user) {
             return res.status(404).json({
                 message: "User not found",
             });
         }
 
-        const foundLastBot = lastBot.lastBotId || null;
+        const botId = user.lastBotId._id;
+        
+        // Find what data the user is sharing with that bot
+        const sharedData = user.sharedWithBots.find(shared => shared.botId.toString() === botId.toString()) || null;
+
+        const result = {
+            ...user.lastBotId, // Bot's data
+            sharedData: sharedData // User's shared data
+                ? {
+                    shareAboutMe: sharedData.shareAboutMe ? user.aboutMe : null,
+                    shareInterestsHobbies: sharedData.shareInterestsHobbies ? user.interestsHobbies : null,
+                    shareCurrentMood: sharedData.shareCurrentMood ? user.currentMood : null,
+                    sharedGoals: user.currentGoals.filter(g => sharedData.sharedGoals.includes(g.id))
+                }
+                : null
+        };
+
+        const foundLastBot = result || null;
         return res.status(200).json({ foundLastBot });
 
     } catch (error) {
@@ -601,83 +648,6 @@ exports.getLastBot = async (req, res) => {
         });
     }
 }
-
-exports.getSharedUserData = async (req, res) => {
-
-    try {
-        const userId = req.id;
-
-        const { botId } = req.query;
-
-        const user = await User.findById(userId);
-
-        // Find the sharing preferences for the specific bot
-        const sharingPreferences = user.sharedWithBots.find(bot => bot.botId === botId);
-
-        if (!sharingPreferences) {
-            return res.status(200).json({})
-        }
-
-        // Construct the response based on the sharing preferences
-        const sharedData = {};
-        if (sharingPreferences.shareAboutMe) {
-            sharedData.aboutMe = user.aboutMe;
-        }
-        if (sharingPreferences.shareInterestsHobbies) {
-            sharedData.interestsHobbies = user.interestsHobbies;
-        }
-        if (sharingPreferences.shareCurrentMood) {
-            sharedData.currentMood = user.currentMood;
-        }
-        if (sharingPreferences.sharedGoals && sharingPreferences.sharedGoals.length > 0) {
-            sharedData.currentGoals = user.currentGoals.filter(goal =>
-                sharingPreferences.sharedGoals.includes(goal.id)
-            );
-        }
-
-        return res.status(200).json({ sharedData })
-    } catch (error) {
-        return res.status(500).json({
-            message: "An error occurred",
-            error: error.message,
-        })
-    };
-};
-
-exports.updateSharedUserData = async (req, res) => {
-    const { botId, sharingPreferences } = req.body;
-
-    const userId = req.id;
-
-    // Validate inputs
-    if (!userId || !botId || !sharingPreferences) {
-        return res.status(400).send('Invalid input');
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).send('User not found');
-    }
-
-    // Update or create sharing preferences for the bot
-    const botSettingsIndex = user.sharedWithBots.findIndex(bot => bot.botId.toString() === botId);
-    if (botSettingsIndex > -1) {
-        // Update existing settings
-        user.sharedWithBots[botSettingsIndex] = {
-            botId,
-            ...sharingPreferences
-        };
-    } else {
-        // Add new settings
-        user.sharedWithBots.push({
-            botId,
-            ...sharingPreferences
-        });
-    }
-
-    await user.save();
-    return res.status(200).send('Sharing preferences updated successfully');
-};
 
 // AVATAR-RELATED
 
@@ -700,7 +670,6 @@ exports.generateBotAvatar = async (req, res) => {
             const description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
             const avatar = await getdalle(description);
             if(avatar) {
-                console.log(avatar)
                 return res.status(200).json(avatar);
             }
         } else {

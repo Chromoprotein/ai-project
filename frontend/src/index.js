@@ -14,7 +14,6 @@ import Logout from './components/User/Logout';
 import { useAuth } from './utils/useAuth';
 import Bots from './components/BotPersonas/Bots';
 import UserProfile from './components/UserProfile/UserProfile';
-import ShareProfile from './components/BotPersonas/ShareProfile';
 
 function RequireAuth({ children }) {
 
@@ -52,14 +51,6 @@ const router = createBrowserRouter(
         element={
           <RequireAuth>
             <UserProfile />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="shareProfile"
-        element={
-          <RequireAuth>
-            <ShareProfile />
           </RequireAuth>
         }
       />

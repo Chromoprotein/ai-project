@@ -19,14 +19,22 @@ import BackButton from '../Reusables/BackButton';
 
 export default function Bots() {
 
-    const { bots, getBots, getLastBot, currentBot, setLastBotId, loadingBots } = useChats();
+    const { bots, getBots, setBots, currentBot, setLastBotId, loadingBots, getUser, userData } = useChats();
 
     const initialState = {
         botName: '',
         instructions: '',
-        userInfo: '',
-        traits: []
+        userInfo: '', // additional info about the user specifically for that bot
+        traits: [],
     };
+
+    // tells if a data section is shared with the bot. True, false, or a goal's id
+    const initialSharedData = {
+        shareAboutMe: false,
+        shareHobbiesInterests: false,
+        sharedGoals: [],
+        shareCurrentMood: false,
+    }
 
     const { theme } = useMode();
 
@@ -39,6 +47,36 @@ export default function Bots() {
 
     const [avatarGen, setAvatarGen] = useState();
 
+    useEffect(() => {
+        const getUserAndBots = async () => {
+            const [botResult, userResult] = await Promise.all([getBots(), getUser()])
+
+            // Convert shared data into a quick lookup map
+            const sharedMap = new Map();
+            userResult.sharedWithBots.forEach((shared) => {
+                sharedMap.set(shared.botId.toString(), shared);
+            });
+
+            // Merge shared data into bots
+            const result = botResult.map(bot => {
+                const sharedData = sharedMap.get(bot.botId.toString()) || null;
+                return {
+                    ...bot,
+                    sharedData: sharedData
+                        ? {
+                            shareAboutMe: sharedData.shareAboutMe ? userResult.aboutMe : null,
+                            shareInterestsHobbies: sharedData.shareInterestsHobbies ? userResult.interestsHobbies : null,
+                            shareCurrentMood: sharedData.shareCurrentMood ? userResult.currentMood : null,
+                            sharedGoals: userResult.currentGoals.filter(g => sharedData.sharedGoals.includes(g.id))
+                        }
+                        : null
+                };
+            });
+            setBots(result);
+        }
+        getUserAndBots();
+    }, [getBots, getUser, isSubmit, setBots])
+
     const toggleAvatarGen = (botId) => {
         if(avatarGen === botId) {
             setAvatarGen();
@@ -50,15 +88,6 @@ export default function Bots() {
             }));
         }
     }
-
-    useEffect(() => {
-        getBots();
-    }, [getBots, isSubmit])
-
-    // Check what bot was last used
-    useEffect(() => {
-        getLastBot();
-    }, [getLastBot]);
 
     const toggleForm = () => {
         setShowForm((prev) => !prev);
@@ -116,7 +145,13 @@ export default function Bots() {
             {/* The bot form */}
 
             {showForm && <>
-                <BotForm initialState={initialState} edit={false} setIsSubmit={setIsSubmit} />
+                <BotForm 
+                    userData={userData} 
+                    initialState={initialState} 
+                    edit={false} 
+                    setIsSubmit={setIsSubmit} 
+                    initialSharedData={initialSharedData}
+                />
             </>}
 
             {loadingBots && <MiniSpinner />}
@@ -128,7 +163,14 @@ export default function Bots() {
                 return <>
                 {editBot === bot.botId ?
                     // Form for editing the bot
-                    <BotForm initialState={bot} edit={true} toggleEdit={() => toggleEdit(bot.botId)} setIsSubmit={setIsSubmit} /> 
+                    <BotForm 
+                        userData={userData} 
+                        initialState={bot} 
+                        initialSharedData={userData.sharedWithBots.find(shared => shared.botId === bot.botId)} 
+                        edit={true} 
+                        toggleEdit={() => toggleEdit(bot.botId)} 
+                        setIsSubmit={setIsSubmit} 
+                    /> 
                 :
                     // Displaying the bot
                     <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${currentBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>

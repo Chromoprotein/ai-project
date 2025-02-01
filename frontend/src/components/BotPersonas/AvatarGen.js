@@ -27,7 +27,6 @@ export default function AvatarGen({botId, originalImage, avatarGen, toggleAvatar
                 { botId }
             );
             if(response) {
-                console.log(response.data[0].url)
                 setAvatar(response.data[0].url);
             }
         } catch (error) {

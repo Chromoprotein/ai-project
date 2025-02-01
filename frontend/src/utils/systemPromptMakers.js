@@ -20,10 +20,23 @@ export const processTraits = (traits, sliderData) => {
     return `You have the following traits: ${traitDescriptions}. The maximum value is 100.`;
 };
 
-export const makeFullSystemPrompt = (botName, instructions, processedTraits, userInfo) => {
+export const processSharedData = (sharedData) => {
+    const processedGoals = sharedData.sharedGoals?.map((goal, index) => (`Goal ${index+1}. ${goal.goal}`));
+    const stringGoals = processedGoals.length > 0 ? processedGoals.toString() : null;
+
+    const processedSharedData = (sharedData.shareAboutMe ? `Information about the user: ${sharedData.shareAboutMe}` : "") +
+    (sharedData.shareInterestsHobbies ? ` The user's interests and hobbies: ${sharedData.shareInterestsHobbies}` : "") +
+    (sharedData.shareCurrentMood ? ` The user's current mood: ${sharedData.shareCurrentMood}` : "") + 
+    (sharedData.sharedGoals ? ` The user's current goals: ${stringGoals}` : "");
+
+    return processedSharedData;
+}
+
+export const makeFullSystemPrompt = (botName, instructions, processedTraits, userInfo, processedSharedData) => {
     const prompt = `Your name is ${botName}. ${instructions}` +
         (processedTraits ? ` ${processedTraits}` : '') +
-        (userInfo ? ` The user has shared this information about themselves: ${userInfo}` : '');
+        (processedSharedData ? ` ${processedSharedData}` : '') +
+        (userInfo ? ` Additional information about the user: ${userInfo}` : '');
 
     return {
         role: "system",
