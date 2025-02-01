@@ -42,9 +42,6 @@ export function useChats() {
                     currentMood: user.currentMood,
                     sharedWithBots: user.sharedWithBots.length > 0 ? user.sharedWithBots : []
                 });
-                if(user.lastBotId) {
-                    setCurrentBot({ botId: user.lastBotId });
-                }
                 return response.data;
             }
         } catch (error) {
@@ -86,10 +83,11 @@ export function useChats() {
                         avatar: bot.avatar,
                         instructions: bot.instructions,
                         traits: bot.traits?.length > 0 ? JSON.parse(bot.traits) : [],
-                        sharedData: bot.sharedData,
-                        userInfo: bot.userInfo
+                        userInfo: bot.userInfo,
+                        sharedData: {}
                     };
                 setCurrentBot(formattedBot);
+                return formattedBot;
             }
         } catch (error) {
             console.log(error.message);
@@ -97,6 +95,37 @@ export function useChats() {
             setLoadingBot(false);
         }
     }), []);
+
+    const addUserDataToBots = useCallback((userResult, botResult) => {
+        // Convert shared data into a quick lookup map
+        const sharedMap = new Map();
+        userResult.sharedWithBots.forEach((shared) => {
+            sharedMap.set(shared.botId.toString(), shared);
+        });
+
+        // A helper function to process a single bot
+        const processBot = (bot) => {
+            const sharedData = sharedMap.get(bot.botId.toString()) || null;
+            return {
+                ...bot,
+                sharedData: sharedData
+                    ? {
+                        shareAboutMe: sharedData.shareAboutMe ? userResult.aboutMe : null,
+                        shareInterestsHobbies: sharedData.shareInterestsHobbies ? userResult.interestsHobbies : null,
+                        shareCurrentMood: sharedData.shareCurrentMood ? userResult.currentMood : null,
+                        sharedGoals: userResult.currentGoals.filter((g) => sharedData.sharedGoals.includes(g.id))
+                    }
+                    : null
+            };
+        };
+
+        // Check if botResult is an array or a single object
+        if (Array.isArray(botResult)) {
+            return botResult.map(processBot);
+        } else {
+            return processBot(botResult);
+        }
+    }, []);
 
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
@@ -117,7 +146,11 @@ export function useChats() {
                     setCurrentBot({ 
                         botId: chat.botId._id,
                         botName: chat.botId.botName,
-                        avatar: chat.botId.avatar
+                        avatar: chat.botId.avatar,
+                        instructions: null,
+                        traits: [],
+                        userInfo: null,
+                        sharedData: {}
                     });
                 }
             }
@@ -197,6 +230,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId, getUser, userData, setBots }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId, getUser, userData, setBots, addUserDataToBots }
 
 };

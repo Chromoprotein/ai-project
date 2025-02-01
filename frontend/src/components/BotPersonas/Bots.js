@@ -19,7 +19,7 @@ import BackButton from '../Reusables/BackButton';
 
 export default function Bots() {
 
-    const { bots, getBots, setBots, currentBot, setLastBotId, loadingBots, getUser, userData } = useChats();
+    const { bots, getBots, setBots, currentBot, setLastBotId, loadingBots, getUser, userData, addUserDataToBots, getLastBot } = useChats();
 
     const initialState = {
         botName: '',
@@ -49,33 +49,19 @@ export default function Bots() {
 
     useEffect(() => {
         const getUserAndBots = async () => {
+            // Fetch the bot data and the user data
             const [botResult, userResult] = await Promise.all([getBots(), getUser()])
 
-            // Convert shared data into a quick lookup map
-            const sharedMap = new Map();
-            userResult.sharedWithBots.forEach((shared) => {
-                sharedMap.set(shared.botId.toString(), shared);
-            });
-
-            // Merge shared data into bots
-            const result = botResult.map(bot => {
-                const sharedData = sharedMap.get(bot.botId.toString()) || null;
-                return {
-                    ...bot,
-                    sharedData: sharedData
-                        ? {
-                            shareAboutMe: sharedData.shareAboutMe ? userResult.aboutMe : null,
-                            shareInterestsHobbies: sharedData.shareInterestsHobbies ? userResult.interestsHobbies : null,
-                            shareCurrentMood: sharedData.shareCurrentMood ? userResult.currentMood : null,
-                            sharedGoals: userResult.currentGoals.filter(g => sharedData.sharedGoals.includes(g.id))
-                        }
-                        : null
-                };
-            });
-            setBots(result);
+            // Check what user data is shared with bots and add it to the bots
+            const combinedData = addUserDataToBots(userResult, botResult);
+            setBots(combinedData);
         }
         getUserAndBots();
-    }, [getBots, getUser, isSubmit, setBots])
+    }, [getBots, getUser, isSubmit, addUserDataToBots, setBots])
+
+    useEffect(() => {
+        getLastBot();
+    }, [getLastBot])
 
     const toggleAvatarGen = (botId) => {
         if(avatarGen === botId) {

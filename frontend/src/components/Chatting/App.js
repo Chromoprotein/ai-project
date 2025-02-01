@@ -18,7 +18,7 @@ import sliderData from "../../shared/botTraitData";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingChatList } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingChatList, addUserDataToBots, getUser } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -203,11 +203,24 @@ export default function App() {
   useEffect(() => {
     const activeBot = async () => {
       if(!searchParams.get("chatId")) { // if the chat hasn't started yet
-        await getLastBot(); // check what bot was last used
+        const getUserAndLastBot = async () => {
+            // Fetch the bot data and the user data
+            const [botResult, userResult] = await Promise.all([getLastBot(), getUser()])
+
+            // Check what user data is shared with bots and add it to the bots
+            if(botResult) {
+              const combinedData = addUserDataToBots(userResult, botResult);
+              setCurrentBot(combinedData);
+            } else {
+              setCurrentBot(null);
+            }
+            
+        }
+        getUserAndLastBot();
       };
     };
     activeBot();
-  }, [getLastBot, searchParams]);
+  }, [addUserDataToBots, getLastBot, getUser, setCurrentBot, searchParams]);
 
   // 4. UI ELEMENTS
 

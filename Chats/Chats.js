@@ -621,24 +621,7 @@ exports.getLastBot = async (req, res) => {
             });
         }
 
-        const botId = user.lastBotId._id;
-        
-        // Find what data the user is sharing with that bot
-        const sharedData = user.sharedWithBots.find(shared => shared.botId.toString() === botId.toString()) || null;
-
-        const result = {
-            ...user.lastBotId, // Bot's data
-            sharedData: sharedData // User's shared data
-                ? {
-                    shareAboutMe: sharedData.shareAboutMe ? user.aboutMe : null,
-                    shareInterestsHobbies: sharedData.shareInterestsHobbies ? user.interestsHobbies : null,
-                    shareCurrentMood: sharedData.shareCurrentMood ? user.currentMood : null,
-                    sharedGoals: user.currentGoals.filter(g => sharedData.sharedGoals.includes(g.id))
-                }
-                : null
-        };
-
-        const foundLastBot = result || null;
+        const foundLastBot = user.lastBotId || null;
         return res.status(200).json({ foundLastBot });
 
     } catch (error) {
