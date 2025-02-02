@@ -403,6 +403,11 @@ body {
     color: var(--text-color);
 }
 
+.roundButton:disabled {
+    cursor:default;
+    background-color:gray;
+}
+
 .inputContainer input,
 .roundButton {
     font-size: 16px;

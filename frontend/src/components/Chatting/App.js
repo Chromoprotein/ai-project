@@ -201,25 +201,22 @@ export default function App() {
 
   // Find the last used bot's info, needed to start a new chat
   useEffect(() => {
-    const activeBot = async () => {
-      if(!searchParams.get("chatId")) { // if the chat hasn't started yet
-        const getUserAndLastBot = async () => {
-            // Fetch the bot data and the user data
-            const [botResult, userResult] = await Promise.all([getLastBot(), getUser()])
+    if(!searchParams.get("chatId")) { // if the chat hasn't started yet
+      const getUserAndLastBot = async () => {
+          // Fetch the bot data and the user data
+          const [botResult, userResult] = await Promise.all([getLastBot(), getUser()])
 
-            // Check what user data is shared with bots and add it to the bots
-            if(botResult) {
-              const combinedData = addUserDataToBots(userResult, botResult);
-              setCurrentBot(combinedData);
-            } else {
-              setCurrentBot(null);
-            }
-            
-        }
-        getUserAndLastBot();
-      };
-    };
-    activeBot();
+          // Check what user data is shared with bots and add it to the bots
+          if(botResult) {
+            const combinedData = addUserDataToBots(userResult, botResult);
+            setCurrentBot(combinedData);
+          } else {
+            setCurrentBot(null);
+          }
+          
+      }
+      getUserAndLastBot();
+    }
   }, [addUserDataToBots, getLastBot, getUser, setCurrentBot, searchParams]);
 
   // 4. UI ELEMENTS

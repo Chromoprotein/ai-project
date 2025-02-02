@@ -40,7 +40,7 @@ export function Sidebar({ chatList, chatId, loadingChatList, resetAll }) {
                         <GoDependabot />
                     </Link>
 
-                    <button className="roundButton" onClick={resetAll}>
+                    <button className="roundButton" onClick={resetAll} disabled={!chatId}>
                         <GoPlus />
                     </button>
                 </div>

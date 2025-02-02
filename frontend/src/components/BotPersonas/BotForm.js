@@ -148,6 +148,17 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
                 <label className="smallLabel">Select profile data to share</label>
             </div>
 
+            <div className={`clickableText ${sharedData.shareUsername && "clickedText"}`} onClick={() => setSharedData((prev) => ({...prev, shareUsername: !prev.shareUsername}))}>
+                <label className="smallLabel">Username</label>
+                <p>{userData.username}</p>
+                <input // Hidden checkbox for accessibility
+                    type="checkbox"
+                    checked={sharedData.shareUsername}
+                    style={{ display: "none" }}
+                    onChange={() => {}}
+                />
+            </div>
+
             <div className={`clickableText ${sharedData.shareAboutMe && "clickedText"}`} onClick={() => setSharedData((prev) => ({...prev, shareAboutMe: !prev.shareAboutMe}))}>
                 <label className="smallLabel">About Me</label>
                 <p>{userData.aboutMe}</p>

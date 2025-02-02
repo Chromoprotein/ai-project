@@ -611,17 +611,14 @@ exports.getLastBot = async (req, res) => {
         const userId = req.id;
 
         // Find what the last used bot is
-        const user = await User.findById(userId, '-password').lean()
-        .populate({
-            path: 'lastBotId', // Populate bot data
-        });
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found",
-            });
+        const user = await User.findById(userId, '-password').lean();
+
+        if (!user || !user.lastBotId) {
+            return null;
         }
 
-        const foundLastBot = user.lastBotId || null;
+        const foundLastBot = await SystemMessage.findById(user.lastBotId);
+
         return res.status(200).json({ foundLastBot });
 
     } catch (error) {

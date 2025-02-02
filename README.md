@@ -50,12 +50,6 @@ A chatbot with the OpenAI API that has chat folders.
 
 - Fixes:
 
-    - share the username with bots
-
-    - freezing bug when clicking on new chat twice
-
     - empty profile page flashes
 
     - cache user data
-
-    - use select instead of populate for getLastBot?

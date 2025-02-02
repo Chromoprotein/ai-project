@@ -50,6 +50,7 @@ const userSchema = new Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'SystemMessage',
             },
+            shareUsername: { type: Boolean, default: true },
             shareAboutMe: { type: Boolean, default: false },
             shareInterestsHobbies: { type: Boolean, default: false },
             shareCurrentMood: { type: Boolean, default: false },

@@ -110,6 +110,7 @@ export function useChats() {
                 ...bot,
                 sharedData: sharedData
                     ? {
+                        shareUsername: sharedData.shareUsername ? userResult.username : null,
                         shareAboutMe: sharedData.shareAboutMe ? userResult.aboutMe : null,
                         shareInterestsHobbies: sharedData.shareInterestsHobbies ? userResult.interestsHobbies : null,
                         shareCurrentMood: sharedData.shareCurrentMood ? userResult.currentMood : null,

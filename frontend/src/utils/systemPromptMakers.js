@@ -24,7 +24,8 @@ export const processSharedData = (sharedData) => {
     const processedGoals = sharedData.sharedGoals?.map((goal, index) => (`Goal ${index+1}. ${goal.goal}`));
     const stringGoals = processedGoals.length > 0 ? processedGoals.toString() : null;
 
-    const processedSharedData = (sharedData.shareAboutMe ? `Information about the user: ${sharedData.shareAboutMe}` : "") +
+    const processedSharedData = (sharedData.shareUsername ? `The user's name is ${sharedData.shareAboutMe}` : "")
+    (sharedData.shareAboutMe ? `Information about the user: ${sharedData.shareAboutMe}` : "") +
     (sharedData.shareInterestsHobbies ? ` The user's interests and hobbies: ${sharedData.shareInterestsHobbies}` : "") +
     (sharedData.shareCurrentMood ? ` The user's current mood: ${sharedData.shareCurrentMood}` : "") + 
     (sharedData.sharedGoals ? ` The user's current goals: ${stringGoals}` : "");

@@ -30,6 +30,7 @@ export default function Bots() {
 
     // tells if a data section is shared with the bot. True, false, or a goal's id
     const initialSharedData = {
+        shareUsername: true,
         shareAboutMe: false,
         shareHobbiesInterests: false,
         sharedGoals: [],
