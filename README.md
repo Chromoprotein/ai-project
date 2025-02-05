@@ -50,6 +50,4 @@ A chatbot with the OpenAI API that has chat folders.
 
 - Fixes:
 
-    - empty profile page flashes
-
     - cache user data

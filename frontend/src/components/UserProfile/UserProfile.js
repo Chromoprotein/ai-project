@@ -8,54 +8,35 @@ import { FaPlusCircle } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import IconButton from "../Reusables/IconButton";
 import BackButton from '../Reusables/BackButton';
+import { useChats } from "../../utils/useChats";
+import { Spinner } from "../Reusables/SmallUIElements";
 
 export default function UserProfile() {
 
     const { theme } = useMode();
+    
+    const { getUser, userData, loadingUser } = useChats();
 
     const [edit, setEdit] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        avatar: '',
-        aboutMe: '',
-        interestsHobbies: '',
-        currentGoals: [{ id: Date.now(), goal: "" }],
-        currentMood: '',
-    });
+    const [formData, setFormData] = useState(null);
 
     useEffect(() => {
-        const getUser = async () => {
-            try {
-                setMessage("");
-                const response = await axiosInstance.get(process.env.REACT_APP_GETUSER);
-                if(response) {
-                    const user = response.data;
-                    setFormData({
-                        username: user.username,
-                        email: user.email,
-                        avatar: user.avatar,
-                        aboutMe: user.aboutMe,
-                        interestsHobbies: user.interestsHobbies,
-                        currentGoals: user.currentGoals.length > 0 ? user.currentGoals : [{ id: 1, goal: "" }],
-                        currentMood: user.currentMood
-                    });
-                }
-            } catch (error) {
-                console.log(error);
-                setError(error.message);
-            }
-        };
         getUser();
-    }, []);
+    }, [getUser]);
+
+    useEffect(() => {
+        if(userData) {
+            setFormData(userData);
+        };
+    }, [userData]);
 
     const handleChange = (e) => {
         setFormData({
-        ...formData,
-        [e.target.name]: e.target.value,
+            ...formData,
+            [e.target.name]: e.target.value,
         });
     };
 
@@ -117,6 +98,8 @@ export default function UserProfile() {
             currentGoals: formData.currentGoals.map(goal => goal.id === id ? {...goal, goal: value} : goal)
         });
     }
+
+    if (loadingUser || !formData) return <Spinner />;
 
     const formFields = [
         { label: "Username", type: "text", name: "username", value: formData.username, onChange: handleChange },

@@ -18,10 +18,12 @@ export function useChats() {
     const [loadingChatList, setLoadingChatList] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
     const [loadingBot, setLoadingBot] = useState(true);
+    const [loadingUser, setLoadingUser] = useState(true);
 
     // User data for display purposes
     const [userData, setUserData] = useState({
         username: '',
+        email: '',
         aboutMe: '',
         interestsHobbies: '',
         currentGoals: [],
@@ -31,11 +33,13 @@ export function useChats() {
 
     const getUser = useCallback(async () => {
         try {
+            setLoadingUser(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETUSER);
             if(response) {
                 const user = response.data;
                 setUserData({
                     username: user.username,
+                    email: user.email,
                     aboutMe: user.aboutMe,
                     interestsHobbies: user.interestsHobbies,
                     currentGoals: user.currentGoals.length > 0 ? user.currentGoals : [],
@@ -46,6 +50,8 @@ export function useChats() {
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoadingUser(false);
         }
     }, []);
 
@@ -231,6 +237,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId, getUser, userData, setBots, addUserDataToBots }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId, getUser, userData, setBots, addUserDataToBots, loadingUser }
 
 };
