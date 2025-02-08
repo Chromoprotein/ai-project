@@ -614,7 +614,7 @@ exports.getLastBot = async (req, res) => {
         const user = await User.findById(userId, '-password').lean();
 
         if (!user || !user.lastBotId) {
-            return null;
+            return res.status(200).json(null);
         }
 
         const foundLastBot = await SystemMessage.findById(user.lastBotId);

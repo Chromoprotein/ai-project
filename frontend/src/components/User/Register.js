@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useCookies } from "react-cookie";
 import { useNavigate } from 'react-router-dom';
 import Form from '../Reusables/Form';
-import Background from '../Reusables/Backgrounds';
 import { useMode } from '../../utils/useMode';
 import { defaultBot } from '../../utils/defaultBot';
+import Layout from '../Reusables/Layout';
+import BackButton from '../Reusables/BackButton';
+import { Link } from 'react-router-dom';
+import { initialSharedData } from '../../utils/defaultBot';
 
 export default function Register() {
   const [cookies, setCookie, removeCookie] = useCookies(['jwt']);
@@ -37,42 +40,45 @@ export default function Register() {
           const token = response.data.jwt;
           setCookie('jwt', token, { path: '/', secure: true, httpOnly: true }); // Set the JWT token as a cookie
           sessionStorage.setItem('isAuthenticated', 'true');
+          sessionStorage.setItem('name', response.data.username)
 
           // Give the user a default bot
-          const botData = {...defaultBot, userInfo: `The user's name is ${response.data.username}`}
-          const createBot = await axios.post(process.env.REACT_APP_CREATEBOT, botData, { withCredentials: true});
+          const formData = defaultBot;
+          const sharedData = initialSharedData;
+
+          const allData = { formData, sharedData };
+
+          const createBot = await axios.post(process.env.REACT_APP_CREATEBOT, allData, { withCredentials: true });
           if(createBot) {
             navigate("/");
           }
       }
     } catch (error) {
       console.error(error);
-      setError(error.message);
+      setError(error.response.data.message);
     }
   };
 
-  return (
-    <>
-      <Background theme={theme} />
-      <div className="fixedContainer">
+  const buttons = (
+      <>
+          <BackButton />
+          <Link to="/login" className="botButton">Log in</Link>
+      </>
+  );
 
-        <div className="introWrapper">
-          <Form
-            title="Register"
-            fields={[
-              { label: "Username", type: "text", name: "username", value: formData.username, onChange: handleChange },
-              { label: "Email", type: "text", name: "email", value: formData.email, onChange: handleChange },
-              { label: "Password", type: "password", name: "password", value: formData.password, onChange: handleChange }
-            ]}
-            buttonText="Register"
-            onSubmit={handleSubmit}
-            error={error}
-            linkInfo="Already have an account?"
-            linkText="Log in"
-            linkTo="/login"
-          />
-        </div>
-      </div>
-    </>
+  return (
+    <Layout theme={theme} buttons={buttons}>
+      <Form
+        title="Register"
+        fields={[
+          { label: "Username", type: "text", name: "username", value: formData.username, onChange: handleChange },
+          { label: "Email", type: "text", name: "email", value: formData.email, onChange: handleChange },
+          { label: "Password", type: "password", name: "password", value: formData.password, onChange: handleChange }
+        ]}
+        buttonText="Register"
+        onSubmit={handleSubmit}
+        error={error}
+      />
+    </Layout>
   );
 };

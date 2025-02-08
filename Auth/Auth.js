@@ -15,6 +15,14 @@ exports.register = async (req, res, next) => {
   }
   
   try {
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email already in use",
+      });
+    };
+
     const hash = await bcrypt.hash(password, 10); // Hash the password asynchronously
     const user = await User.create({
       username,

@@ -31,7 +31,7 @@ export default function App() {
   const [botTyping, setBotTyping] = useState(false);
 
   // User data -related state
-  const [username, setUsername] = useState(sessionStorage.getItem("name") || "User");
+  const [username, setUsername] = useState(sessionStorage.getItem("name") || "You");
 
   // 1. HELPER FUNCTIONS
 
@@ -221,7 +221,7 @@ export default function App() {
 
   // 4. UI ELEMENTS
 
-  const mappedMessages = (messages && messages.length > 1) && messages
+  const mappedMessages = (messages && messages.length > 0) && messages
     .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => {
       let name;
@@ -230,7 +230,7 @@ export default function App() {
         name = username;
         // Users will get avatars when I've added user profiles
       } else if(message.role === "assistant") {
-        imageSrc = `data:image/webp;base64,${currentBot?.avatar}`;
+        imageSrc = currentBot?.avatar ? `data:image/webp;base64,${currentBot?.avatar}` : imageSrc;
         if(currentBot?.botName) {
           name = currentBot.botName;
         } else {
@@ -254,7 +254,7 @@ export default function App() {
 
         <div className="mainContent">
           <div className="scrollContainer">
-            {mappedMessages.length > 0 ? (
+            {searchParams.get("chatId") ? (
               <>
                 {mappedMessages}
                 {botTyping && <Typing />}

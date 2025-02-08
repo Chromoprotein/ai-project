@@ -51,3 +51,5 @@ A chatbot with the OpenAI API that has chat folders.
 - Fixes:
 
     - cache user data
+
+    - remove the unique username index

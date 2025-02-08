@@ -9,7 +9,7 @@ export default function Form({ title, fields, buttonText, onSubmit, error, linkT
       </div>
       {fields.map(({ label, type, name, value, onChange, inputType }) => (
         <div key={name} className="formItem">
-            <label>{label}</label>
+            <label className="smallLabel">{label}</label>
             {inputType === "textarea" ?
                 <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
                 <input type={type} name={name} value={value} onChange={onChange} />

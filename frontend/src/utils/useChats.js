@@ -80,7 +80,7 @@ export function useChats() {
         try {
             setLoadingBot(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETLASTBOT);
-            if(response.data.foundLastBot) {
+            if(response.data?.foundLastBot) {
                 const bot = response.data.foundLastBot;
                 const formattedBot =
                     {
@@ -94,6 +94,8 @@ export function useChats() {
                     };
                 setCurrentBot(formattedBot);
                 return formattedBot;
+            } else {
+                return null;
             }
         } catch (error) {
             console.log(error.message);

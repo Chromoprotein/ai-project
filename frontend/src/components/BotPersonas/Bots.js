@@ -16,6 +16,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import Layout from '../Reusables/Layout';
 import IconButton from '../Reusables/IconButton';
 import BackButton from '../Reusables/BackButton';
+import { initialSharedData } from '../../utils/defaultBot';
 
 export default function Bots() {
 
@@ -27,15 +28,6 @@ export default function Bots() {
         userInfo: '', // additional info about the user specifically for that bot
         traits: [],
     };
-
-    // tells if a data section is shared with the bot. True, false, or a goal's id
-    const initialSharedData = {
-        shareUsername: true,
-        shareAboutMe: false,
-        shareHobbiesInterests: false,
-        sharedGoals: [],
-        shareCurrentMood: false,
-    }
 
     const { theme } = useMode();
 
@@ -147,7 +139,7 @@ export default function Bots() {
 
             {bots && bots.map((bot, index) => {
 
-                return <>
+                return <div key={index}>
                 {editBot === bot.botId ?
                     // Form for editing the bot
                     <BotForm 
@@ -185,7 +177,7 @@ export default function Bots() {
                         </div>
                     </div>
                 }
-                </>
+                </div>
             })}
 
             <div className={`botWrapper expanded ${currentBot?.botId ? "inactiveBot" : "activeBot"}`}>
