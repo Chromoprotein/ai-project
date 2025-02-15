@@ -826,6 +826,7 @@ body {
     border-radius: 50%;
     border: 3px solid transparent;
     transition: all 0.2s ease-in;
+    margin-right: 10px;
 }
 
 .botImageLoading {
@@ -842,6 +843,11 @@ body {
     margin: 30px 10px;
 }
 
+.botIcon {
+    width: 22px;
+    border-radius: 50%;
+}
+
 .labelBubble {
     background-color: var(--color-pop);
     border-radius: 20px;
@@ -854,11 +860,31 @@ body {
     display: inline;
 }
 
+/* HOVERING MENU */
+
+.popupMenu {
+    width: 250px;
+    background-color: var(--highlight-background);
+    color: var(--text-color);
+    display: flex;
+    justify-content: start;
+    flex-direction: column;
+    padding: 5px 5px 30px 5px;
+    gap: 10px;
+    transition: width 0.3s; /* Smooth transition for collapsing */
+}
+
 /* ERROR MESSAGE */
 
 .errorMessage {
     color: red;
     text-align: center;
+}
+
+/* NEW USER NOTIF */
+
+.userMessage {
+    padding: 10px;
 }
 
 /* UTILS */

@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const sharp = require('sharp');
 const path = require('path');
+const fs = require('fs');
 
 const openai = new OpenAI(
     {
@@ -701,6 +702,49 @@ exports.avatar = async (req, res) => {
         await existingBot.save();
 
         res.json({ message: 'Avatar uploaded successfully!' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to upload avatar.' });
+    }
+};
+
+exports.placeholderAvatar = async (req, res) => {
+    const { botId, avatar } = req.body; // `avatar` is now just the filename
+    const userId = req.id;
+
+    if (!avatar || !botId) {
+        return res.status(400).json({ error: 'An avatar filename is required or bot not found' });
+    }
+
+    try {
+        // Validate bot ownership
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+        if (!existingBot) {
+            return res.status(404).json({ message: "Bot not found" });
+        }
+
+        // Construct the full path to the image
+        const imagePath = path.join(__dirname, '..', 'frontend', 'public', avatar);
+
+        // Ensure the file exists
+        if (!fs.existsSync(imagePath)) {
+            return res.status(404).json({ message: "Avatar file not found" });
+        }
+
+        // Read and resize the image
+        const processedImage = await sharp(imagePath)
+            .resize(128, 128)
+            .toBuffer();
+
+        // Convert to Base64 for MongoDB storage
+        const base64Image = processedImage.toString('base64');
+
+        // Save to MongoDB
+        existingBot.avatar = base64Image;
+        await existingBot.save();
+
+        res.json({ message: 'Avatar uploaded successfully!' });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to upload avatar.' });

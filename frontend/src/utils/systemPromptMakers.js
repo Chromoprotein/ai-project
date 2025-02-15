@@ -1,4 +1,9 @@
 export const processTraits = (traits, sliderData) => {
+
+    if(traits.length === 0) {
+        return null;
+    }
+
     // Map over the formData array to transform it
     const processedTraits = traits.map((trait) => {
         // Find the matching sliderData object by ID
@@ -21,20 +26,28 @@ export const processTraits = (traits, sliderData) => {
 };
 
 export const processSharedData = (sharedData) => {
-    const processedGoals = sharedData.sharedGoals?.map((goal, index) => (`Goal ${index+1}. ${goal.goal}`));
-    const stringGoals = processedGoals.length > 0 ? processedGoals.toString() : null;
+    if (Object.keys(sharedData).length === 0) {
+        return null;
+    }
 
-    const processedSharedData = (sharedData.shareUsername ? `The user's name is ${sharedData.shareAboutMe}` : "")
-    (sharedData.shareAboutMe ? `Information about the user: ${sharedData.shareAboutMe}` : "") +
-    (sharedData.shareInterestsHobbies ? ` The user's interests and hobbies: ${sharedData.shareInterestsHobbies}` : "") +
-    (sharedData.shareCurrentMood ? ` The user's current mood: ${sharedData.shareCurrentMood}` : "") + 
-    (sharedData.sharedGoals ? ` The user's current goals: ${stringGoals}` : "");
+    let processedGoals = null;
+    if (sharedData?.sharedGoals?.length > 0) {
+        processedGoals = sharedData.sharedGoals.map((goal, index) => (`Goal ${index + 1}. ${goal.goal}`)).toString();
+    }
+
+    const processedSharedData = 
+        (sharedData?.shareUsername ? `The user's name is ${sharedData?.shareUsername}` : "") + 
+        (sharedData?.shareAboutMe ? ` Information about the user: ${sharedData?.shareAboutMe}` : "") +
+        (sharedData?.shareInterestsHobbies ? ` The user's interests and hobbies: ${sharedData?.shareInterestsHobbies}` : "") +
+        (sharedData?.shareCurrentMood ? ` The user's current mood: ${sharedData?.shareCurrentMood}` : "") + 
+        (processedGoals ? ` The user's current goals: ${processedGoals}` : "");
 
     return processedSharedData;
-}
+};
 
 export const makeFullSystemPrompt = (botName, instructions, processedTraits, userInfo, processedSharedData) => {
-    const prompt = `Your name is ${botName}. ${instructions}` +
+    const prompt = (botName ? `Your name is ${botName}` : '') +
+        (instructions ? ` ${instructions}` : '') +
         (processedTraits ? ` ${processedTraits}` : '') +
         (processedSharedData ? ` ${processedSharedData}` : '') +
         (userInfo ? ` Additional information about the user: ${userInfo}` : '');

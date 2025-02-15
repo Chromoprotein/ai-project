@@ -182,7 +182,7 @@ export default function Bots() {
 
                 <div className={`botWrapper expanded ${currentBot?.botId ? "inactiveBot" : "activeBot"}`}>
                     <div className="botButtons">
-                        <p>Chat without custom instructions</p>
+                        <p>Chat anonymously and without custom instructions</p>
                         <Chat func={forgetBot} />
                     </div>
                 </div>

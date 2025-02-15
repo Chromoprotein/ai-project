@@ -10,7 +10,7 @@ import { useChats } from "../../utils/useChats";
 import { scrollToBottom } from "../../utils/uiHelpers";
 import axiosInstance from "../../utils/axiosInstance";
 import { Typing } from "../Reusables/Loaders";
-import { Hello } from "../Reusables/SmallUIElements";
+import { Hello } from "./HelloScreen";
 import { InputContainer } from "./InputContainer";
 import { processTraits, processSharedData } from "../../utils/systemPromptMakers";
 import { makeFullSystemPrompt } from "../../utils/systemPromptMakers";
@@ -93,9 +93,11 @@ export default function App() {
     // The chat is new (no messages yet) and a bot is selected
     if (messages.length === 0 && currentBot) {
       // Add system prompt to new chat
-      const processedTraits = processTraits(currentBot.traits, sliderData);
-      const processedSharedData = processSharedData(currentBot.sharedData);
-      const fullSystemPrompt = makeFullSystemPrompt(currentBot.botName, currentBot.instructions, processedTraits, currentBot.userInfo, processedSharedData);
+      const processedTraits = processTraits(currentBot?.traits, sliderData);
+      const processedSharedData = processSharedData(currentBot?.sharedData);
+      
+      const fullSystemPrompt = makeFullSystemPrompt(currentBot?.botName, currentBot?.instructions, processedTraits, currentBot?.userInfo, processedSharedData);
+
       allMessages = [fullSystemPrompt];
       addMessage(fullSystemPrompt);
     } else {
@@ -225,19 +227,20 @@ export default function App() {
     .filter((message) => message.role !== "system" || !message.content) // Filter system and empty content
     .map((message, index) => {
       let name;
-      let imageSrc = "/placeholderAvatar.webp";
+      let imageSrc;
       if(message.role === "user") {
         name = username;
+        //imageSrc = 
         // Users will get avatars when I've added user profiles
       } else if(message.role === "assistant") {
-        imageSrc = currentBot?.avatar ? `data:image/webp;base64,${currentBot?.avatar}` : imageSrc;
+        imageSrc = currentBot?.avatar;
         if(currentBot?.botName) {
           name = currentBot.botName;
         } else {
           name = "AI";
         }
       }
-      return <Message key={index} message={message} index={index} name={name} imageSrc={imageSrc} />
+      return <Message key={index} message={message} index={index} name={name} imageSrc={imageSrc && `data:image/webp;base64,${imageSrc}`} />
   });
 
   return (
@@ -250,6 +253,7 @@ export default function App() {
           chatId={searchParams.get("chatId")}
           loadingChatList={loadingChatList}
           resetAll={resetAll}
+          currentBotAvatar={currentBot?.avatar && `data:image/webp;base64,${currentBot?.avatar}`}
         />
 
         <div className="mainContent">
@@ -261,7 +265,11 @@ export default function App() {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              <Hello bot={currentBot?.botName} avatar={currentBot?.avatar ? `data:image/webp;base64,${currentBot?.avatar}` : "/placeholderAvatar.webp"} loadingBot={loadingBot} />
+              <Hello 
+                bot={currentBot?.botName} 
+                avatar={currentBot?.avatar && `data:image/webp;base64,${currentBot?.avatar}`} 
+                loadingBot={loadingBot} 
+              />
             )}
           </div>
 

@@ -7,7 +7,7 @@ import axios from "axios";
 import { AiFillSound } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 
-export default function Message({ message, messageIndex, name, imageSrc }) {
+export default function Message({ message, messageIndex, name, imageSrc = "/placeholderAvatar.webp" }) {
   const [copySuccess, setCopySuccess] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);

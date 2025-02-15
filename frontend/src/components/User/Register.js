@@ -9,11 +9,15 @@ import Layout from '../Reusables/Layout';
 import BackButton from '../Reusables/BackButton';
 import { Link } from 'react-router-dom';
 import { initialSharedData } from '../../utils/defaultBot';
+import { useChats } from '../../utils/useChats';
+import axiosInstance from '../../utils/axiosInstance';
 
 export default function Register() {
   const [cookies, setCookie, removeCookie] = useCookies(['jwt']);
 
   const { theme, setTheme } = useMode();
+
+  const { setLastBotId } = useChats();
 
   const navigate = useNavigate();
 
@@ -30,6 +34,21 @@ export default function Register() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const saveAvatar = async (botId, avatarFilename) => {
+      try {
+          const response = await axiosInstance.put(
+              process.env.REACT_APP_PLACEHOLDERAVATAR,
+              { 
+                  botId,
+                  avatar: avatarFilename
+              }
+          );
+      } catch (error) {
+          console.log(error);
+          setError(error.message);
+      }
   };
 
   const handleSubmit = async (e) => {
@@ -50,8 +69,12 @@ export default function Register() {
 
           const createBot = await axios.post(process.env.REACT_APP_CREATEBOT, allData, { withCredentials: true });
           if(createBot) {
+            const botId = createBot.data.id;
+            await setLastBotId(botId);
+            await saveAvatar(botId, "mysteriousTravellerAvatar.webp");
+
             navigate("/");
-          }
+          };
       }
     } catch (error) {
       console.error(error);
