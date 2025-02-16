@@ -128,7 +128,7 @@ export default function UserProfile() {
                                 }
                             </> 
                         : 
-                            <>{value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
+                            <>{value && value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
                         }
                     </div>
                 ))}

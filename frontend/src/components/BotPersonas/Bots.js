@@ -20,7 +20,7 @@ import { initialSharedData } from '../../utils/defaultBot';
 
 export default function Bots() {
 
-    const { bots, getBots, setBots, currentBot, setLastBotId, loadingBots, getUser, userData, addUserDataToBots, getLastBot } = useChats();
+    const { bots, getBots, setBots, lastActiveBot, setLastBotId, loadingBots, getUser, userData, addUserDataToBots, getLastBot } = useChats();
 
     const initialState = {
         botName: '',
@@ -152,7 +152,7 @@ export default function Bots() {
                         /> 
                     :
                         // Displaying the bot
-                        <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${currentBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
+                        <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${lastActiveBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
 
                             <AvatarGen 
                                 botId={bot.botId} 
@@ -180,7 +180,7 @@ export default function Bots() {
                     </div>
                 })}
 
-                <div className={`botWrapper expanded ${currentBot?.botId ? "inactiveBot" : "activeBot"}`}>
+                <div className={`botWrapper expanded ${lastActiveBot?.botId ? "inactiveBot" : "activeBot"}`}>
                     <div className="botButtons">
                         <p>Chat anonymously and without custom instructions</p>
                         <Chat func={forgetBot} />

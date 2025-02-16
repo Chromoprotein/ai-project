@@ -45,7 +45,11 @@ export const processSharedData = (sharedData) => {
     return processedSharedData;
 };
 
-export const makeFullSystemPrompt = (botName, instructions, processedTraits, userInfo, processedSharedData) => {
+export const makeFullSystemPrompt = (botName, instructions, traits, sliderData, userInfo, sharedData) => {
+
+    const processedTraits = processTraits(traits, sliderData);
+    const processedSharedData = processSharedData(sharedData);
+
     const prompt = (botName ? `Your name is ${botName}` : '') +
         (instructions ? ` ${instructions}` : '') +
         (processedTraits ? ` ${processedTraits}` : '') +

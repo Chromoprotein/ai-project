@@ -18,7 +18,7 @@ import sliderData from "../../shared/botTraitData";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingChatList, addUserDataToBots, getUser } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, lastActiveBot, setLastActiveBot, setCurrentBot, loadingBot, setLoadingBot, loadingChatList, addUserDataToBots, getUser } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -91,12 +91,8 @@ export default function App() {
     let allMessages;
 
     // The chat is new (no messages yet) and a bot is selected
-    if (messages.length === 0 && currentBot) {
-      // Add system prompt to new chat
-      const processedTraits = processTraits(currentBot?.traits, sliderData);
-      const processedSharedData = processSharedData(currentBot?.sharedData);
-      
-      const fullSystemPrompt = makeFullSystemPrompt(currentBot?.botName, currentBot?.instructions, processedTraits, currentBot?.userInfo, processedSharedData);
+    if (messages.length === 0 && lastActiveBot) {
+      const fullSystemPrompt = makeFullSystemPrompt(lastActiveBot?.botName, lastActiveBot?.instructions, lastActiveBot?.traits, sliderData, lastActiveBot?.userInfo, lastActiveBot?.sharedData);
 
       allMessages = [fullSystemPrompt];
       addMessage(fullSystemPrompt);
@@ -140,7 +136,7 @@ export default function App() {
       chatId = searchParams.get("chatId");
     } else {
       // If there isn't a chat id, generate a new one. This query also generates a title for the new chat based on the user's first message
-      const newChatId = await saveNewChat(newMessage, currentBot?.botId);
+      const newChatId = await saveNewChat(newMessage, lastActiveBot?.botId);
 
       if(newChatId) {
         chatId = newChatId;
@@ -211,15 +207,15 @@ export default function App() {
           // Check what user data is shared with bots and add it to the bots
           if(botResult) {
             const combinedData = addUserDataToBots(userResult, botResult);
-            setCurrentBot(combinedData);
+            setLastActiveBot(combinedData);
           } else {
-            setCurrentBot(null);
+            setLastActiveBot(null);
           }
           
       }
       getUserAndLastBot();
     }
-  }, [addUserDataToBots, getLastBot, getUser, setCurrentBot, searchParams]);
+  }, [addUserDataToBots, getLastBot, getUser, setLastActiveBot, searchParams]);
 
   // 4. UI ELEMENTS
 
@@ -253,7 +249,7 @@ export default function App() {
           chatId={searchParams.get("chatId")}
           loadingChatList={loadingChatList}
           resetAll={resetAll}
-          currentBotAvatar={currentBot?.avatar && `data:image/webp;base64,${currentBot?.avatar}`}
+          currentBotAvatar={lastActiveBot?.avatar && `data:image/webp;base64,${lastActiveBot?.avatar}`}
         />
 
         <div className="mainContent">
@@ -266,8 +262,8 @@ export default function App() {
               </>
             ) : (
               <Hello 
-                bot={currentBot?.botName} 
-                avatar={currentBot?.avatar && `data:image/webp;base64,${currentBot?.avatar}`} 
+                bot={lastActiveBot?.botName} 
+                avatar={lastActiveBot?.avatar && `data:image/webp;base64,${lastActiveBot?.avatar}`} 
                 loadingBot={loadingBot} 
               />
             )}

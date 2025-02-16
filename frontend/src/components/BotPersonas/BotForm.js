@@ -8,6 +8,7 @@ import { FaSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { RiCollapseDiagonal2Line } from "react-icons/ri";
 import IconButton from "../Reusables/IconButton";
+import { useDeleteWarning } from "../Reusables/useDeleteWarning";
 
 export default function BotForm({ userData, initialState, initialSharedData, edit, toggleEdit, setIsSubmit }) {
 
@@ -17,7 +18,8 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-    const [deleteWarning, setDeleteWarning] = useState(false);
+
+    const { deleteWarning, toggleDeleteWarning, confirmMessage } = useDeleteWarning("Are you sure you want to permanently delete this bot?", () => deleteBot(formData.botId))
 
     const toggleAdvanced = () => {
         setShowAdvanced((prev) => !prev);
@@ -75,10 +77,6 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
 
     };
 
-    const toggleDeleteWarning = () => {
-        setDeleteWarning((prev) => !prev);
-    };
-
     const deleteBot = async (botId) => {
         try {
             const response = await axiosInstance.delete(
@@ -92,7 +90,7 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
             setError(error.message);
         }
     };
-    
+    console.log(deleteWarning)
     return (
         <form onSubmit={handleSubmit} className="formContainer">
 
@@ -241,18 +239,8 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
                     <div className="formInfo">{message}</div>
                 </div>
             }
-
-            {deleteWarning && <>
-                <p>Confirm you want to delete this bot. Deleting is permanent.</p>
-                <div className="botButtons">
-                    <button className="botButton" type="button" onClick={toggleDeleteWarning}>
-                        Don't delete
-                    </button>
-                    <button className="botButton" type="button" onClick={() => deleteBot(formData.botId)}>
-                        Delete
-                    </button>
-                </div>
-            </>}
+            
+            {deleteWarning && confirmMessage}
 
             {error && (
                 <div className="formItem">

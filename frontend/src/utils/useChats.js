@@ -11,7 +11,8 @@ export function useChats() {
 
     // Bot persona -related state
     const [bots, setBots] = useState(); // List of bot personas
-    const [currentBot, setCurrentBot] = useState();
+    const [currentBot, setCurrentBot] = useState(); // the bot of the opened chat
+    const [lastActiveBot, setLastActiveBot] = useState(); // the last used bot, needed for starting a new chat quickly. Could be expanded to save multiple recent bots
 
     // Loading states
     const [loadingBots, setLoadingBots] = useState(false);
@@ -92,7 +93,7 @@ export function useChats() {
                         userInfo: bot.userInfo,
                         sharedData: {}
                     };
-                setCurrentBot(formattedBot);
+                setLastActiveBot(formattedBot);
                 return formattedBot;
             } else {
                 return null;
@@ -106,6 +107,11 @@ export function useChats() {
 
     const addUserDataToBots = useCallback((userResult, botResult) => {
         // Convert shared data into a quick lookup map
+
+        if(userResult?.sharedWithBots.length === 0) {
+            return botResult;
+        }
+
         const sharedMap = new Map();
         userResult.sharedWithBots.forEach((shared) => {
             sharedMap.set(shared.botId.toString(), shared);
@@ -239,6 +245,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId, getUser, userData, setBots, addUserDataToBots, loadingUser }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, lastActiveBot, setLastActiveBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId, getUser, userData, setBots, addUserDataToBots, loadingUser }
 
 };

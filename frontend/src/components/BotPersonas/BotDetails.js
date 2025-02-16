@@ -28,8 +28,8 @@ export default function BotDetails({bot}) {
             </p>
 
             <p>
-                <span className="smallLabel">Knowledge about the user: </span>
-                {bot.userInfo ? bot.userInfo : <span className="italic">No user information added</span>}
+                <span className="smallLabel">Extra knowledge about the user: </span>
+                {bot.userInfo ? bot.userInfo : <span className="italic">No extra user information added</span>}
             </p>
         </>
     );
