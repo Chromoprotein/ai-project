@@ -90,7 +90,7 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
             setError(error.message);
         }
     };
-    console.log(deleteWarning)
+
     return (
         <form onSubmit={handleSubmit} className="formContainer">
 
@@ -100,7 +100,7 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
 
             <div className="formItem">
                 <label className="smallLabel">Name *</label>
-                <input type="text" name="botName" value={formData.botName} onChange={handleChange} />
+                <input className="inputElement" type="text" name="botName" value={formData.botName} onChange={handleChange} />
             </div>
 
             <div className="formItem">

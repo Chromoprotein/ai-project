@@ -7,7 +7,7 @@ import { CiCirclePlus } from "react-icons/ci";
 import BotForm from './BotForm';
 import { MiniSpinner } from '../Reusables/SmallUIElements';
 import BotDetails from './BotDetails';
-import AvatarGen from './AvatarGen';
+import AvatarManager from '../Reusables/AvatarManager';
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { FaEdit } from "react-icons/fa";
 import { RiExpandDiagonalLine } from "react-icons/ri";
@@ -38,6 +38,7 @@ export default function Bots() {
 
     const [isSubmit, setIsSubmit] = useState(false);
 
+    // The id of the bot whose avatar generation view is open
     const [avatarGen, setAvatarGen] = useState();
 
     useEffect(() => {
@@ -154,12 +155,13 @@ export default function Bots() {
                         // Displaying the bot
                         <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${lastActiveBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
 
-                            <AvatarGen 
-                                botId={bot.botId} 
-                                originalImage={bot.avatar ? `data:image/webp;base64,${bot.avatar}` : "/placeholderAvatar.webp"}
+                            <AvatarManager 
+                                id={bot.botId} 
+                                originalImage={bot.avatar && `data:image/webp;base64,${bot.avatar}`}
                                 avatarGen={avatarGen} 
                                 toggleAvatarGen={() => toggleAvatarGen(bot.botId)} 
                                 setIsSubmit={setIsSubmit} 
+                                entityType="bot"
                             />
 
                             <h2 className="botTitle">{bot.botName}</h2>

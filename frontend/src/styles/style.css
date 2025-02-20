@@ -232,14 +232,14 @@ body {
     font-weight: bold;
 }
 
-.formContainer input {
+.inputElement {
     border-radius: 20px;
     border: 1px solid transparent;
     padding: 10px;
     font-size:16px;
 }
 
-.formContainer input:focus {
+.inputElement:focus {
     outline: 2px solid var(--color-pop);
 }
 

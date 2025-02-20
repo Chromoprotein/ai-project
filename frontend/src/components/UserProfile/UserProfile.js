@@ -124,7 +124,7 @@ export default function UserProfile() {
                             <>
                                 {inputType === "textarea" ?
                                     <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
-                                    <input type={type} name={name} value={value} onChange={onChange} />
+                                    <input type={type} name={name} value={value} className="inputElement" onChange={onChange} />
                                 }
                             </> 
                         : 

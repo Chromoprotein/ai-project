@@ -12,7 +12,7 @@ export default function Form({ title, fields, buttonText, onSubmit, error, linkT
             <label className="smallLabel">{label}</label>
             {inputType === "textarea" ?
                 <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
-                <input type={type} name={name} value={value} onChange={onChange} />
+                <input className="inputElement" type={type} name={name} value={value} onChange={onChange} />
             }
         </div>
       ))}

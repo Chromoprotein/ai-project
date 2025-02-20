@@ -636,7 +636,7 @@ exports.getLastBot = async (req, res) => {
 exports.generateBotAvatar = async (req, res) => {
 
     try {
-        const { botId } = req.body;
+        const { botId, prompt } = req.body;
         const userId = req.id;
 
         const existingBot = await SystemMessage.findOne({ _id: botId, userId });
@@ -647,16 +647,19 @@ exports.generateBotAvatar = async (req, res) => {
             });
         }
 
-        if(existingBot.instructions) {
-            const description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
-            const avatar = await getdalle(description);
-            if(avatar) {
-                return res.status(200).json(avatar);
-            }
+        let description;
+        if(prompt) {
+            description = prompt; // Use the prompt provided by the user
+        } else if(existingBot.instructions) { // Prompt is based on the bot's instructions
+            description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
         } else {
             return res.status(404).json({
                 message: "Custom instructions not found, can't generate an avatar.",
             });
+        }
+        const avatar = await getdalle(description);
+        if(avatar) {
+            return res.status(200).json(avatar);
         }
     } catch (error) {
         res.status(500).json({
@@ -668,6 +671,7 @@ exports.generateBotAvatar = async (req, res) => {
 
 // Saves a generated avatar
 exports.avatar = async (req, res) => {
+
     const { botId, avatar } = req.body;
     const userId = req.id;
 
