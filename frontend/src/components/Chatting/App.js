@@ -18,7 +18,7 @@ import sliderData from "../../shared/botTraitData";
 
 export default function App() {
 
-  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, lastActiveBot, setLastActiveBot, setCurrentBot, loadingBot, setLoadingBot, loadingChatList, addUserDataToBots, getUser } = useChats();
+  const { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, getLastBot, currentBot, lastActiveBot, setLastActiveBot, setCurrentBot, loadingBot, setLoadingBot, loadingChatList, addUserDataToBots, getUser, userData, loadingUser } = useChats();
 
   // Messaging-related state
   const [query, setQuery] = useState("");
@@ -199,22 +199,20 @@ export default function App() {
 
   // Find the last used bot's info, needed to start a new chat
   useEffect(() => {
-    if(!searchParams.get("chatId")) { // if the chat hasn't started yet
-      const getUserAndLastBot = async () => {
-          // Fetch the bot data and the user data
-          const [botResult, userResult] = await Promise.all([getLastBot(), getUser()])
+    const getUserAndLastBot = async () => {
+        // Fetch the bot data and the user data
+        const [botResult, userResult] = await Promise.all([getLastBot(), getUser()])
 
-          // Check what user data is shared with bots and add it to the bots
-          if(botResult) {
-            const combinedData = addUserDataToBots(userResult, botResult);
-            setLastActiveBot(combinedData);
-          } else {
-            setLastActiveBot(null);
-          }
-          
-      }
-      getUserAndLastBot();
+        // Check what user data is shared with bots and add it to the bots
+        if(botResult) {
+          const combinedData = addUserDataToBots(userResult, botResult);
+          setLastActiveBot(combinedData);
+        } else {
+          setLastActiveBot(null);
+        }
+        
     }
+    getUserAndLastBot();
   }, [addUserDataToBots, getLastBot, getUser, setLastActiveBot, searchParams]);
 
   // 4. UI ELEMENTS
@@ -225,8 +223,8 @@ export default function App() {
       let name;
       let imageSrc;
       if(message.role === "user") {
-        name = username;
-        //imageSrc = 
+        name = userData.username;
+        imageSrc = userData?.avatar;
         // Users will get avatars when I've added user profiles
       } else if(message.role === "assistant") {
         imageSrc = currentBot?.avatar;
@@ -249,7 +247,9 @@ export default function App() {
           chatId={searchParams.get("chatId")}
           loadingChatList={loadingChatList}
           resetAll={resetAll}
+          userAvatar={userData?.avatar && `data:image/webp;base64,${userData?.avatar}`}
           currentBotAvatar={lastActiveBot?.avatar && `data:image/webp;base64,${lastActiveBot?.avatar}`}
+          loadingUser={loadingUser}
         />
 
         <div className="mainContent">

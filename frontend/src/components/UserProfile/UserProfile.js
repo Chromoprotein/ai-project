@@ -10,9 +10,8 @@ import IconButton from "../Reusables/IconButton";
 import BackButton from '../Reusables/BackButton';
 import { useChats } from "../../utils/useChats";
 import { Spinner } from "../Reusables/SmallUIElements";
-import AvatarManager from "../Reusables/AvatarManager";
-import useAvatar from "../../utils/useAvatar";
-import useAvatarToggler from "../../utils/useAvatarToggler";
+import AvatarManager from "../Avatar/AvatarManager";
+import useAvatarToggler from "../Avatar/useAvatarToggler";
 
 export default function UserProfile() {
 
@@ -26,13 +25,13 @@ export default function UserProfile() {
 
     const [formData, setFormData] = useState(null);
 
-    const [isSubmit, setIsSubmit] = useState(false);
-
     const { showAvatarGen, toggleAvatarGen } = useAvatarToggler();
+
+    const [isSubmit, setIsSubmit] = useState(false);
 
     useEffect(() => {
         getUser();
-    }, [getUser]);
+    }, [getUser, isSubmit]);
 
     useEffect(() => {
         if(userData) {
@@ -78,6 +77,7 @@ export default function UserProfile() {
             );
             if (response) {
                 setMessage(response.data.message);
+                setIsSubmit((prev) => !prev);
             }
         } catch (error) {
             console.error(error);
@@ -130,8 +130,8 @@ export default function UserProfile() {
                     originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
                     showAvatarGen={showAvatarGen.user}
                     toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
-                    setIsSubmit={setIsSubmit}
                     entityType="user"
+                    setIsSubmit={setIsSubmit}
                 />
 
                 {formFields.map(({ label, type, name, value, onChange, inputType }) => (

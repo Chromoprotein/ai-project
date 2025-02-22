@@ -647,7 +647,7 @@ exports.generateAvatar = async (req, res) => {
                 return res.status(404).json({ message: "Bot not found or does not belong to the user" });
             }
             description = existingEntity.instructions 
-                ? `Generate an avatar for a bot that has the following instructions: ${existingEntity.instructions}.`
+                ? `Generate an avatar for a bot based on its instructions. Don't try to include every detail, instead choose a couple of traits of the bot. The bot's instructions: ${existingEntity.instructions}.`
                 : "Generate an avatar for a chatbot.";
         } else {
             existingEntity = await User.findOne({ _id: userId });
@@ -655,7 +655,7 @@ exports.generateAvatar = async (req, res) => {
                 return res.status(404).json({ message: "User not found" });
             }
             description = existingEntity.aboutMe || existingEntity.interestsHobbies
-                ? `Generate an avatar for a user. About them: ${existingEntity.aboutMe || ''} Interests and hobbies: ${existingEntity.interestsHobbies || ''}`
+                ? `Generate an avatar for a user based on their profile. Don't try to include every detail, instead choose a couple of traits of the user. About them: ${existingEntity.aboutMe || ''} Interests and hobbies: ${existingEntity.interestsHobbies || ''}`
                 : "Generate a general user avatar.";
         }
 

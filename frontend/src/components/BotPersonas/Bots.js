@@ -7,7 +7,7 @@ import { CiCirclePlus } from "react-icons/ci";
 import BotForm from './BotForm';
 import { MiniSpinner } from '../Reusables/SmallUIElements';
 import BotDetails from './BotDetails';
-import AvatarManager from '../Reusables/AvatarManager';
+import AvatarManager from '../Avatar/AvatarManager';
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { FaEdit } from "react-icons/fa";
 import { RiExpandDiagonalLine } from "react-icons/ri";
@@ -17,7 +17,7 @@ import Layout from '../Reusables/Layout';
 import IconButton from '../Reusables/IconButton';
 import BackButton from '../Reusables/BackButton';
 import { initialSharedData } from '../../utils/defaultBot';
-import useAvatarToggler from '../../utils/useAvatarToggler';
+import useAvatarToggler from '../Avatar/useAvatarToggler';
 
 export default function Bots() {
 
@@ -145,8 +145,8 @@ export default function Bots() {
                                 originalImage={bot.avatar && `data:image/webp;base64,${bot.avatar}`}
                                 showAvatarGen={showAvatarGen.bots[bot.botId] || false} 
                                 toggleAvatarGen={() => toggleAvatarGen(bot.botId, "bot")} 
-                                setIsSubmit={setIsSubmit} 
                                 entityType="bot"
+                                setIsSubmit={setIsSubmit} 
                             />
 
                             <h2 className="botTitle">{bot.botName}</h2>

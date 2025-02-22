@@ -2,11 +2,12 @@ import { RiEditCircleFill } from "react-icons/ri";
 import { IoSparklesOutline } from "react-icons/io5";
 import { FaSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
-import useAvatar from "../../utils/useAvatar";
-import { MiniOverlaySpinner } from "./SmallUIElements";
-import IconButton from "./IconButton";
+import useAvatar from "./useAvatar";
+import { MiniOverlaySpinner } from "../Reusables/SmallUIElements";
+import IconButton from "../Reusables/IconButton";
+import { IoReturnDownBackSharp } from "react-icons/io5";
 
-export default function AvatarManager({ id, originalImage, showAvatarGen, toggleAvatarGen, setIsSubmit, entityType = "bot" }) {
+export default function AvatarManager({ id, originalImage, showAvatarGen, toggleAvatarGen, entityType = "bot", setIsSubmit }) {
 
     const apiEndpoints = {
         generate: process.env.REACT_APP_GENERATEAVATAR,
@@ -14,7 +15,7 @@ export default function AvatarManager({ id, originalImage, showAvatarGen, toggle
         clear: process.env.REACT_APP_CLEARAVATAR,
     };
 
-    const { avatar, loading, isSaved, message, prompt, handlePromptChange, generateAvatar, saveAvatar, clearAvatar } = useAvatar(apiEndpoints, entityType);
+    const { avatar, loading, isSaved, message, prompt, handlePromptChange, generateAvatar, saveAvatar, clearAvatar, discardWithoutSaving } = useAvatar(apiEndpoints, entityType, setIsSubmit);
 
     return (
         <>
@@ -22,10 +23,9 @@ export default function AvatarManager({ id, originalImage, showAvatarGen, toggle
                 <div className="botImageEditIcon"><RiEditCircleFill size={25}/></div>
                 {loading && <MiniOverlaySpinner />}
                 <img 
-                    src={(avatar && showAvatarGen) ? avatar : (originalImage ? originalImage : "/placeholderAvatar.webp")} 
+                    src={avatar ? avatar : (originalImage ? originalImage : "/placeholderAvatar.webp")} 
                     alt={`${entityType} avatar`} 
                     className={`botImage clickable ${loading && "botImageLoading"}`} 
-                    onLoad={() => setIsSubmit((prev) => !prev)}
                     onError={() => console.log("Error: failed to load image")}
                 />
             </div>
@@ -48,6 +48,8 @@ export default function AvatarManager({ id, originalImage, showAvatarGen, toggle
                             <IconButton changeClass="botButton" disabled={loading} func={() => generateAvatar(id)} icon={<IoSparklesOutline />} text="Generate avatar" />
 
                             <IconButton changeClass="botButton" disabled={isSaved || !avatar || loading} func={() => saveAvatar(id)} icon={<FaSave />} text={isSaved ? "Avatar saved" : "Save this avatar"} />
+
+                            <IconButton changeClass="botButton" disabled={loading} func={(avatar && !isSaved) ? discardWithoutSaving : () => toggleAvatarGen()} icon={<IoReturnDownBackSharp />} text={(avatar && !isSaved) ? "Cancel" : "Return"} />
 
                             <IconButton changeClass="botButton" disabled={!originalImage || loading} func={() => clearAvatar(id)} icon={<MdDeleteForever />} text="Delete avatar" />
                         </div>

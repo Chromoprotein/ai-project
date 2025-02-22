@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../../utils/axiosInstance";
 
-export default function useAvatar(apiEndpoints, entityType) {
+export default function useAvatar(apiEndpoints, entityType, setIsSubmit) {
     const [avatar, setAvatar] = useState();
     const [loading, setLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -37,6 +37,7 @@ export default function useAvatar(apiEndpoints, entityType) {
             const response = await axiosInstance.put(apiEndpoints.save, payload);
             if (response) {
                 setIsSaved(true);
+                setIsSubmit((prev) => !prev);
             }
         } catch (error) {
             console.error(error);
@@ -54,6 +55,7 @@ export default function useAvatar(apiEndpoints, entityType) {
             await axiosInstance.patch(endpoint);
             setAvatar();
             setIsSaved(false);
+            setIsSubmit((prev) => !prev);
         } catch (error) {
             console.error(error);
             setMessage(error.message);
@@ -61,6 +63,10 @@ export default function useAvatar(apiEndpoints, entityType) {
             setLoading(false);
         }
     };
+
+    const discardWithoutSaving = () => {
+        setAvatar();
+    }
 
     return {
         avatar,
@@ -72,6 +78,7 @@ export default function useAvatar(apiEndpoints, entityType) {
         handlePromptChange,
         generateAvatar,
         saveAvatar,
-        clearAvatar
+        clearAvatar,
+        discardWithoutSaving
     };
 };

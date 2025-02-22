@@ -10,7 +10,7 @@ import LinkButton from "../Reusables/LinkButton";
 import { RiChatNewLine } from "react-icons/ri";
 import IconButton from "../Reusables/IconButton";
 
-export function Sidebar({ chatList, chatId, loadingChatList, resetAll, currentBotAvatar = "/placeholderAvatar.webp" }) {
+export function Sidebar({ chatList, chatId, loadingChatList, resetAll, userAvatar = "/placeholderAvatar.webp", currentBotAvatar = "/placeholderAvatar.webp", loadingUser }) {
 
     const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(true);
     const [collapsedCategory, setCollapsedCategory] = useState({}); // Chat categories that are collapsed. Key is the category's name and value is boolean
@@ -62,9 +62,7 @@ export function Sidebar({ chatList, chatId, loadingChatList, resetAll, currentBo
                         {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}
                     </button>
 
-                    <button className="roundButton" onClick={toggleUserMenu}>
-                        <FaRegUser />
-                    </button>
+                    {loadingUser ? <MiniSpinner /> : <img src={userAvatar} alt="User avatar" className="profileButton" onClick={toggleUserMenu} />}
 
                     <button className="roundButton" onClick={toggleChatMenu}>
                         <RiChatNewLine />
@@ -91,7 +89,7 @@ export function Sidebar({ chatList, chatId, loadingChatList, resetAll, currentBo
                 {isChatMenuShown &&
                     <>
                         <div className="popupMenu">
-                            <IconButton func={resetAll} changeClass="botButton" disabled={!chatId} icon={<img src={currentBotAvatar} alt="new chat icon" className="botIcon" />} text="New chat" />
+                            <IconButton func={resetAll} changeClass="botButton" disabled={!chatId} icon={<img src={currentBotAvatar} alt="New chat icon" className="botIcon" />} text="New chat" />
                             <LinkButton url="/bots" icon={<GoDependabot />} text="Choose bot" />
                         </div>
                     </>

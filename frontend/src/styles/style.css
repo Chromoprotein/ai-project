@@ -487,6 +487,13 @@ body {
     border-radius: 20px;
 }
 
+.profileButton {
+    width:37px;
+    border-radius: 50%;
+    margin:10px;
+    cursor:pointer;
+}
+
 /*AUDIO PLAYER*/
 
 .audioPlayer {
