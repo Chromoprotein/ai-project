@@ -10,6 +10,9 @@ import IconButton from "../Reusables/IconButton";
 import BackButton from '../Reusables/BackButton';
 import { useChats } from "../../utils/useChats";
 import { Spinner } from "../Reusables/SmallUIElements";
+import AvatarManager from "../Reusables/AvatarManager";
+import useAvatar from "../../utils/useAvatar";
+import useAvatarToggler from "../../utils/useAvatarToggler";
 
 export default function UserProfile() {
 
@@ -22,6 +25,10 @@ export default function UserProfile() {
     const [error, setError] = useState("");
 
     const [formData, setFormData] = useState(null);
+
+    const [isSubmit, setIsSubmit] = useState(false);
+
+    const { showAvatarGen, toggleAvatarGen } = useAvatarToggler();
 
     useEffect(() => {
         getUser();
@@ -117,6 +124,16 @@ export default function UserProfile() {
                 <div className="formItem">
                     <h2>{formData.username}'s profile</h2>
                 </div>
+
+                <AvatarManager 
+                    id={userData.userId}
+                    originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
+                    showAvatarGen={showAvatarGen.user}
+                    toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
+                    setIsSubmit={setIsSubmit}
+                    entityType="user"
+                />
+
                 {formFields.map(({ label, type, name, value, onChange, inputType }) => (
                     <div key={name} className="formItem">
                         <label className="smallLabel">{label}</label>

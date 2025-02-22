@@ -6,11 +6,11 @@ import useAvatar from "../../utils/useAvatar";
 import { MiniOverlaySpinner } from "./SmallUIElements";
 import IconButton from "./IconButton";
 
-export default function AvatarManager({ id, originalImage, avatarGen, toggleAvatarGen, setIsSubmit, entityType = "bot" }) {
+export default function AvatarManager({ id, originalImage, showAvatarGen, toggleAvatarGen, setIsSubmit, entityType = "bot" }) {
 
     const apiEndpoints = {
         generate: process.env.REACT_APP_GENERATEAVATAR,
-        save: process.env.REACT_APP_AVATAR,
+        save: process.env.REACT_APP_SAVEAVATAR,
         clear: process.env.REACT_APP_CLEARAVATAR,
     };
 
@@ -22,33 +22,37 @@ export default function AvatarManager({ id, originalImage, avatarGen, toggleAvat
                 <div className="botImageEditIcon"><RiEditCircleFill size={25}/></div>
                 {loading && <MiniOverlaySpinner />}
                 <img 
-                    src={(avatar && avatarGen === id) ? avatar : (originalImage ? originalImage : "/placeholderAvatar.webp")} 
+                    src={(avatar && showAvatarGen) ? avatar : (originalImage ? originalImage : "/placeholderAvatar.webp")} 
                     alt={`${entityType} avatar`} 
                     className={`botImage clickable ${loading && "botImageLoading"}`} 
-                    onLoad={() => setIsSubmit((prev) => !prev)} 
+                    onLoad={() => setIsSubmit((prev) => !prev)}
                     onError={() => console.log("Error: failed to load image")}
                 />
             </div>
 
-            {avatarGen === id && (
-                <div className="botButtons">
-                    <div className="formItem">
-                        <label className="smallLabel">Avatar prompt</label>
-                        <input 
-                            className="inputElement" 
-                            type="text" 
-                            name="prompt" 
-                            value={prompt} 
-                            onChange={handlePromptChange} 
-                        />
+            {showAvatarGen && (
+                <>
+                    <div className="formContainer removePadding removeMargin">
+                        <div className="formItem">
+                            <label className="smallLabel">Custom prompt (optional). If omitted, the prompt will be based on the {entityType === "bot" ? "bot's instructions" : "profile text"}.</label>
+                            <textarea 
+                                className="inputElement" 
+                                type="text" 
+                                name="prompt" 
+                                value={prompt} 
+                                onChange={handlePromptChange} 
+                            ></textarea>
+                        </div>
+                    
+                        <div className="botButtons">
+                            <IconButton changeClass="botButton" disabled={loading} func={() => generateAvatar(id)} icon={<IoSparklesOutline />} text="Generate avatar" />
+
+                            <IconButton changeClass="botButton" disabled={isSaved || !avatar || loading} func={() => saveAvatar(id)} icon={<FaSave />} text={isSaved ? "Avatar saved" : "Save this avatar"} />
+
+                            <IconButton changeClass="botButton" disabled={!originalImage || loading} func={() => clearAvatar(id)} icon={<MdDeleteForever />} text="Delete avatar" />
+                        </div>
                     </div>
-
-                    <IconButton changeClass="botButton" disabled={loading} func={() => generateAvatar(id)} icon={<IoSparklesOutline />} text="Generate avatar" />
-
-                    <IconButton changeClass="botButton" disabled={isSaved || !avatar || loading} func={() => saveAvatar(id)} icon={<FaSave />} text={isSaved ? "Avatar saved" : "Save this avatar"} />
-
-                    <IconButton changeClass="botButton" disabled={!originalImage || loading} func={() => clearAvatar(id)} icon={<MdDeleteForever />} text="Delete avatar" />
-                </div>
+                </>
             )}
 
             {message && <div className="errorMessage"><p>{message}</p></div>}

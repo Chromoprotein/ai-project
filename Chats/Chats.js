@@ -632,66 +632,61 @@ exports.getLastBot = async (req, res) => {
 
 // AVATAR-RELATED
 
-// Generates a new avatar with Dalle
-exports.generateBotAvatar = async (req, res) => {
-
+// Generates a new avatar with Dalle for bots or users
+exports.generateAvatar = async (req, res) => {
     try {
         const { botId, prompt } = req.body;
-        const userId = req.id;
-
-        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
-
-        if (!existingBot) {
-            return res.status(404).json({
-                message: "Bot not found or does not belong to the user",
-            });
-        }
+        const userId = req.id; // Extracted from middleware
 
         let description;
-        if(prompt) {
-            description = prompt; // Use the prompt provided by the user
-        } else if(existingBot.instructions) { // Prompt is based on the bot's instructions
-            description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
+        let existingEntity;
+
+        if (botId) {
+            existingEntity = await SystemMessage.findOne({ _id: botId, userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "Bot not found or does not belong to the user" });
+            }
+            description = existingEntity.instructions 
+                ? `Generate an avatar for a bot that has the following instructions: ${existingEntity.instructions}.`
+                : "Generate an avatar for a chatbot.";
         } else {
-            return res.status(404).json({
-                message: "Custom instructions not found, can't generate an avatar.",
-            });
+            existingEntity = await User.findOne({ _id: userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            description = existingEntity.aboutMe || existingEntity.interestsHobbies
+                ? `Generate an avatar for a user. About them: ${existingEntity.aboutMe || ''} Interests and hobbies: ${existingEntity.interestsHobbies || ''}`
+                : "Generate a general user avatar.";
         }
+
+        // Override with user-provided prompt if available
+        if (prompt) {
+            description = prompt;
+        }
+
+        // Call DALL-E API to generate avatar
         const avatar = await getdalle(description);
-        if(avatar) {
+
+        if (avatar) {
             return res.status(200).json(avatar);
         }
+
     } catch (error) {
-        res.status(500).json({
-            message: "An error occurred",
-            error: error.message,
-        });
+        res.status(500).json({ message: "An error occurred", error: error.message });
     }
 };
 
-// Saves a generated avatar
-exports.avatar = async (req, res) => {
-
+// Saves a generated avatar for either a bot or a user
+exports.saveAvatar = async (req, res) => {
     const { botId, avatar } = req.body;
     const userId = req.id;
 
-    if (!avatar || !botId) {
-        return res.status(400).json({ error: 'An avatar is required or bot not found' });
+    if (!avatar) {
+        return res.status(400).json({ error: 'An avatar is required' });
     }
 
     try {
-
-        // Fetch the bot and image concurrently
-        const [existingBot, avatarResponse] = await Promise.all([
-            SystemMessage.findOne({ _id: botId, userId }),
-            axios.get(avatar, { responseType: 'arraybuffer' })
-        ]);
-
-        if (!existingBot) {
-            return res.status(404).json({
-                message: "Bot not found",
-            });
-        };
+        const avatarResponse = await axios.get(avatar, { responseType: 'arraybuffer' });
 
         // Resize the image
         const processedImage = await sharp(avatarResponse.data)
@@ -700,15 +695,57 @@ exports.avatar = async (req, res) => {
 
         const base64Image = Buffer.from(processedImage, 'binary').toString('base64');
 
-        // Save to MongoDB
-        existingBot.avatar = base64Image;
+        let existingEntity;
 
-        await existingBot.save();
+        if (botId) {
+            existingEntity = await SystemMessage.findOne({ _id: botId, userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "Bot not found" });
+            }
+        } else {
+            existingEntity = await User.findOne({ _id: userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "User not found" });
+            }
+        }
+
+        // Save avatar to MongoDB
+        existingEntity.avatar = base64Image;
+        await existingEntity.save();
 
         res.json({ message: 'Avatar uploaded successfully!' });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to upload avatar.' });
+    }
+};
+
+// Deletes an avatar for either a bot or a user
+exports.clearAvatar = async (req, res) => {
+    const { botId } = req.params;
+    const userId = req.id;
+
+    try {
+        let updateResult;
+
+        if (botId) {
+            updateResult = await SystemMessage.updateOne({ _id: botId, userId }, { $unset: { avatar: "" } });
+            if (updateResult.modifiedCount === 0) {
+                return res.status(404).json({ message: "Bot not found or does not belong to the user" });
+            }
+        } else {
+            updateResult = await User.updateOne({ _id: userId }, { $unset: { avatar: "" } });
+            if (updateResult.modifiedCount === 0) {
+                return res.status(404).json({ message: "User not found" });
+            }
+        }
+
+        res.json({ message: 'Avatar deleted successfully' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to delete avatar.' });
     }
 };
 
@@ -752,31 +789,5 @@ exports.placeholderAvatar = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to upload avatar.' });
-    }
-};
-
-// Deletes an avatar
-exports.clearAvatar = async (req, res) => {
-    const { botId } = req.params;
-    const userId = req.id;
-
-    if (!botId) {
-        return res.status(400).json({ error: 'Bot not found' });
-    }
-
-    try {
-
-        // Make sure the bot exists
-        const existingBot = await SystemMessage.updateOne({ _id: botId, userId }, { $unset: { avatar: "" } });
-        if (!existingBot) {
-            return res.status(404).json({
-                message: "Bot not found or does not belong to the user",
-            });
-        }
-
-        res.json({ message: 'Avatar deleted successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to delete avatar.' });
     }
 };

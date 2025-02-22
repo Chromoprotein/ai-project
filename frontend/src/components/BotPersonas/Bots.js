@@ -17,6 +17,7 @@ import Layout from '../Reusables/Layout';
 import IconButton from '../Reusables/IconButton';
 import BackButton from '../Reusables/BackButton';
 import { initialSharedData } from '../../utils/defaultBot';
+import useAvatarToggler from '../../utils/useAvatarToggler';
 
 export default function Bots() {
 
@@ -34,12 +35,11 @@ export default function Bots() {
     const [editBot, setEditBot] = useState();
 
     const [showForm, setShowForm] = useState(false);
-    const [expandedBots, setExpandedBots] = useState({});
+    const [showBotDetails, setshowBotDetails] = useState({});
 
     const [isSubmit, setIsSubmit] = useState(false);
 
-    // The id of the bot whose avatar generation view is open
-    const [avatarGen, setAvatarGen] = useState();
+    const { showAvatarGen, toggleAvatarGen } = useAvatarToggler();
 
     useEffect(() => {
         const getUserAndBots = async () => {
@@ -57,18 +57,6 @@ export default function Bots() {
         getLastBot();
     }, [getLastBot])
 
-    const toggleAvatarGen = (botId) => {
-        if(avatarGen === botId) {
-            setAvatarGen();
-        } else {
-            setAvatarGen(botId);
-            setExpandedBots((prev) => ({ // Also expand the bot profile when the avatar generating view is expanded
-                ...prev,
-                [botId]: true,
-            }));
-        }
-    }
-
     const toggleForm = () => {
         setShowForm((prev) => !prev);
     }
@@ -82,10 +70,7 @@ export default function Bots() {
     }
 
     const expandBot = (botId) => {
-        if(expandedBots[botId]) {
-            setAvatarGen(); // Also close the avatar generating view when the bot profile is closed
-        }
-        setExpandedBots((prev) => ({
+        setshowBotDetails((prev) => ({
             ...prev,
             [botId]: !prev[botId],
         }));
@@ -153,27 +138,27 @@ export default function Bots() {
                         /> 
                     :
                         // Displaying the bot
-                        <div className={`botWrapper ${!expandedBots[bot.botId] ? "collapsed" : "expanded"} ${lastActiveBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
+                        <div className={`botWrapper ${(showBotDetails[bot.botId] || showAvatarGen.bots[bot.botId]) ? "expanded" : "collapsed"} ${lastActiveBot?.botId === bot.botId ? "activeBot" : "inactiveBot"}`} key={index}>
 
                             <AvatarManager 
                                 id={bot.botId} 
                                 originalImage={bot.avatar && `data:image/webp;base64,${bot.avatar}`}
-                                avatarGen={avatarGen} 
-                                toggleAvatarGen={() => toggleAvatarGen(bot.botId)} 
+                                showAvatarGen={showAvatarGen.bots[bot.botId] || false} 
+                                toggleAvatarGen={() => toggleAvatarGen(bot.botId, "bot")} 
                                 setIsSubmit={setIsSubmit} 
                                 entityType="bot"
                             />
 
                             <h2 className="botTitle">{bot.botName}</h2>
 
-                            {expandedBots[bot.botId] && 
+                            {showBotDetails[bot.botId] && 
                                 <BotDetails bot={bot} />
                             }
 
                             <div className="botButtons">
                                 <Chat func={() => navigateToBot(bot.botId)} />
 
-                                <IconButton changeClass="botButton" func={() => expandBot(bot.botId)} condition={!expandedBots[bot.botId]} falseIcon={<RiCollapseDiagonal2Line/>} trueIcon={<RiExpandDiagonalLine/>} falseText="Close" trueText="Info" />
+                                <IconButton changeClass="botButton" func={() => expandBot(bot.botId)} condition={!showBotDetails[bot.botId]} falseIcon={<RiCollapseDiagonal2Line/>} trueIcon={<RiExpandDiagonalLine/>} falseText="Close" trueText="Info" />
 
                                 <IconButton changeClass="botButton" func={() => toggleEdit(bot.botId)} icon={<FaEdit/>} text="Edit" />
                             </div>

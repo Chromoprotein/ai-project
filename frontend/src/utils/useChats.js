@@ -23,6 +23,8 @@ export function useChats() {
 
     // User data for display purposes
     const [userData, setUserData] = useState({
+        userId: '',
+        avatar: '',
         username: '',
         email: '',
         aboutMe: '',
@@ -39,6 +41,8 @@ export function useChats() {
             if(response) {
                 const user = response.data;
                 setUserData({
+                    userId: user._id,
+                    avatar: user.avatar,
                     username: user.username,
                     email: user.email,
                     aboutMe: user.aboutMe,

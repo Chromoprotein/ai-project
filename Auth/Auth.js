@@ -130,7 +130,7 @@ exports.getUser = async (req, res) => {
   try {
     const userId = req.id;
 
-    const user = await User.findOne({ _id: userId }, '-password -_id');
+    const user = await User.findOne({ _id: userId }, '-password');
     
     if (!user) {
         return res.status(404).json({ message: "User not found" });
