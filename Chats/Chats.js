@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const sharp = require('sharp');
 const path = require('path');
+const fs = require('fs');
 
 const openai = new OpenAI(
     {
@@ -205,6 +206,8 @@ const categorizeChat = async (userMessage, res) => {
 
 // 2. ENDPOINTS
 
+// AI ENDPOINTS
+
 exports.getai = async (req, res) => {
     
     try {
@@ -269,6 +272,8 @@ exports.speech = async (req, res) => {
         res.status(500).json({ error: "Failed to generate speech" });
     }
 };
+
+// CHAT-RELATED
 
 // Gets the list of chats for the sidebar
 exports.getChatList = async (req, res) => {
@@ -363,11 +368,36 @@ exports.newChat = async (req, res) => {
 
 };
 
+// BOT PERSONA-RELATED
+
+exports.getAllBots = async (req, res) => {
+
+    try {
+        const userId = req.id;
+
+        const bots = await SystemMessage.find({ userId: userId }).lean()
+
+        if (!bots) {
+            return res.status(404).send('Bots not found');
+        };
+
+        if(bots) {
+            res.status(200).json({ bots })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred",
+            error: error.message,
+        })
+    }
+};
+
 // Creates a new system message / bot persona
 exports.newSystemMessage = async (req, res) => {
 
     try {
-        const { botName, instructions, userInfo, traits } = req.body;
+        const { formData, sharedData } = req.body;
+        const { botName, instructions, userInfo, traits } = formData;
 
         const userId = req.id;
 
@@ -375,6 +405,19 @@ exports.newSystemMessage = async (req, res) => {
 
             const bot = await SystemMessage.create({ botName, userId, instructions, traits: JSON.stringify(traits), userInfo });
             if(bot) {
+
+                const user = await User.findById(userId);
+                if (!user) {
+                    return res.status(404).send('User not found');
+                }
+                // Add new settings
+                user.sharedWithBots.push({
+                    botId: bot._id,
+                    ...sharedData
+                });
+
+                await user.save();
+
                 res.status(201).json({
                     message: "New system message successfully created",
                     id: bot._id,
@@ -396,154 +439,11 @@ exports.newSystemMessage = async (req, res) => {
 
 };
 
-// Fetches the user's bot personas
-exports.getSystemMessages = async (req, res) => {
-
-    try {
-        // User id comes from the auth middleware
-        const userId = req.id;
-
-        const bots = await SystemMessage.find({ userId: userId })
-        if(bots) {
-            res.status(200).json({ bots })
-        }
-    } catch (error) {
-        res.status(500).json({
-            message: "An error occurred",
-            error: error.message,
-        })
-    }
-
-};
-
-// Fetches the user's bot persona
-exports.getOneSystemMessage = async (req, res) => {
-
-    try {
-        // User id comes from the auth middleware
-        const userId = req.id;
-        const { botId } = req.query;
-
-        const bot = await SystemMessage.findOne({ userId: userId, _id: botId })
-        if(bot) {
-            res.status(200).json({ bot })
-        }
-    } catch (error) {
-        res.status(500).json({
-            message: "An error occurred",
-            error: error.message,
-        })
-    }
-
-};
-
-// Generates a new avatar with Dalle
-exports.generateBotAvatar = async (req, res) => {
-
-    try {
-        const { botId } = req.body;
-        const userId = req.id;
-
-        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
-
-        if (!existingBot) {
-            return res.status(404).json({
-                message: "Bot not found or does not belong to the user",
-            });
-        }
-
-        if(existingBot.instructions) {
-            const description = `Generate an avatar for a bot that has the following instructions: ${existingBot.instructions}.`;
-            const avatar = await getdalle(description);
-            if(avatar) {
-                console.log(avatar)
-                return res.status(200).json(avatar);
-            }
-        } else {
-            return res.status(404).json({
-                message: "Custom instructions not found, can't generate an avatar.",
-            });
-        }
-    } catch (error) {
-        res.status(500).json({
-            message: "An error occurred",
-            error: error.message,
-        });
-    }
-};
-
-// Saves a generated avatar
-exports.avatar = async (req, res) => {
-    const { botId, avatar } = req.body;
-    const userId = req.id;
-
-    if (!avatar || !botId) {
-        return res.status(400).json({ error: 'An avatar is required or bot not found' });
-    }
-
-    try {
-
-        // Fetch the bot and image concurrently
-        const [existingBot, avatarResponse] = await Promise.all([
-            SystemMessage.findOne({ _id: botId, userId }),
-            axios.get(avatar, { responseType: 'arraybuffer' })
-        ]);
-
-        if (!existingBot) {
-            return res.status(404).json({
-                message: "Bot not found",
-            });
-        };
-
-        // Resize the image
-        const processedImage = await sharp(avatarResponse.data)
-            .resize(128, 128)
-            .toBuffer();
-
-        const base64Image = Buffer.from(processedImage, 'binary').toString('base64');
-
-        // Save to MongoDB
-        existingBot.avatar = base64Image;
-
-        await existingBot.save();
-
-        res.json({ message: 'Avatar uploaded successfully!' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to upload avatar.' });
-    }
-};
-
-// Deletes an avatar
-exports.clearAvatar = async (req, res) => {
-    const { botId } = req.params;
-    const userId = req.id;
-
-    if (!botId) {
-        return res.status(400).json({ error: 'Bot not found' });
-    }
-
-    try {
-
-        // Make sure the bot exists
-        const existingBot = await SystemMessage.updateOne({ _id: botId, userId }, { $unset: { avatar: "" } });
-        if (!existingBot) {
-            return res.status(404).json({
-                message: "Bot not found or does not belong to the user",
-            });
-        }
-
-        res.json({ message: 'Avatar deleted successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to delete avatar.' });
-    }
-};
-
 exports.editBot = async (req, res) => {
 
     try {
-        const { botId, botName, instructions, userInfo, traits } = req.body;
+        const { formData, sharedData } = req.body;
+        const { botId, botName, instructions, userInfo, traits } = formData;
 
         const userId = req.id;
 
@@ -568,8 +468,31 @@ exports.editBot = async (req, res) => {
 
         await existingBot.save();
 
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Update or create sharing preferences for the bot
+        const botSettingsIndex = user.sharedWithBots.findIndex(bot => bot.botId.toString() === botId);
+        if (botSettingsIndex > -1) {
+            // Update existing settings
+            user.sharedWithBots[botSettingsIndex] = {
+                botId,
+                ...sharedData
+            };
+        } else {
+            // Add new settings
+            user.sharedWithBots.push({
+                botId,
+                ...sharedData
+            });
+        }
+
+        await user.save();
+
         res.status(200).json({
-            message: "System message successfully updated",
+            message: "Bot successfully updated",
             id: existingBot._id,
         });
 
@@ -603,7 +526,17 @@ exports.deleteBot = async (req, res) => {
 
         await SystemMessage.deleteOne({ _id: botId, userId });
 
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('Error removing profile data permissions from bot: user not found');
+        }
+
         await User.updateOne({ _id: userId, lastBotId: botId }, { $unset: { lastBotId: "" } });
+
+        await User.updateOne(
+            { _id: userId }, // Find the user
+            { $pull: { sharedWithBots: { botId: botId } } } // Remove the specific bot's entry
+        );
 
         res.status(200).json({
             message: "Bot persona successfully deleted",
@@ -678,17 +611,15 @@ exports.getLastBot = async (req, res) => {
     try {
         const userId = req.id;
 
-        const lastBot = await User.findOne({ _id: userId })
-        .populate({
-            path: 'lastBotId',
-        });
-        if (!lastBot) {
-            return res.status(404).json({
-                message: "User not found",
-            });
+        // Find what the last used bot is
+        const user = await User.findById(userId, '-password').lean();
+
+        if (!user || !user.lastBotId) {
+            return res.status(200).json(null);
         }
 
-        const foundLastBot = lastBot.lastBotId || null;
+        const foundLastBot = await SystemMessage.findById(user.lastBotId);
+
         return res.status(200).json({ foundLastBot });
 
     } catch (error) {
@@ -698,3 +629,165 @@ exports.getLastBot = async (req, res) => {
         });
     }
 }
+
+// AVATAR-RELATED
+
+// Generates a new avatar with Dalle for bots or users
+exports.generateAvatar = async (req, res) => {
+    try {
+        const { botId, prompt } = req.body;
+        const userId = req.id; // Extracted from middleware
+
+        let description;
+        let existingEntity;
+
+        if (botId) {
+            existingEntity = await SystemMessage.findOne({ _id: botId, userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "Bot not found or does not belong to the user" });
+            }
+            description = existingEntity.instructions 
+                ? `Generate an avatar for a bot based on its instructions. Don't try to include every detail, instead choose a couple of traits of the bot. The bot's instructions: ${existingEntity.instructions}.`
+                : "Generate an avatar for a chatbot.";
+        } else {
+            existingEntity = await User.findOne({ _id: userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            description = existingEntity.aboutMe || existingEntity.interestsHobbies
+                ? `Generate an avatar for a user based on their profile. Don't try to include every detail, instead choose a couple of traits of the user. About them: ${existingEntity.aboutMe || ''} Interests and hobbies: ${existingEntity.interestsHobbies || ''}`
+                : "Generate a general user avatar.";
+        }
+
+        // Override with user-provided prompt if available
+        if (prompt) {
+            description = prompt;
+        }
+
+        // Call DALL-E API to generate avatar
+        const avatar = await getdalle(description);
+
+        if (avatar) {
+            return res.status(200).json(avatar);
+        }
+
+    } catch (error) {
+        res.status(500).json({ message: "An error occurred", error: error.message });
+    }
+};
+
+// Saves a generated avatar for either a bot or a user
+exports.saveAvatar = async (req, res) => {
+    const { botId, avatar } = req.body;
+    const userId = req.id;
+
+    if (!avatar) {
+        return res.status(400).json({ error: 'An avatar is required' });
+    }
+
+    try {
+        const avatarResponse = await axios.get(avatar, { responseType: 'arraybuffer' });
+
+        // Resize the image
+        const processedImage = await sharp(avatarResponse.data)
+            .resize(128, 128)
+            .toBuffer();
+
+        const base64Image = Buffer.from(processedImage, 'binary').toString('base64');
+
+        let existingEntity;
+
+        if (botId) {
+            existingEntity = await SystemMessage.findOne({ _id: botId, userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "Bot not found" });
+            }
+        } else {
+            existingEntity = await User.findOne({ _id: userId });
+            if (!existingEntity) {
+                return res.status(404).json({ message: "User not found" });
+            }
+        }
+
+        // Save avatar to MongoDB
+        existingEntity.avatar = base64Image;
+        await existingEntity.save();
+
+        res.json({ message: 'Avatar uploaded successfully!' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to upload avatar.' });
+    }
+};
+
+// Deletes an avatar for either a bot or a user
+exports.clearAvatar = async (req, res) => {
+    const { botId } = req.params;
+    const userId = req.id;
+
+    try {
+        let updateResult;
+
+        if (botId) {
+            updateResult = await SystemMessage.updateOne({ _id: botId, userId }, { $unset: { avatar: "" } });
+            if (updateResult.modifiedCount === 0) {
+                return res.status(404).json({ message: "Bot not found or does not belong to the user" });
+            }
+        } else {
+            updateResult = await User.updateOne({ _id: userId }, { $unset: { avatar: "" } });
+            if (updateResult.modifiedCount === 0) {
+                return res.status(404).json({ message: "User not found" });
+            }
+        }
+
+        res.json({ message: 'Avatar deleted successfully' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to delete avatar.' });
+    }
+};
+
+exports.placeholderAvatar = async (req, res) => {
+    const { botId, avatar } = req.body; // `avatar` is now just the filename
+    const userId = req.id;
+
+    if (!avatar || !botId) {
+        return res.status(400).json({ error: 'An avatar filename is required or bot not found' });
+    }
+
+    try {
+        // Validate bot ownership
+        const existingBot = await SystemMessage.findOne({ _id: botId, userId });
+        if (!existingBot) {
+            return res.status(404).json({ message: "Bot not found" });
+        }
+
+        // Construct the full path to the image
+        const imagePath = path.join(__dirname, '..', 'frontend', 'public', avatar);
+
+        // Ensure the file exists
+        if (!fs.existsSync(imagePath)) {
+            return res.status(404).json({ message: "Avatar file not found" });
+        }
+
+        // Read and resize the image
+        const processedImage = await sharp(imagePath)
+            .resize(128, 128)
+            .toBuffer();
+
+        // Convert to Base64 for MongoDB storage
+        const base64Image = processedImage.toString('base64');
+
+        // Save to MongoDB
+        existingBot.avatar = base64Image;
+        await existingBot.save();
+
+        res.json({ message: 'Avatar uploaded successfully!' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to upload avatar.' });
+    }
+};

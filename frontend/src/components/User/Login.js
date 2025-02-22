@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../utils/useAuth';
@@ -45,7 +45,6 @@ export default function Login() {
             { withCredentials: true }
           );
           if (response.status === 201) {
-              console.log("user logged in")
               sessionStorage.setItem('isAuthenticated', 'true');
               sessionStorage.setItem('name', response.data.username)
               navigate("/");

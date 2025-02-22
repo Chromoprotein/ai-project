@@ -7,10 +7,11 @@ import axios from "axios";
 import { AiFillSound } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 
-export default function Message({ message, messageIndex, name, imageSrc }) {
+export default function Message({ message, messageIndex, name, imageSrc = "/placeholderAvatar.webp" }) {
   const [copySuccess, setCopySuccess] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
+  const [imageError, setImageError] = useState(false);
 
   const parentDivRef = useRef(null);
 
@@ -26,6 +27,10 @@ export default function Message({ message, messageIndex, name, imageSrc }) {
 
   const handleImageLoad = () => {
     setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   // Copying a message
@@ -83,8 +88,15 @@ export default function Message({ message, messageIndex, name, imageSrc }) {
             components={{
               img: ({ node, ...props }) => (
                 <div className="imageContainer">
-                  <img {...props} className="image" alt="AI generated" onLoad={handleImageLoad} />
-                  {imageLoaded && (
+                  <img 
+                    {...props} 
+                    className="image" 
+                    alt="AI generated" 
+                    onLoad={handleImageLoad} 
+                    onError={handleImageError} 
+                    src={imageError ? "image-expired-placeholder.webp" : props.src} 
+                  />
+                  {imageLoaded && !imageError && (
                     <button className="downloadButton" onClick={downloadImage}>
                       <IoMdDownload size={30} />
                     </button>

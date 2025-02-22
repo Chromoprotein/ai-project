@@ -11,13 +11,54 @@ export function useChats() {
 
     // Bot persona -related state
     const [bots, setBots] = useState(); // List of bot personas
-    const [currentBot, setCurrentBot] = useState();
+    const [currentBot, setCurrentBot] = useState(); // the bot of the opened chat
+    const [lastActiveBot, setLastActiveBot] = useState(); // the last used bot, needed for starting a new chat quickly. Could be expanded to save multiple recent bots
 
     // Loading states
     const [loadingBots, setLoadingBots] = useState(false);
     const [loadingChatList, setLoadingChatList] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
     const [loadingBot, setLoadingBot] = useState(true);
+    const [loadingUser, setLoadingUser] = useState(true);
+
+    // User data for display purposes
+    const [userData, setUserData] = useState({
+        userId: '',
+        avatar: '',
+        username: '',
+        email: '',
+        aboutMe: '',
+        interestsHobbies: '',
+        currentGoals: [],
+        currentMood: '',
+        sharedWithBots: []
+    });
+
+    const getUser = useCallback(async () => {
+        try {
+            setLoadingUser(true);
+            const response = await axiosInstance.get(process.env.REACT_APP_GETUSER);
+            if(response) {
+                const user = response.data;
+                setUserData({
+                    userId: user._id,
+                    avatar: user.avatar,
+                    username: user.username,
+                    email: user.email,
+                    aboutMe: user.aboutMe,
+                    interestsHobbies: user.interestsHobbies,
+                    currentGoals: user.currentGoals.length > 0 ? user.currentGoals : [],
+                    currentMood: user.currentMood,
+                    sharedWithBots: user.sharedWithBots.length > 0 ? user.sharedWithBots : []
+                });
+                return response.data;
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoadingUser(false);
+        }
+    }, []);
 
     // Used when a bot is selected. Saves what was the last active bot
     const setLastBotId = useCallback((async (botId) => {
@@ -44,17 +85,22 @@ export function useChats() {
         try {
             setLoadingBot(true);
             const response = await axiosInstance.get(process.env.REACT_APP_GETLASTBOT);
-            if(response.data.foundLastBot) {
+            if(response.data?.foundLastBot) {
                 const bot = response.data.foundLastBot;
-                const newBot = {
-                    botId: bot._id,
-                    botName: bot.botName,
-                    instructions: bot.instructions,
-                    traits: bot.traits ? JSON.parse(bot.traits) : [],
-                    userInfo: bot.userInfo,
-                    avatar: bot.avatar,
-                };             
-                setCurrentBot(newBot);
+                const formattedBot =
+                    {
+                        botId: bot._id,
+                        botName: bot.botName,
+                        avatar: bot.avatar,
+                        instructions: bot.instructions,
+                        traits: bot.traits?.length > 0 ? JSON.parse(bot.traits) : [],
+                        userInfo: bot.userInfo,
+                        sharedData: {}
+                    };
+                setLastActiveBot(formattedBot);
+                return formattedBot;
+            } else {
+                return null;
             }
         } catch (error) {
             console.log(error.message);
@@ -62,6 +108,43 @@ export function useChats() {
             setLoadingBot(false);
         }
     }), []);
+
+    const addUserDataToBots = useCallback((userResult, botResult) => {
+        // Convert shared data into a quick lookup map
+
+        if(userResult?.sharedWithBots.length === 0) {
+            return botResult;
+        }
+
+        const sharedMap = new Map();
+        userResult.sharedWithBots.forEach((shared) => {
+            sharedMap.set(shared.botId.toString(), shared);
+        });
+
+        // A helper function to process a single bot
+        const processBot = (bot) => {
+            const sharedData = sharedMap.get(bot.botId.toString()) || null;
+            return {
+                ...bot,
+                sharedData: sharedData
+                    ? {
+                        shareUsername: sharedData.shareUsername ? userResult.username : null,
+                        shareAboutMe: sharedData.shareAboutMe ? userResult.aboutMe : null,
+                        shareInterestsHobbies: sharedData.shareInterestsHobbies ? userResult.interestsHobbies : null,
+                        shareCurrentMood: sharedData.shareCurrentMood ? userResult.currentMood : null,
+                        sharedGoals: userResult.currentGoals.filter((g) => sharedData.sharedGoals.includes(g.id))
+                    }
+                    : null
+            };
+        };
+
+        // Check if botResult is an array or a single object
+        if (Array.isArray(botResult)) {
+            return botResult.map(processBot);
+        } else {
+            return processBot(botResult);
+        }
+    }, []);
 
     // Fetch an old chat based on the chat ID in the URL
     const getChat = useCallback((async (chatId, setMessages) => {
@@ -79,13 +162,14 @@ export function useChats() {
                 }
                 const chat = response.data.chat;
                 if(chat.botId) {
-                    setCurrentBot({
+                    setCurrentBot({ 
                         botId: chat.botId._id,
                         botName: chat.botId.botName,
-                        traits: chat.botId.traits,
-                        instructions: chat.botId.instructions,
-                        userInfo: chat.botId.userInfo,
                         avatar: chat.botId.avatar,
+                        instructions: null,
+                        traits: [],
+                        userInfo: null,
+                        sharedData: {}
                     });
                 }
             }
@@ -121,12 +205,11 @@ export function useChats() {
                 { newChatData: newChatData },
                 {
                     headers: {
-                    "Content-Type": "application/json",
+                        "Content-Type": "application/json",
                     },
                 }
             );
             if (response.data) {
-                console.log(response.data);
                 const chatId = response.data.id;
                 setSearchParams({ chatId: chatId });
                 return chatId;
@@ -142,17 +225,22 @@ export function useChats() {
     const getBots = useCallback((async () => {
         try {
             setLoadingBots(true);
-            const response = await axiosInstance.get(process.env.REACT_APP_GETBOTS);
-            if(response.data.bots.length > 0) {
-            const mappedBots = response.data.bots.map((bot) => ({
-                botId: bot._id,
-                botName: bot.botName,
-                instructions: bot.instructions,
-                traits: bot.traits?.length > 0 ? JSON.parse(bot.traits) : [],
-                userInfo: bot.userInfo,
-                avatar: bot.avatar,
-            }));
-                setBots(mappedBots);
+            const fetchBotsResponse = await axiosInstance.get(process.env.REACT_APP_GETALLBOTS);
+
+            if(fetchBotsResponse) {
+                const fetchBots = fetchBotsResponse.data.bots;
+                const formattedBots = fetchBots.map((bot) => (
+                    {
+                        botId: bot._id,
+                        botName: bot.botName,
+                        avatar: bot.avatar,
+                        instructions: bot.instructions,
+                        traits: bot.traits?.length > 0 ? JSON.parse(bot.traits) : [],
+                        userInfo: bot.userInfo
+                    }
+                ));
+                setBots(formattedBots);
+                return formattedBots;
             }
         } catch (error) {
             console.log(error);
@@ -161,6 +249,6 @@ export function useChats() {
         }
     }), []);
 
-    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId }
+    return { chatList, getChat, getChatList, saveNewChat, searchParams, setSearchParams, bots, getBots, getLastBot, currentBot, setCurrentBot, lastActiveBot, setLastActiveBot, loadingBot, setLoadingBot, loadingBots, loadingChat, loadingChatList, setLastBotId, getUser, userData, setBots, addUserDataToBots, loadingUser }
 
 };

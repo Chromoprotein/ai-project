@@ -15,6 +15,14 @@ exports.register = async (req, res, next) => {
   }
   
   try {
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email already in use",
+      });
+    };
+
     const hash = await bcrypt.hash(password, 10); // Hash the password asynchronously
     const user = await User.create({
       username,
@@ -117,3 +125,68 @@ exports.logout = (req, res) => {
   res.cookie('jwt', '', { maxAge: 1 }); // Set the jwt cookie to expire immediately
   res.status(200).json({ message: 'Logged out successfully' });
 };
+
+exports.getUser = async (req, res) => {
+  try {
+    const userId = req.id;
+
+    const user = await User.findOne({ _id: userId }, '-password');
+    
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json(user);
+    
+  } catch (error) {
+    return res.status(500).json({
+        message: "An error occurred",
+        error: error.message,
+    });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+
+    try {
+
+      const { username, email, avatar, aboutMe, interestsHobbies, currentGoals, currentMood } = req.body;
+      const userId = req.id;
+    
+      if (!username || !email) { // mandatory fields
+          return res.status(400).json({
+              message: "Username and email are required",
+          });
+      }
+
+      const user = await User.findOne({ _id: userId });
+
+      if (!user) {
+          return res.status(404).json({
+              message: "User not found",
+          });
+      }
+
+      user.username = username;
+      user.email = email;
+      user.avatar = avatar;
+      user.aboutMe = aboutMe;
+      user.interestsHobbies = interestsHobbies;
+      user.currentGoals = currentGoals;
+      user.currentMood = currentMood;
+
+      await user.save();
+
+      res.status(200).json({
+          message: "Profile updated",
+          id: user._id,
+      });
+
+  } catch (error) {
+    res.status(500).json({
+        message: "An error occurred",
+        error: error.message,
+    });
+  }
+
+}
