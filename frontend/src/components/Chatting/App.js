@@ -210,7 +210,6 @@ export default function App() {
         } else {
           setLastActiveBot(null);
         }
-        
     }
     getUserAndLastBot();
   }, [addUserDataToBots, getLastBot, getUser, setLastActiveBot, searchParams]);

@@ -9,24 +9,20 @@ import { FaEye } from "react-icons/fa";
 import IconButton from "../Reusables/IconButton";
 import BackButton from '../Reusables/BackButton';
 import { useChats } from "../../utils/useChats";
-import { Spinner } from "../Reusables/SmallUIElements";
+import { MiniSpinner } from "../Reusables/SmallUIElements";
 import AvatarManager from "../Avatar/AvatarManager";
 import useAvatarToggler from "../Avatar/useAvatarToggler";
 
 export default function UserProfile() {
 
     const { theme } = useMode();
-    
     const { getUser, userData, loadingUser } = useChats();
+    const { showAvatarGen, toggleAvatarGen } = useAvatarToggler();
 
     const [edit, setEdit] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
-
     const [formData, setFormData] = useState(null);
-
-    const { showAvatarGen, toggleAvatarGen } = useAvatarToggler();
-
     const [isSubmit, setIsSubmit] = useState(false);
 
     useEffect(() => {
@@ -49,13 +45,6 @@ export default function UserProfile() {
     const toggleEdit = () => {
         setEdit((prev) => !prev);
     }
-
-    const buttons = (
-        <>
-            <BackButton />
-            <IconButton func={toggleEdit} condition={edit} trueIcon={<FaEye/>} trueText="View profile" falseIcon={<FaEdit />} falseText="Edit profile" changeClass="botButton" />
-        </>
-    );
 
     const filterEmptyGoals = () => {
         const newFormData = {
@@ -106,14 +95,19 @@ export default function UserProfile() {
         });
     }
 
-    if (loadingUser || !formData) return <Spinner />;
+    const buttons = (
+        <>
+            <BackButton />
+            <IconButton func={toggleEdit} condition={edit} trueIcon={<FaEye/>} trueText="View profile" falseIcon={<FaEdit />} falseText="Edit profile" changeClass="botButton" />
+        </>
+    );
 
     const formFields = [
-        { label: "Username", type: "text", name: "username", value: formData.username, onChange: handleChange },
-        { label: "Email (never shared with bots)", type: "text", name: "email", value: formData.email, onChange: handleChange },
-        { label: "About me", type: "text", name: "aboutMe", value: formData.aboutMe, onChange: handleChange, inputType: "textarea" },
-        { label: "My interests and hobbies", type: "text", name: "interestsHobbies", value: formData.interestsHobbies, onChange: handleChange, inputType: "textarea" },
-        { label: "My current mood", type: "text", name: "currentMood", value: formData.currentMood, onChange: handleChange }
+        { label: "Username", type: "text", name: "username", value: formData?.username, onChange: handleChange },
+        { label: "Email (never shared with bots)", type: "text", name: "email", value: formData?.email, onChange: handleChange },
+        { label: "About me", type: "text", name: "aboutMe", value: formData?.aboutMe, onChange: handleChange, inputType: "textarea" },
+        { label: "My interests and hobbies", type: "text", name: "interestsHobbies", value: formData?.interestsHobbies, onChange: handleChange, inputType: "textarea" },
+        { label: "My current mood", type: "text", name: "currentMood", value: formData?.currentMood, onChange: handleChange }
     ];
 
     const emptyField = <p className="emptyField">This field is empty</p>;
@@ -121,71 +115,74 @@ export default function UserProfile() {
     return (
         <Layout theme={theme} buttons={buttons}>
             <form onSubmit={handleSubmit} className="formContainer">
-                <div className="formItem">
-                    <h2>{formData.username}'s profile</h2>
-                </div>
 
-                <AvatarManager 
-                    id={userData.userId}
-                    originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
-                    showAvatarGen={showAvatarGen.user}
-                    toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
-                    entityType="user"
-                    setIsSubmit={setIsSubmit}
-                />
-
-                {formFields.map(({ label, type, name, value, onChange, inputType }) => (
-                    <div key={name} className="formItem">
-                        <label className="smallLabel">{label}</label>
-                        {edit ?
-                            <>
-                                {inputType === "textarea" ?
-                                    <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
-                                    <input type={type} name={name} value={value} className="inputElement" onChange={onChange} />
-                                }
-                            </> 
-                        : 
-                            <>{value && value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
-                        }
-                    </div>
-                ))}
-
-                {formData.currentGoals?.map((field, index) => (
-                    <div key={field.id} className="formItem">
-                        <div className="spacedItemsWrapper">
-                            <label className="smallLabel">My goal {index+1}</label>
-                            {edit && <button type="button" className="iconButton" onClick={() => handleRemoveGoal(field.id)}>
-                                <MdDeleteForever/>
-                            </button>}
-                        </div>
-                        {edit ? 
-                            <textarea
-                                type="text"
-                                value={field.goal}
-                                onChange={(e) => handleChangeGoal(field.id, e.target.value)}
-                            ></textarea> 
-                        :
-                            <>{field.goal.length > 0 ? <p>{field.goal}</p> : <>{emptyField}</>}</>
-                        }
-                    </div>
-                ))}
-                {edit && 
+                {(loadingUser || !formData) ? 
+                    <MiniSpinner />
+                :
                     <>
-                        {formData.currentGoals.length < 3 ? 
-                            <IconButton changeClass="textButton" func={handleAddGoal} icon={<FaPlusCircle/>} text="Goal" />
-                        : 
-                            <div className="formItem">
-                                <div className="formInfo">You can enter max. 3 goals</div>    
+                        <AvatarManager 
+                            id={userData.userId}
+                            originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
+                            showAvatarGen={showAvatarGen.user}
+                            toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
+                            entityType="user"
+                            setIsSubmit={setIsSubmit}
+                        />
+
+                        {formFields.map(({ label, type, name, value, onChange, inputType }) => (
+                            <div key={name} className="formItem">
+                                <label className="smallLabel">{label}</label>
+                                {edit ?
+                                    <>
+                                        {inputType === "textarea" ?
+                                            <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
+                                            <input type={type} name={name} value={value} className="inputElement" onChange={onChange} />
+                                        }
+                                    </> 
+                                : 
+                                    <>{value && value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
+                                }
                             </div>
+                        ))}
+
+                        {formData && formData.currentGoals?.map((field, index) => (
+                            <div key={field.id} className="formItem">
+                                <div className="spacedItemsWrapper">
+                                    <label className="smallLabel">My goal {index+1}</label>
+                                    {edit && <button type="button" className="iconButton" onClick={() => handleRemoveGoal(field.id)}>
+                                        <MdDeleteForever/>
+                                    </button>}
+                                </div>
+                                {edit ? 
+                                    <textarea
+                                        type="text"
+                                        value={field.goal}
+                                        onChange={(e) => handleChangeGoal(field.id, e.target.value)}
+                                    ></textarea> 
+                                :
+                                    <>{field.goal.length > 0 ? <p>{field.goal}</p> : <>{emptyField}</>}</>
+                                }
+                            </div>
+                        ))}
+                        {edit && 
+                            <>
+                                {formData.currentGoals.length < 3 ? 
+                                    <IconButton changeClass="textButton" func={handleAddGoal} icon={<FaPlusCircle/>} text="Goal" />
+                                : 
+                                    <div className="formItem">
+                                        <div className="formInfo">You can enter max. 3 goals</div>    
+                                    </div>
+                                }
+                            </>
                         }
+
+                        {edit && <div className="formItem">
+                            <button className="button" type="submit">
+                                Save changes
+                            </button>
+                        </div>}
                     </>
                 }
-
-                {edit && <div className="formItem">
-                    <button className="button" type="submit">
-                        Save changes
-                    </button>
-                </div>}
 
                 {message && (
                     <div className="formItem">
