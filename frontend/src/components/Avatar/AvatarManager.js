@@ -15,7 +15,7 @@ export default function AvatarManager({ id, originalImage, showAvatarGen, toggle
         clear: process.env.REACT_APP_CLEARAVATAR,
     };
 
-    const { avatar, loading, isSaved, message, prompt, handlePromptChange, generateAvatar, saveAvatar, clearAvatar, discardWithoutSaving } = useAvatar(apiEndpoints, entityType, setIsSubmit);
+    const { avatar, loading, setLoading, isSaved, message, prompt, handlePromptChange, generateAvatar, saveAvatar, clearAvatar, discardWithoutSaving } = useAvatar(apiEndpoints, entityType, setIsSubmit);
 
     return (
         <>
@@ -26,7 +26,8 @@ export default function AvatarManager({ id, originalImage, showAvatarGen, toggle
                     src={avatar ? avatar : (originalImage ? originalImage : "/placeholderAvatar.webp")} 
                     alt={`${entityType} avatar`} 
                     className={`botImage clickable ${loading && "botImageLoading"}`} 
-                    onError={() => console.log("Error: failed to load image")}
+                    onLoad={() => setLoading(false)}
+                    onError={() => setLoading(false)}
                 />
             </div>
 
@@ -49,7 +50,7 @@ export default function AvatarManager({ id, originalImage, showAvatarGen, toggle
 
                             <IconButton changeClass="botButton" disabled={isSaved || !avatar || loading} func={() => saveAvatar(id)} icon={<FaSave />} text={isSaved ? "Avatar saved" : "Save this avatar"} />
 
-                            <IconButton changeClass="botButton" disabled={loading} func={(avatar && !isSaved) ? discardWithoutSaving : () => toggleAvatarGen()} icon={<IoReturnDownBackSharp />} text={(avatar && !isSaved) ? "Cancel" : "Return"} />
+                            <IconButton changeClass="botButton" disabled={loading} func={(avatar && !isSaved) ? discardWithoutSaving : () => toggleAvatarGen()} icon={<IoReturnDownBackSharp />} text="Cancel" />
 
                             <IconButton changeClass="botButton" disabled={!originalImage || loading} func={() => clearAvatar(id)} icon={<MdDeleteForever />} text="Delete avatar" />
                         </div>

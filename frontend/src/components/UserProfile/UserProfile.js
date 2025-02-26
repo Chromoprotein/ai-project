@@ -116,73 +116,69 @@ export default function UserProfile() {
         <Layout theme={theme} buttons={buttons}>
             <form onSubmit={handleSubmit} className="formContainer">
 
-                {(loadingUser || !formData) ? 
-                    <MiniSpinner />
-                :
-                    <>
-                        <AvatarManager 
-                            id={userData.userId}
-                            originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
-                            showAvatarGen={showAvatarGen.user}
-                            toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
-                            entityType="user"
-                            setIsSubmit={setIsSubmit}
-                        />
+                {(loadingUser || !formData) && <MiniSpinner />}
 
-                        {formFields.map(({ label, type, name, value, onChange, inputType }) => (
-                            <div key={name} className="formItem">
-                                <label className="smallLabel">{label}</label>
-                                {edit ?
-                                    <>
-                                        {inputType === "textarea" ?
-                                            <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
-                                            <input type={type} name={name} value={value} className="inputElement" onChange={onChange} />
-                                        }
-                                    </> 
-                                : 
-                                    <>{value && value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
-                                }
-                            </div>
-                        ))}
+                <AvatarManager 
+                    id={userData.userId}
+                    originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
+                    showAvatarGen={showAvatarGen.user}
+                    toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
+                    entityType="user"
+                    setIsSubmit={setIsSubmit}
+                />
 
-                        {formData && formData.currentGoals?.map((field, index) => (
-                            <div key={field.id} className="formItem">
-                                <div className="spacedItemsWrapper">
-                                    <label className="smallLabel">My goal {index+1}</label>
-                                    {edit && <button type="button" className="iconButton" onClick={() => handleRemoveGoal(field.id)}>
-                                        <MdDeleteForever/>
-                                    </button>}
-                                </div>
-                                {edit ? 
-                                    <textarea
-                                        type="text"
-                                        value={field.goal}
-                                        onChange={(e) => handleChangeGoal(field.id, e.target.value)}
-                                    ></textarea> 
-                                :
-                                    <>{field.goal.length > 0 ? <p>{field.goal}</p> : <>{emptyField}</>}</>
-                                }
-                            </div>
-                        ))}
-                        {edit && 
+                {formFields.map(({ label, type, name, value, onChange, inputType }) => (
+                    <div key={name} className="formItem">
+                        <label className="smallLabel">{label}</label>
+                        {edit ?
                             <>
-                                {formData.currentGoals.length < 3 ? 
-                                    <IconButton changeClass="textButton" func={handleAddGoal} icon={<FaPlusCircle/>} text="Goal" />
-                                : 
-                                    <div className="formItem">
-                                        <div className="formInfo">You can enter max. 3 goals</div>    
-                                    </div>
+                                {inputType === "textarea" ?
+                                    <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
+                                    <input type={type} name={name} value={value} className="inputElement" onChange={onChange} />
                                 }
-                            </>
+                            </> 
+                        : 
+                            <>{value && value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
                         }
+                    </div>
+                ))}
 
-                        {edit && <div className="formItem">
-                            <button className="button" type="submit">
-                                Save changes
-                            </button>
-                        </div>}
+                {formData && formData.currentGoals?.map((field, index) => (
+                    <div key={field.id} className="formItem">
+                        <div className="spacedItemsWrapper">
+                            <label className="smallLabel">My goal {index+1}</label>
+                            {edit && <button type="button" className="iconButton" onClick={() => handleRemoveGoal(field.id)}>
+                                <MdDeleteForever/>
+                            </button>}
+                        </div>
+                        {edit ? 
+                            <textarea
+                                type="text"
+                                value={field.goal}
+                                onChange={(e) => handleChangeGoal(field.id, e.target.value)}
+                            ></textarea> 
+                        :
+                            <>{field.goal.length > 0 ? <p>{field.goal}</p> : <>{emptyField}</>}</>
+                        }
+                    </div>
+                ))}
+                {edit && 
+                    <>
+                        {formData.currentGoals.length < 3 ? 
+                            <IconButton changeClass="textButton" func={handleAddGoal} icon={<FaPlusCircle/>} text="Goal" />
+                        : 
+                            <div className="formItem">
+                                <div className="formInfo">You can enter max. 3 goals</div>    
+                            </div>
+                        }
                     </>
                 }
+
+                {edit && <div className="formItem">
+                    <button className="button" type="submit">
+                        Save changes
+                    </button>
+                </div>}
 
                 {message && (
                     <div className="formItem">

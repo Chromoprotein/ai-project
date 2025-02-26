@@ -24,9 +24,7 @@ export default function useAvatar(apiEndpoints, entityType, setIsSubmit) {
         } catch (error) {
             console.error(error);
             setMessage(error.message);
-        } finally {
-            setLoading(false);
-        }
+        } 
     };
 
     const saveAvatar = async (id) => {
@@ -71,6 +69,7 @@ export default function useAvatar(apiEndpoints, entityType, setIsSubmit) {
     return {
         avatar,
         loading,
+        setLoading,
         isSaved,
         message,
         prompt,

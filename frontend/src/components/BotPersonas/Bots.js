@@ -51,6 +51,7 @@ export default function Bots() {
             setBots(combinedData);
         }
         getUserAndBots();
+        console.log("here")
     }, [getBots, getUser, isSubmit, addUserDataToBots, setBots])
 
     useEffect(() => {
