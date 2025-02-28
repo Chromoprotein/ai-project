@@ -137,8 +137,12 @@ body {
     color: var(--text-color);
 }
 
-.formContainer {
+.formBackground {
     background-color: var(--highlight-background);
+    border-radius: 20px;
+}
+
+.formContainer {
     display: flex;
     flex-direction: column;
     gap:20px;
@@ -146,7 +150,6 @@ body {
     align-items: center;
     width:100%;
     max-width:700px;
-    border-radius:20px;
     color: var(--text-color);
     padding: 30px;
     margin: 10px 0;
@@ -489,7 +492,8 @@ body {
 
 .profileButton {
     width:37px;
-    border-radius: 50%;
+    height:37px;
+    border-radius: 50% !important;
     margin:10px;
     cursor:pointer;
 }
@@ -830,7 +834,8 @@ body {
 .botImage {
     position: relative;
     width: 90px;
-    border-radius: 50%;
+    height: 90px;
+    border-radius: 50% !important;
     border: 3px solid transparent;
     transition: all 0.2s ease-in;
 }
@@ -891,6 +896,71 @@ body {
 
 .userMessage {
     padding: 10px;
+}
+
+/* SKELETONS */
+
+.skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #e0e0e0 50%, #f3f3f3 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+
+.skeleton-text {
+    height: 12px;
+    width: 100%;
+    margin: 6px 0;
+}
+
+.skeleton-label {
+    width:30%;
+}
+
+.skeleton-short {
+    width: 60%;
+    /* Simulates shorter text */
+}
+
+.skeleton-title {
+    width: 80%;
+    height: 18px;
+}
+
+.skeleton-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.skeleton-button {
+    width: 100px;
+    height: 30px;
+    border-radius: 6px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* UTILS */

@@ -12,6 +12,7 @@ import { useChats } from "../../utils/useChats";
 import { MiniSpinner } from "../Reusables/SmallUIElements";
 import AvatarManager from "../Avatar/AvatarManager";
 import useAvatarToggler from "../Avatar/useAvatarToggler";
+import { SkeletonProfile } from "../Reusables/Skeletons";
 
 export default function UserProfile() {
 
@@ -44,6 +45,7 @@ export default function UserProfile() {
 
     const toggleEdit = () => {
         setEdit((prev) => !prev);
+        setMessage("");
     }
 
     const filterEmptyGoals = () => {
@@ -65,6 +67,7 @@ export default function UserProfile() {
                 filteredFormData
             );
             if (response) {
+                toggleEdit();
                 setMessage(response.data.message);
                 setIsSubmit((prev) => !prev);
             }
@@ -114,83 +117,111 @@ export default function UserProfile() {
 
     return (
         <Layout theme={theme} buttons={buttons}>
-            <form onSubmit={handleSubmit} className="formContainer">
+            <form onSubmit={handleSubmit} className="formBackground">
 
-                {(loadingUser || !formData) && <MiniSpinner />}
+                {(loadingUser || !formData) ? 
+                    <SkeletonProfile /> :
+                <div className={`formContainer ${(!loadingUser && formData) && "fade-in"}`}>
+                    <AvatarManager 
+                        id={userData.userId}
+                        originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
+                        showAvatarGen={showAvatarGen.user}
+                        toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
+                        entityType="user"
+                        setIsSubmit={setIsSubmit}
+                    />
 
-                <AvatarManager 
-                    id={userData.userId}
-                    originalImage={userData.avatar && `data:image/webp;base64,${userData.avatar}`}
-                    showAvatarGen={showAvatarGen.user}
-                    toggleAvatarGen={() => toggleAvatarGen(null, "user")} 
-                    entityType="user"
-                    setIsSubmit={setIsSubmit}
-                />
+                    <ProfileFields formFields={formFields} edit={edit} emptyField={emptyField} />
 
-                {formFields.map(({ label, type, name, value, onChange, inputType }) => (
-                    <div key={name} className="formItem">
-                        <label className="smallLabel">{label}</label>
-                        {edit ?
-                            <>
-                                {inputType === "textarea" ?
-                                    <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
-                                    <input type={type} name={name} value={value} className="inputElement" onChange={onChange} />
-                                }
-                            </> 
-                        : 
-                            <>{value && value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
-                        }
-                    </div>
-                ))}
+                    <ProfileGoals formData={formData} edit={edit} handleChangeGoal={handleChangeGoal} emptyField={emptyField} handleRemoveGoal={handleRemoveGoal} />
 
-                {formData && formData.currentGoals?.map((field, index) => (
-                    <div key={field.id} className="formItem">
-                        <div className="spacedItemsWrapper">
-                            <label className="smallLabel">My goal {index+1}</label>
-                            {edit && <button type="button" className="iconButton" onClick={() => handleRemoveGoal(field.id)}>
-                                <MdDeleteForever/>
-                            </button>}
+                    <AddGoals edit={edit} formData={formData} handleAddGoal={handleAddGoal} />
+
+                    {edit && <div className="formItem">
+                        <button className="button" type="submit">
+                            Save changes
+                        </button>
+                    </div>}
+
+                    {message && (
+                        <div className="formItem">
+                        <p className="formInfo">{message}</p>
                         </div>
-                        {edit ? 
-                            <textarea
-                                type="text"
-                                value={field.goal}
-                                onChange={(e) => handleChangeGoal(field.id, e.target.value)}
-                            ></textarea> 
-                        :
-                            <>{field.goal.length > 0 ? <p>{field.goal}</p> : <>{emptyField}</>}</>
-                        }
-                    </div>
-                ))}
-                {edit && 
-                    <>
-                        {formData.currentGoals.length < 3 ? 
-                            <IconButton changeClass="textButton" func={handleAddGoal} icon={<FaPlusCircle/>} text="Goal" />
-                        : 
-                            <div className="formItem">
-                                <div className="formInfo">You can enter max. 3 goals</div>    
-                            </div>
-                        }
-                    </>
-                }
+                    )}
 
-                {edit && <div className="formItem">
-                    <button className="button" type="submit">
-                        Save changes
-                    </button>
+                    {error && (
+                        <div className="formItem">
+                        <p className="formInfo errorMessage">{error}</p>
+                        </div>
+                    )}
                 </div>}
-
-                {message && (
-                    <div className="formItem">
-                    <p className="formInfo">{message}</p>
-                    </div>
-                )}
-                {error && (
-                    <div className="formItem">
-                    <p className="formInfo errorMessage">{error}</p>
-                    </div>
-                )}
             </form>
         </Layout>
+    );
+}
+
+function AddGoals({ edit, formData, handleAddGoal}) {
+    return (
+        <>
+            {edit && 
+                <>
+                    {formData.currentGoals.length < 3 ? 
+                        <IconButton changeClass="textButton" func={handleAddGoal} icon={<FaPlusCircle/>} text="Goal" />
+                    : 
+                        <div className="formItem">
+                            <div className="formInfo">You can enter max. 3 goals</div>    
+                        </div>
+                    }
+                </>
+            }
+        </>
+    )
+}
+
+function ProfileGoals({ formData, edit, handleChangeGoal, emptyField, handleRemoveGoal }) {
+    return (
+        <>
+            {formData && formData.currentGoals?.map((field, index) => (
+                <div key={field.id} className="formItem">
+                    <div className="spacedItemsWrapper">
+                        <label className="smallLabel">My goal {index+1}</label>
+                        {edit && <button type="button" className="iconButton" onClick={() => handleRemoveGoal(field.id)}>
+                            <MdDeleteForever/>
+                        </button>}
+                    </div>
+                    {edit ? 
+                        <textarea
+                            type="text"
+                            value={field.goal}
+                            onChange={(e) => handleChangeGoal(field.id, e.target.value)}
+                        ></textarea> 
+                    :
+                        <>{field.goal.length > 0 ? <p>{field.goal}</p> : <>{emptyField}</>}</>
+                    }
+                </div>
+            ))}
+        </>
+    );
+}
+
+function ProfileFields({ formFields, edit, emptyField }) {
+    return (
+        <>
+            {formFields.map(({ label, type, name, value, onChange, inputType }) => (
+                <div key={name} className="formItem">
+                    <label className="smallLabel">{label}</label>
+                    {edit ?
+                        <>
+                            {inputType === "textarea" ?
+                                <textarea type={type} name={name} value={value} onChange={onChange}></textarea> : 
+                                <input type={type} name={name} value={value} className="inputElement" onChange={onChange} />
+                            }
+                        </> 
+                    : 
+                        <>{value && value.length > 0 ? <p>{value}</p> : <>{emptyField}</>}</>
+                    }
+                </div>
+            ))}
+        </>
     );
 }

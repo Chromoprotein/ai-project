@@ -9,6 +9,7 @@ import { IoLogOut } from "react-icons/io5";
 import LinkButton from "../Reusables/LinkButton";
 import { RiChatNewLine } from "react-icons/ri";
 import IconButton from "../Reusables/IconButton";
+import { SkeletonCircleSmall } from "../Reusables/Skeletons";
 
 export function Sidebar({ chatList, chatId, loadingChatList, resetAll, userAvatar = "/placeholderAvatar.webp", currentBotAvatar = "/placeholderAvatar.webp", loadingUser }) {
 
@@ -62,7 +63,7 @@ export function Sidebar({ chatList, chatId, loadingChatList, resetAll, userAvata
                         {isNavbarCollapsed ? <GoSidebarCollapse /> : <GoSidebarExpand />}
                     </button>
 
-                    {loadingUser ? <MiniSpinner /> : <img src={userAvatar} alt="User avatar" className="profileButton" onClick={toggleUserMenu} />}
+                    {loadingUser ? <SkeletonCircleSmall /> : <img src={userAvatar} alt="User avatar" className="profileButton" onClick={toggleUserMenu} />}
 
                     <button className="roundButton" onClick={toggleChatMenu}>
                         <RiChatNewLine />
