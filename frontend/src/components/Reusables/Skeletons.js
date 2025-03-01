@@ -58,12 +58,56 @@ function SkeletonItemLong() {
     );
 }
 
+export function SkeletonBotProfile() {
+    return (
+        <>
+            <SkeletonBot />
+            <SkeletonBot />
+            <SkeletonBot />
+        </>
+    );
+}
+
+function SkeletonBot() {
+    return (
+        <div className="botWrapper collapsed">
+            <SkeletonCircle />
+            <SkeletonTitleLine />
+            <SkeletonButtonWrapper>
+                <SkeletonButton />
+                <SkeletonButton />
+                <SkeletonButton />
+            </SkeletonButtonWrapper>
+        </div>
+    );
+}
+
 function SkeletonWrapper({ children }) {
     return (
         <div className="formItem">
             {children}
         </div>
     );
+}
+
+function SkeletonButtonWrapper({ children }) {
+    return (
+        <div className="botButtons">
+            {children}
+        </div>
+    );
+}
+
+function SkeletonButton() {
+    return (
+        <div className="skeleton skeleton-button botButton"></div>
+    );
+}
+
+function SkeletonTitleLine() {
+    return (
+        <div className="skeleton skeleton-title botTitle"></div>
+    )
 }
 
 function SkeletonLabel() {

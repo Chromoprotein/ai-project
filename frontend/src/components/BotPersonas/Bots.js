@@ -18,6 +18,7 @@ import IconButton from '../Reusables/IconButton';
 import BackButton from '../Reusables/BackButton';
 import { initialSharedData } from '../../utils/defaultBot';
 import useAvatarToggler from '../Avatar/useAvatarToggler';
+import { SkeletonBotProfile } from '../Reusables/Skeletons';
 
 export default function Bots() {
 
@@ -120,7 +121,7 @@ export default function Bots() {
                     />
                 }
 
-                {loadingBots && <MiniSpinner />}
+                {loadingBots && <SkeletonBotProfile />}
 
                 {/* The existing bots */}
 

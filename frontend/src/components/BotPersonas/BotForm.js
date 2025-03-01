@@ -92,6 +92,7 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
     };
 
     return (
+        <div className="formBackground">
         <form onSubmit={handleSubmit} className="formContainer">
 
             <div className="formItem">
@@ -248,5 +249,6 @@ export default function BotForm({ userData, initialState, initialSharedData, edi
                 </div>
             )}
         </form>
+        </div>
     );
 }
